@@ -1,0 +1,11 @@
+{
+  "name": "IPLD Go unit tests",
+  "description": "workflow to run Go unit tests",
+  "iconName": "example-icon",
+  "categories": [
+      "Go"
+  ],
+  "filePatterns": [
+      "go.mod"
+  ]
+}
