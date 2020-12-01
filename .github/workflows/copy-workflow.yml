@@ -1,0 +1,72 @@
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.set-matrix.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TARGETS=$(jq -c . .github/workflows/config.json)
+          echo "::set-output name=targets::$TARGETS"
+  copy:
+    needs: [ matrix ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg: ${{ fromJson(needs.matrix.outputs.targets) }}
+        workflow: [ "go-test", "go-check" ]
+    env:
+      WORKFLOW_DIR: "workflow-repo"
+      FILE: "${{ matrix.workflow }}.yml"
+      NEEDS_UPDATE: 0
+    name: Update ${{ matrix.workflow }} on ${{ matrix.cfg.target }}
+    steps:
+    - name: Checkout ${{ matrix.cfg.target }}
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ matrix.cfg.target }}
+        token: ${{ secrets.IPLDBOT_GITHUB_TOKEN }}
+        persist-credentials: true
+    - name: Checkout workflow templates
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.WORKFLOW_DIR }}
+    - name: Add "DO NOT EDIT" header to ${{ env.FILE }}
+      run: |
+        tmp=$(mktemp)
+        cat $WORKFLOW_DIR/workflow-templates/header.yml $WORKFLOW_DIR/workflow-templates/$FILE > $tmp
+        mv $tmp $WORKFLOW_DIR/workflow-templates/$FILE
+    - name: Check if an update to ${{ env.FILE }} is neccessary
+      run: |
+        STATUS=$(cmp --silent .github/workflows/$FILE $WORKFLOW_DIR/workflow-templates/$FILE; echo $?)
+        if [[ $STATUS -ne 0 ]]; then
+          echo "Update needed."
+          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
+        else
+          echo "Files indentical. Skipping."
+        fi
+    - name: Copy ${{ env.FILE }} to target repo
+      if: ${{ env.NEEDS_UPDATE == 1 }}
+      run: |
+        mkdir -p .github/workflows/
+        cp $WORKFLOW_DIR/workflow-templates/$FILE .github/workflows/
+        rm -rf $WORKFLOW_DIR
+    - name: Create Pull Request
+      if: ${{ env.NEEDS_UPDATE == 1 }}
+      uses: peter-evans/create-pull-request@v3
+      with:
+        commit-message: update ${{ env.FILE }}
+        title: update ${{ matrix.workflow }} workflow
+        body: update to https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+        token: ${{ secrets.IPLDBOT_GITHUB_TOKEN }}
+        committer: ipldbot <ipldbot@users.noreply.github.com>
+        author: ipldbot <ipldbot@users.noreply.github.com>
+        branch: ipldbot/update-${{matrix.workflow }}
+        delete-branch: true
