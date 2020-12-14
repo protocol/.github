@@ -1,5 +1,6 @@
 [
   { "target": "ipld/go-car" },
+  { "target": "ipld/go-codec-dagpb" },
   { "target": "ipld/go-ipld-adl-hamt" },
   { "target": "ipld/go-ipld-btc" },
   { "target": "ipld/go-ipld-prime-proto" }
