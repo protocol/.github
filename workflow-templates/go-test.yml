@@ -18,8 +18,6 @@ jobs:
         run: |
           go version
           go env
-      - name: Install dependencies
-        run: go install ./...
       - name: Run tests
         run: go test -v -coverprofile coverage.txt ./...
       - name: Run tests (32 bit)
