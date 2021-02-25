@@ -8,10 +8,10 @@ By storing them in a central place (here), and distributing them in an automated
 ## Technical Details
 
 This repository currently defines two workflows for Go repositories:
-* [go-check](https://github.com/ipld/.github/blob/master/workflow-templates/go-check.yml): Performs checks that ensure that the code adheres to common coding styles.
-* [go-test](https://github.com/ipld/.github/blob/master/workflow-templates/go-test.yml): Runs unit tests, using different compiler versions and operating systems.
+* [go-check](workflow-templates/go-check.yml): Performs checks that ensure that the code adheres to common coding styles.
+* [go-test](workflow-templates/go-test.yml): Runs unit tests, using different compiler versions and operating systems.
 
-Whenever one of these workflows is changed, this repository runs the [copy workflow](https://github.com/ipld/.github/blob/master/.github/workflows/copy-workflow.yml). This workflow creates a pull request in every participating repository to update *go-check* and *go-test*.
+Whenever one of these workflows is changed, this repository runs the [copy workflow](.github/workflows/copy-workflow.yml). This workflow creates a pull request in every participating repository to update *go-check* and *go-test*.
 In order to help with the distribution of these workflows, this repository defines two additional workflows that are distributed across participating repositories:
-* [autorebase](https://github.com/ipld/.github/blob/master/workflow-templates/autorebase.yml): Assume that we update *go-test* here, and this change uncovers a bug in one of the repositories. After this bug has to be fixed in that repo, commenting `@ipldbot rebase` on the pull request will trigger a rebase of that PR, such that we can be sure that the intended fix actually allows this workflow to pass.
-* [automerge](https://github.com/ipld/.github/blob/master/workflow-templates/automerge.yml): In most cases, an update to the workflows will not cause CI to fail in most participating repositories. To make our life easier, *automerge* automatically merges the pull request if all checks succeed.
+* [autorebase](workflow-templates/autorebase.yml): Assume that we update *go-test* here, and this change uncovers a bug in one of the repositories. After this bug has to be fixed in that repo, commenting `@ipldbot rebase` on the pull request will trigger a rebase of that PR, such that we can be sure that the intended fix actually allows this workflow to pass.
+* [automerge](workflow-templates/automerge.yml): In most cases, an update to the workflows will not cause CI to fail in most participating repositories. To make our life easier, *automerge* automatically merges the pull request if all checks succeed.
