@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Wait on tests
-      uses: lewagon/wait-on-check-action@v0.2
+      uses: lewagon/wait-on-check-action@bafe56a6863672c681c3cf671f5e10b20abf2eaa # v0.2
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         wait-interval: 10
         running-workflow-name: 'automerge' # the name of this job
     - name: Merge PR
-      uses: pascalgn/automerge-action@v0.13.1
+      uses: pascalgn/automerge-action@741c311a47881be9625932b0a0de1b0937aab1ae # v0.13.1
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         MERGE_LABELS: ""
