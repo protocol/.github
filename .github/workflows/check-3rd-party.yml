@@ -1,0 +1,25 @@
+on: [ pull_request ]
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.set-matrix.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TARGETS=$(find . -type f -name "*.yml" | sed "s|^\./||" | grep -v workflow-templates/header.yml | jq -R -s -c 'split("\n")[:-1]')
+          echo "::set-output name=targets::$TARGETS"
+  check:
+    needs: [ matrix ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJson(needs.matrix.outputs.targets) }}
+    name: check ${{ matrix.file }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run check
+        run: .github/workflows/check-3rd-party.sh ${{ matrix.file }}
