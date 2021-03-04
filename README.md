@@ -8,7 +8,7 @@ By storing them in a central place (here), and distributing them in an automated
 ## Technical Details
 
 This repository currently defines two workflows for Go repositories:
-* [go-check](workflow-templates/go-check.yml): Performs checks that ensure that the code adheres to common coding styles.
+* [go-check](workflow-templates/go-check.yml): Performs static analysis, style, and formatting checks to help improve the code quality.
 * [go-test](workflow-templates/go-test.yml): Runs unit tests, using different compiler versions and operating systems.
 
 Whenever one of these workflows is changed, this repository runs the [copy workflow](.github/workflows/copy-workflow.yml). This workflow creates a pull request in every participating repository to update *go-check* and *go-test*.
