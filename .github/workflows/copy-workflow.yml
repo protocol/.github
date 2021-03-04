@@ -1,10 +1,11 @@
 on:
-  push:
-    branches:
-      - master
+  pull_request:
+    branches: [ master ]
+    types: [ closed ] # IMPORTANT: check the merge status for every job: github.event.pull_request.merged == true
 
 jobs:
   matrix:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       targets: ${{ steps.set-matrix.outputs.targets }}
@@ -15,6 +16,7 @@ jobs:
           TARGETS=$(jq -c . .github/workflows/config.json)
           echo "::set-output name=targets::$TARGETS"
   copy:
+    if: github.event.pull_request.merged == true
     needs: [ matrix ]
     runs-on: ubuntu-latest
     strategy:
@@ -62,10 +64,10 @@ jobs:
       if: ${{ env.NEEDS_UPDATE == 1 }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
-        commit-message: update ${{ env.FILE }}
-        title: update ${{ matrix.workflow }} workflow
-        body:  |
-          update to https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+        commit-message: "update ${{ env.FILE }}: ${{ github.event.pull_request.title }}"
+        title: "${{ matrix.workflow }}: ${{ github.event.pull_request.title }}"
+        body: |
+          Change introduced by ${{ github.event.pull_request.html_url }}.
 
           ---
           You can trigger a rebase by commenting `@ipldbot rebase`.
