@@ -3,15 +3,14 @@
 FILE=$1
 status=0
 
-while read -r line; do
-  src=`echo $line | sed -E "s/(.*)uses://g" | xargs`
-  author=`echo $src | awk -F/ '{print $1}'`
+for line in `sed -ne 's/[[:space:]-]*uses:[[:space:]]*//p' $1 | sed -e 's/\s*#.*$//'`; do
+  author=`echo $line | awk -F/ '{print $1}'`
   if [ $author == "actions" ]; then continue; fi
-  version=`echo $src | awk -F@ '{print $2}' | awk '{print $1}'`
+  version=`echo $line | awk -F@ '{print $2}' | awk '{print $1}'`
   if [ ${#version} != 40 ]; then
     status=1
-    echo "$FILE includes $src and doesn't use commit hash"
+    echo "$FILE includes $line and doesn't use commit hash"
   fi
-done < <(grep "uses:" $FILE)
+done 
 
 exit $status
