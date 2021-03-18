@@ -1,29 +1,17 @@
+# This workflow is triggered by the dispatch workflow.
+
 on:
-  pull_request:
-    branches: [ master ]
-    types: [ closed ] # IMPORTANT: check the merge status for every job: github.event.pull_request.merged == true
+  repository_dispatch:
+    types: [ copy-workflow ]
 
 jobs:
-  matrix:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    outputs:
-      targets: ${{ steps.set-matrix.outputs.targets }}
-    steps:
-      - uses: actions/checkout@v2
-      - id: set-matrix
-        run: |
-          TARGETS=$(jq -c . .github/workflows/config.json)
-          echo "::set-output name=targets::$TARGETS"
   copy:
-    if: github.event.pull_request.merged == true
-    needs: [ matrix ]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        cfg: ${{ fromJson(needs.matrix.outputs.targets) }}
-        workflow: [ "autorebase", "automerge", "go-test", "go-check" ]
+        cfg: ${{ github.event.client_payload.targets }}
+        workflow: ${{ github.event.client_payload.workflows }}
     env:
       WORKFLOW_DIR: "workflow-repo"
       FILE: "${{ matrix.workflow }}.yml"
@@ -64,11 +52,10 @@ jobs:
       if: ${{ env.NEEDS_UPDATE == 1 }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
-        commit-message: "update ${{ env.FILE }}: ${{ github.event.pull_request.title }}"
-        title: "${{ matrix.workflow }}: ${{ github.event.pull_request.title }}"
+        commit-message: "update ${{ env.FILE }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
+        title: "${{ matrix.workflow }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
         body: |
-          Change introduced by ${{ github.event.pull_request.html_url }}.
-
+          Change introduced by ${{ github.event.client_payload.github.event.pull_request.html_url }}.
           ---
           You can trigger a rebase by commenting `@web3-bot rebase`.
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
