@@ -34,7 +34,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: ${{ matrix.cfg.target }}
-        token: ${{ secrets.IPLDBOT_GITHUB_TOKEN }}
+        token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
     - name: Checkout workflow templates
       uses: actions/checkout@v2
@@ -70,9 +70,9 @@ jobs:
           Change introduced by ${{ github.event.pull_request.html_url }}.
 
           ---
-          You can trigger a rebase by commenting `@ipldbot rebase`.
-        token: ${{ secrets.IPLDBOT_GITHUB_TOKEN }}
-        committer: ipldbot <ipldbot@users.noreply.github.com>
-        author: ipldbot <ipldbot@users.noreply.github.com>
-        branch: ipldbot/update-${{matrix.workflow }}
+          You can trigger a rebase by commenting `@web3-bot rebase`.
+        token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+        committer: web3-bot <web3-bot@users.noreply.github.com>
+        author: web3-bot <web3-bot@users.noreply.github.com>
+        branch: web3-bot/update-${{matrix.workflow }}
         delete-branch: true
