@@ -1,0 +1,268 @@
+[
+  {
+    "name": "P0",
+    "color": "b60205",
+    "description": "Critical: Tackled by core team ASAP",
+    "aliases": ["P0 - Critical", "Priority: Critical"]
+  },
+  {
+    "name": "P1",
+    "color": "d93f0b",
+    "description": "High: Likely tackled by core team if no one steps up",
+    "aliases": ["P1 - High", "priority:high", "Priority: High"]
+  },
+  {
+    "name": "P2",
+    "color": "e99695",
+    "description": "Medium: Good to have, but can wait until someone steps up",
+    "aliases": ["P2 - Medium", "priority:medium", "Priority: Medium"]
+  },
+  {
+    "name": "P3",
+    "color": "f9d0c4",
+    "description": "Low: Not priority right now",
+    "aliases": ["P3 - Low", "priority:low", "Priority: Low"]
+  },
+  {
+    "name": "bounty",
+    "color": "1cfc60",
+    "description": "Has bounty! See https://github.com/ipfs/devgrants/projects/1"
+  },
+  {
+    "name": "effort/days",
+    "color": "fef2c0",
+    "description": "Estimated to take multiple days, but less than a week"
+  },
+  {
+    "name": "effort/hours",
+    "color": "fef2c0",
+    "description": "Estimated to take one or several hours"
+  },
+  {
+    "name": "effort/weeks",
+    "color": "fef2c0",
+    "description": "Estimated to take multiple weeks"
+  },
+  {
+    "name": "exp/beginner",
+    "color": "bfe5bf",
+    "description": "Can be confidently tackled by newcomers",
+    "aliases": ["dif/trivial"]
+  },
+  {
+    "name": "exp/expert",
+    "color": "bfe5bf",
+    "description": "Having worked on the specific codebase is important",
+    "aliases": ["dif/expert", "difficulty:moderate", "Difficulty: Moderate"]
+  },
+  {
+    "name": "exp/intermediate",
+    "color": "bfe5bf",
+    "description": "Prior experience is likely helpful",
+    "aliases": ["dif/medium", "difficulty:medium"]
+  },
+  {
+    "name": "exp/novice",
+    "color": "bfe5bf",
+    "description": "Someone with a little familiarity can pick up",
+    "aliases": ["dif/easy", "difficulty:easy", "Difficulty: Easy"]
+  },
+  {
+    "name": "exp/wizard",
+    "color": "bfe5bf",
+    "description": "Extensive knowledge (implications, ramifications) required",
+    "aliases": ["dif/expert", "difficulty:hard", "Difficulty: Hard"]
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Good issue for new contributors"
+  },
+  {
+    "name": "help wanted",
+    "color": "0e8a16",
+    "description": "Seeking public contribution on this issue"
+  },
+  {
+    "name": "kind/architecture",
+    "color": "c7def8",
+    "description": "Core architecture of project"
+  },
+  {
+    "name": "kind/bug",
+    "color": "fc2929",
+    "description": "A bug in existing code (including security flaws)",
+    "aliases": ["bug"]
+  },
+  {
+    "name": "kind/discussion",
+    "color": "c7def8",
+    "description": "Topical discussion; usually not changes to codebase",
+    "aliases": ["discussion"]
+  },
+  {
+    "name": "kind/enhancement",
+    "color": "c7def8",
+    "description": "A net-new feature or improvement to an existing feature",
+    "aliases": ["enhancement", "feature", "enhancement/feature"]
+  },
+  {
+    "name": "kind/maintenance",
+    "color": "c7def8",
+    "description": "Work required to avoid breaking changes or harm to project's status quo"
+  },
+  {
+    "name": "kind/support",
+    "color": "c7def8",
+    "description": "A question or request for support",
+    "aliases": ["support", "question", "kind/question"]
+  },
+  {
+    "name": "kind/test",
+    "color": "c7def8",
+    "description": "Testing work",
+    "aliases": ["test", "testing"]
+  },
+  {
+    "name": "need/analysis",
+    "color": "ededed",
+    "description": "Needs further analysis before proceeding",
+    "aliases": ["needs_refining"]
+  },
+  {
+    "name": "need/author-input",
+    "color": "ededed",
+    "description": "Needs input from the original author",
+    "aliases": ["waiting on author"]
+  },
+  {
+    "name": "need/community-input",
+    "color": "ededed",
+    "description": "Needs input from the wider community",
+    "aliases": ["discussion-needed"]
+  },
+  {
+    "name": "need/maintainer-input",
+    "color": "ededed",
+    "description": "Needs input from the current maintainer(s)"
+  },
+  {
+    "name": "need/triage",
+    "color": "ededed",
+    "description": "Needs initial labeling and prioritization",
+    "aliases": ["need/triage"]
+  },
+  {
+    "name": "status/blocked",
+    "color": "b52ed1",
+    "description": "Unable to be worked further until needs are met",
+    "aliases": ["blocked"]
+  },
+  {
+    "name": "status/deferred",
+    "color": "dcc8e0",
+    "description": "Conscious decision to pause or backlog",
+    "aliases": ["postponed"]
+  },
+  {
+    "name": "status/in-progress",
+    "color": "dcc8e0",
+    "description": "In progress",
+    "aliases": ["in progress"]
+  },
+  {
+    "name": "status/inactive",
+    "color": "dcc8e0",
+    "description": "No significant work in the previous month"
+  },
+  {
+    "name": "status/ready",
+    "color": "dcc8e0",
+    "description": "Ready to be worked",
+    "aliases": ["ready"]
+  },
+  {
+    "name": "topic/design-content",
+    "color": "3f4b56",
+    "description": "Content design, writing, information architecture"
+  },
+  {
+    "name": "topic/design-front-end",
+    "color": "3f4b56",
+    "description": "Front-end implementation of UX/UI work"
+  },
+  {
+    "name": "topic/design-ux",
+    "color": "3f4b56",
+    "description": "UX strategy, research, not solely visual design"
+  },
+  {
+    "name": "topic/design-video",
+    "color": "3f4b56",
+    "description": "Video and/or motion design"
+  },
+  {
+    "name": "topic/design-visual",
+    "color": "3f4b56",
+    "description": "Visual design ONLY, not part of a larger UX effort"
+  },
+  {
+    "name": "topic/devexp",
+    "color": "3f4b56",
+    "description": "Developer Experience"
+  },
+  {
+    "name": "topic/docs",
+    "color": "3f4b56",
+    "description": "Documentation",
+    "aliases": ["docs", "documentation", "doc"]
+  },
+  {
+    "name": "topic/infra",
+    "color": "3f4b56",
+    "description": "Infrastructure",
+    "aliases": ["infra", "infrastructure"]
+  },
+  {
+    "name": "topic/interop",
+    "color": "3f4b56",
+    "description": "Interoperability",
+    "aliases": ["interop"]
+  },
+  {
+    "name": "topic/perf",
+    "color": "3f4b56",
+    "description": "Performance",
+    "aliases": ["perf", "performance"]
+  },
+  {
+    "name": "topic/windows",
+    "color": "3f4b56",
+    "description": "Windows specific",
+    "aliases": ["windows"]
+  },
+  {
+    "name": "topic/linux",
+    "color": "3f4b56",
+    "description": "Linux specific",
+    "aliases": ["linux"]
+  },
+  {
+    "name": "topic/macos",
+    "color": "3f4b56",
+    "description": "MacOS specific",
+    "aliases": ["macos"]
+  },
+  {
+    "name": "topic/dependencies",
+    "color": "3f4b56",
+    "description": "Dependencies",
+    "aliases": ["dependencies", "deps"]
+  },
+  {
+    "name": "topic/ci",
+    "color": "3f4b56",
+    "description": "Continuous integration",
+    "aliases": ["ci"]
+  }
+]
