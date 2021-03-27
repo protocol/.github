@@ -1,0 +1,42 @@
+# Trigger the execution of copy-workflow.yml, in batches of 5 repositories.
+# This workflow is needed since GitHub Actions limits the matrix size to 256 jobs.
+# We use one job per repository per file.
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ closed ] # IMPORTANT: check the merge status for every job: github.event.pull_request.merged == true
+
+env:
+  # We could use a higher number here. We use a small number just to make sure to create multiple batches.
+  MAX_REPOS_PER_WORKFLOW: 5
+  WORKFLOWS: '[ "autorebase", "automerge", "go-test", "go-check" ]' # a JSON array of the files to distribute
+
+jobs:
+  matrix:
+    if: github.event.pull_request.merged == true
+    name: Trigger copy workflows
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.set-matrix.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TARGETS=$(jq '. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})' .github/workflows/config.json | jq -sc '. | to_entries')
+          echo "::set-output name=targets::$TARGETS"
+  dispatch:
+    if: github.event.pull_request.merged == true
+    needs: [ matrix ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg: ${{ fromJson(needs.matrix.outputs.targets) }}
+    name: Start copy workflow (batch ${{ matrix.cfg.key }})
+    steps:
+      - uses: peter-evans/repository-dispatch@ce5485de42c9b2622d2ed064be479e8ed65e76f4 # v1.1.3
+        with:
+          token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+          event-type: copy-workflow
+          client-payload: '{ "github": ${{ toJson(github) }}, "workflows": ${{ env.WORKFLOWS }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
