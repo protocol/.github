@@ -1,4 +1,4 @@
-# Trigger the execution of copy-workflow.yml, in batches of 5 repositories.
+# Trigger the execution of copy-workflow.yml, in batches of 8 repositories.
 # This workflow is needed since GitHub Actions limits the matrix size to 256 jobs.
 # We use one job per repository per file.
 
@@ -9,7 +9,7 @@ on:
 
 env:
   # We could use a higher number here. We use a small number just to make sure to create multiple batches.
-  MAX_REPOS_PER_WORKFLOW: 5
+  MAX_REPOS_PER_WORKFLOW: 8
   WORKFLOWS: '[ "autorebase", "automerge", "go-test", "go-check" ]' # a JSON array of the files to distribute
 
 jobs:
