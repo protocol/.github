@@ -17,8 +17,8 @@ jobs:
       FILE: "${{ matrix.workflow }}.yml"
       NEEDS_UPDATE: 0
       # We overwrite these values if this is the first deployment of this workflow.
-      COMMIT_MSG: "update ${{ matrix.workflow }}.yml: ${{ github.event.client_payload.github.event.pull_request.title }}"
-      PR_TITLE: "${{ matrix.workflow }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
+      COMMIT_MSG: "update ${{ matrix.workflow }}.yml: ${{ github.event.client_payload.github_event.pull_request.title }}"
+      PR_TITLE: "${{ matrix.workflow }}: ${{ github.event.client_payload.github_event.pull_request.title }}"
     name: Update ${{ matrix.workflow }} on ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -65,7 +65,7 @@ jobs:
         commit-message: ${{ env.COMMIT_MSG }}
         title: ${{ env.PR_TITLE }}
         body: |
-          Change introduced by ${{ github.event.client_payload.github.event.pull_request.html_url }}.
+          Change introduced by ${{ github.event.client_payload.github_event.pull_request.html_url }}.
           ---
           You can trigger a rebase by commenting `@web3-bot rebase`.
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
