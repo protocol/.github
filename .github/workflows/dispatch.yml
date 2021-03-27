@@ -39,4 +39,4 @@ jobs:
         with:
           token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
           event-type: copy-workflow
-          client-payload: '{ "github": ${{ toJson(github) }}, "workflows": ${{ env.WORKFLOWS }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
+          client-payload: '{ "github_event": ${{ toJson(github.event) }}, "workflows": ${{ env.WORKFLOWS }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
