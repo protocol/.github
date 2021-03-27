@@ -53,7 +53,7 @@
     "name": "exp/expert",
     "color": "bfe5bf",
     "description": "Having worked on the specific codebase is important",
-    "aliases": ["dif/expert", "difficulty:moderate", "Difficulty: Moderate"]
+    "aliases": ["dif/hard", "difficulty:moderate", "Difficulty: Moderate"]
   },
   {
     "name": "exp/intermediate",
