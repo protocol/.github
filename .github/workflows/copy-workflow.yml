@@ -16,6 +16,9 @@ jobs:
       WORKFLOW_DIR: "workflow-repo"
       FILE: "${{ matrix.workflow }}.yml"
       NEEDS_UPDATE: 0
+      # We overwrite these values if this is the first deployment of this workflow.
+      COMMIT_MSG: "update ${{ matrix.workflow }}.yml: ${{ github.event.client_payload.github.event.pull_request.title }}"
+      PR_TITLE: "${{ matrix.workflow }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
     name: Update ${{ matrix.workflow }} on ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -35,6 +38,13 @@ jobs:
         mv $tmp $WORKFLOW_DIR/workflow-templates/$FILE
     - name: Check if an update to ${{ env.FILE }} is neccessary
       run: |
+        if [[ ! -f ".github/workflows/${{ env.FILE }}" ]]; then
+          echo "First deployment of this workflow."
+          echo 'COMMIT_MSG=add ${{ env.FILE }} workflow' >> $GITHUB_ENV
+          echo 'PR_TITLE=add ${{ env.FILE }} workflow' >> $GITHUB_ENV
+          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
+          exit
+        fi
         STATUS=$(cmp --silent .github/workflows/$FILE $WORKFLOW_DIR/workflow-templates/$FILE; echo $?)
         if [[ $STATUS -ne 0 ]]; then
           echo "Update needed."
@@ -52,8 +62,8 @@ jobs:
       if: ${{ env.NEEDS_UPDATE == 1 }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
-        commit-message: "update ${{ env.FILE }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
-        title: "${{ matrix.workflow }}: ${{ github.event.client_payload.github.event.pull_request.title }}"
+        commit-message: ${{ env.COMMIT_MSG }}
+        title: ${{ env.PR_TITLE }}
         body: |
           Change introduced by ${{ github.event.client_payload.github.event.pull_request.html_url }}.
           ---
