@@ -11,16 +11,16 @@ jobs:
       fail-fast: false
       matrix:
         cfg: ${{ github.event.client_payload.targets }}
-        workflow: ${{ github.event.client_payload.workflows }}
+        file: ${{ github.event.client_payload.files }}
     env:
-      WORKFLOW_DIR: "workflow-repo"
+      TARGET_DIR: "target-repo"
       TEMPLATE_DIR: "templates"
-      FILE: "${{ matrix.workflow }}"
+      FILE: "${{ matrix.file }}"
       NEEDS_UPDATE: 0
-      # We overwrite these values if this is the first deployment of this workflow.
-      COMMIT_MSG: "update ${{ matrix.workflow }}: ${{ github.event.client_payload.github_event.pull_request.title }}"
-      PR_TITLE: "${{ matrix.workflow }}: ${{ github.event.client_payload.github_event.pull_request.title }}"
-    name: Update ${{ matrix.workflow }} on ${{ matrix.cfg.target }}
+      # We overwrite these values if this is the first deployment of this file.
+      COMMIT_MSG: "update ${{ matrix.file }}: ${{ github.event.client_payload.github_event.pull_request.title }}"
+      PR_TITLE: "${{ matrix.file }}: ${{ github.event.client_payload.github_event.pull_request.title }}"
+    name: Update ${{ matrix.file }} on ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
       uses: actions/checkout@v2
@@ -28,25 +28,25 @@ jobs:
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
-    - name: Checkout workflow templates
+    - name: Checkout template repository
       uses: actions/checkout@v2
       with:
-        path: ${{ env.WORKFLOW_DIR }}
+        path: ${{ env.TARGET_DIR }}
     - name: Add "DO NOT EDIT" header to ${{ env.FILE }}
       run: |
         tmp=$(mktemp)
-        cat $WORKFLOW_DIR/$TEMPLATE_DIR/header.yml $WORKFLOW_DIR/$TEMPLATE_DIR/$FILE > $tmp
-        mv $tmp $WORKFLOW_DIR/$TEMPLATE_DIR/$FILE
+        cat $TARGET_DIR/$TEMPLATE_DIR/header.yml $TARGET_DIR/$TEMPLATE_DIR/$FILE > $tmp
+        mv $tmp $TARGET_DIR/$TEMPLATE_DIR/$FILE
     - name: Check if an update to ${{ env.FILE }} is neccessary
       run: |
         if [[ ! -f "${{ env.FILE }}" ]]; then
-          echo "First deployment of this workflow."
+          echo "First deployment of this file."
           echo 'COMMIT_MSG=add ${{ env.FILE }}' >> $GITHUB_ENV
           echo 'PR_TITLE=add ${{ env.FILE }}' >> $GITHUB_ENV
           echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
           exit
         fi
-        STATUS=$(cmp --silent $FILE $WORKFLOW_DIR/$TEMPLATE_DIR/$FILE; echo $?)
+        STATUS=$(cmp --silent $FILE $TARGET_DIR/$TEMPLATE_DIR/$FILE; echo $?)
         if [[ $STATUS -ne 0 ]]; then
           echo "Update needed."
           echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
@@ -58,8 +58,8 @@ jobs:
       run: |
         dir=$(dirname $FILE)
         mkdir -p $dir
-        cp $WORKFLOW_DIR/$TEMPLATE_DIR/$FILE $dir
-        rm -rf $WORKFLOW_DIR
+        cp $TARGET_DIR/$TEMPLATE_DIR/$FILE $dir
+        rm -rf $TARGET_DIR
     - name: Create Pull Request
       if: ${{ env.NEEDS_UPDATE == 1 }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
@@ -73,5 +73,5 @@ jobs:
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         committer: web3-bot <web3-bot@users.noreply.github.com>
         author: web3-bot <web3-bot@users.noreply.github.com>
-        branch: web3-bot/update-${{matrix.workflow }}
+        branch: web3-bot/update-${{ matrix.file }}
         delete-branch: true
