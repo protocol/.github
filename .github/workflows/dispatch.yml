@@ -10,7 +10,7 @@ on:
 env:
   # We could use a higher number here. We use a small number just to make sure to create multiple batches.
   MAX_REPOS_PER_WORKFLOW: 8
-  WORKFLOWS: '[ "autorebase", "automerge", "go-test", "go-check" ]' # a JSON array of the files to distribute
+  FILES: '[ ".github/workflows/autorebase.yml", ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml" ]' # a JSON array of the files to distribute
 
 jobs:
   matrix:
@@ -39,4 +39,4 @@ jobs:
         with:
           token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
           event-type: copy-workflow
-          client-payload: '{ "github_event": ${{ toJson(github.event) }}, "workflows": ${{ env.WORKFLOWS }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
+          client-payload: '{ "github_event": ${{ toJson(github.event) }}, "files": ${{ env.FILES }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
