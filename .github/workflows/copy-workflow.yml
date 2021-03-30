@@ -13,7 +13,7 @@ jobs:
         cfg: ${{ github.event.client_payload.targets }}
         file: ${{ github.event.client_payload.files }}
     env:
-      TARGET_DIR: "target-repo"
+      TARGET_DIR: "template-repo"
       TEMPLATE_DIR: "templates"
       FILE: "${{ matrix.file }}"
       NEEDS_UPDATE: 0
@@ -39,20 +39,34 @@ jobs:
         mv $tmp $TARGET_DIR/$TEMPLATE_DIR/$FILE
     - name: Check if an update to ${{ env.FILE }} is neccessary
       run: |
-        if [[ ! -f "${{ env.FILE }}" ]]; then
-          echo "First deployment of this file."
-          echo 'COMMIT_MSG=add ${{ env.FILE }}' >> $GITHUB_ENV
-          echo 'PR_TITLE=add ${{ env.FILE }}' >> $GITHUB_ENV
-          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
-          exit
-        fi
-        STATUS=$(cmp --silent $FILE $TARGET_DIR/$TEMPLATE_DIR/$FILE; echo $?)
-        if [[ $STATUS -ne 0 ]]; then
-          echo "Update needed."
-          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
-        else
-          echo "Files indentical. Skipping."
-        fi
+        git checkout -b web3-bot/sync
+        for f in $(jq ".[]" <<< '${{ github.event.client_payload.files }}' | xargs -n1); do 
+          needs_update=false
+          commit_msg=""
+          if [[ ! -f "$f" ]]; then
+            echo "First deployment of $f."
+            commit_msg="add $f"
+            needs_update=true
+          else
+            status=$(cmp --silent $f $TARGET_DIR/$TEMPLATE_DIR/$f; echo $?)
+            if [[ $status -ne 0 ]]; then
+              echo "Update needed."
+              commit_msg="update $f"
+              needs_update=true
+            else
+              echo "Files indentical. Skipping."
+              continue
+            fi
+          fi
+          if [ $needs_update = true ]; then
+            dir=$(dirname $f)
+            mkdir -p $dir
+            cp $TARGET_DIR/$TEMPLATE_DIR/$FILE $dir
+            git add $file
+            git commit -m "$commit_msg"
+          fi
+        done
+        rm -rf $TARGET_DIR
     - name: Copy ${{ env.FILE }} to target repo
       if: ${{ env.NEEDS_UPDATE == 1 }}
       run: |
