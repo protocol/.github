@@ -31,9 +31,8 @@ jobs:
       run: |
         git config user.name web3-bot
         git config user.email "web3-bot@users.noreply.github.com"
-        for f in $(jq ".[]" <<< '${{ toJson(github.event.client_payload.files) }}' | xargs -n1); do 
+        for f in $(jq -r ".[]" <<< '${{ toJson(github.event.client_payload.files) }}'); do 
           echo -e "\nProcessing $f."
-          needs_update=false
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
@@ -43,26 +42,22 @@ jobs:
           if [[ ! -f "$f" ]]; then
             echo "First deployment.\n"
             commit_msg="add $f"
-            needs_update=true
           else
             status=$(cmp --silent $f $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f; echo $?)
             if [[ $status -ne 0 ]]; then
               echo "Update needed."
               commit_msg="update $f"
-              needs_update=true
             else
               echo "File indentical. Skipping."
               continue
             fi
           fi
-          if [ $needs_update = true ]; then
-            dir=$(dirname $f)
-            mkdir -p $dir
-            cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f $dir
-            git add $f
-            git commit -m "$commit_msg"
-            echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
-          fi
+          dir=$(dirname $f)
+          mkdir -p $dir
+          cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f $dir
+          git add $f
+          git commit -m "$commit_msg"
+          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
         done
         rm -rf $TEMPLATE_REPO_DIR
     - name: Create Pull Request
