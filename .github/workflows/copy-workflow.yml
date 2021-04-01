@@ -23,14 +23,25 @@ jobs:
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
+    - name: git config
+      run: |
+        git config user.name web3-bot
+        git config user.email "web3-bot@users.noreply.github.com"
+    - name: run go mod tidy
+      run: |
+        go mod edit -go 1.15
+        go mod tidy
+        if ! git diff --quiet; then
+          git add .
+          git commit -m "run go mod tidy"
+          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
+        fi
     - name: Checkout template repository
       uses: actions/checkout@v2
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
-    - name: Create commits
+    - name: Add files
       run: |
-        git config user.name web3-bot
-        git config user.email "web3-bot@users.noreply.github.com"
         for f in $(jq -r ".[]" <<< '${{ toJson(github.event.client_payload.files) }}'); do 
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
