@@ -48,7 +48,7 @@ jobs:
               echo "Update needed."
               commit_msg="update $f"
             else
-              echo "File indentical. Skipping."
+              echo "File identical. Skipping."
               continue
             fi
           fi
