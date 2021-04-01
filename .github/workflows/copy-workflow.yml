@@ -36,6 +36,14 @@ jobs:
           git commit -m "run go mod tidy"
           echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
         fi
+    - name: gofmt
+      run: |
+        gofmt -s -w .
+        if ! git diff --quiet; then
+          git add .
+          git commit -m "run gofmt -s"
+          echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
+        fi
     - name: Checkout template repository
       uses: actions/checkout@v2
       with:
