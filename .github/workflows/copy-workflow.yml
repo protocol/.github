@@ -33,7 +33,7 @@ jobs:
         go mod tidy
         if ! git diff --quiet; then
           git add .
-          git commit -m "run go mod tidy"
+          git commit -m "set Go version to 1.15 and run go mod tidy"
           echo "NEEDS_UPDATE=1" >> $GITHUB_ENV
         fi
     - name: gofmt
