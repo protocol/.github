@@ -8,7 +8,6 @@
   { "target": "libp2p/go-libp2p-core" },
   { "target": "libp2p/go-libp2p-swarm" },
   { "target": "libp2p/go-libp2p-tls" },
-  { "target": "libp2p/go-libp2p-pubsub" },
   { "target": "multiformats/go-multistream" },
   { "target": "multiformats/go-multiaddr" }
 ]
