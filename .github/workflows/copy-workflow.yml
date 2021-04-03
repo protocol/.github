@@ -102,9 +102,10 @@ jobs:
       if: ${{ env.NEEDS_UPDATE == 1 }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
-        title: "sync: ${{ github.event.client_payload.github_event.pull_request.title }}"
+        title: "sync: update CI config files"
         body: |
-          Change introduced by ${{ github.event.client_payload.github_event.pull_request.html_url }}.
+          Syncing to commit ${{ github.event.client_payload.github_event.head_commit.url }}.
+          
           ---
           You can trigger a rebase by commenting `@web3-bot rebase`.
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
