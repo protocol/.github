@@ -3,9 +3,8 @@
 # We use one job per repository per file.
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
-    types: [ closed ] # IMPORTANT: check the merge status for every job: github.event.pull_request.merged == true
 
 env:
   # We could use a higher number here. We use a small number just to make sure to create multiple batches.
@@ -14,7 +13,6 @@ env:
 
 jobs:
   matrix:
-    if: github.event.pull_request.merged == true
     name: Trigger copy workflows
     runs-on: ubuntu-latest
     outputs:
@@ -26,7 +24,6 @@ jobs:
           TARGETS=$(jq '. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})' .github/workflows/config.json | jq -sc '. | to_entries')
           echo "::set-output name=targets::$TARGETS"
   dispatch:
-    if: github.event.pull_request.merged == true
     needs: [ matrix ]
     runs-on: ubuntu-latest
     strategy:
