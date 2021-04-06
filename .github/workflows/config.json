@@ -1,4 +1,5 @@
 [
+  { "target": "filecoin-project/go-fil-commp-hashhash" },
   { "target": "ipld/go-car" },
   { "target": "ipld/go-codec-dagpb" },
   { "target": "ipld/go-ipld-adl-hamt" },
