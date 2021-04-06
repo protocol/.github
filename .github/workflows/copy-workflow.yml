@@ -99,7 +99,7 @@ jobs:
     - name: Check if we need to create a PR
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count)" >> $GITHUB_ENV
     - name: Create Pull Request
-      if: ${{ env.NEEDS_UPDATE == 1 }}
+      if: ${{ env.NEEDS_UPDATE }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
         title: "sync: update CI config files"
