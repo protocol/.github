@@ -12,6 +12,7 @@ jobs:
       matrix:
         cfg: ${{ github.event.client_payload.targets }}
     env:
+      TARGET_REPO_DIR: "target-repo"
       TEMPLATE_REPO_DIR: "template-repo"
       TEMPLATE_DIR: "templates"
       NEEDS_UPDATE: 0
@@ -21,21 +22,24 @@ jobs:
     - name: Checkout ${{ matrix.cfg.target }}
       uses: actions/checkout@v2
       with:
+        path: {{ $env.TARGET_REPO_DIR }}
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
     - name: git config
       run: |
+        cd $TARGET_REPO_DIR
         git config user.name web3-bot
         git config user.email "web3-bot@users.noreply.github.com"
     - name: is initial test workflow deployment
       run: |
-        if [[ ! -f .github/workflows/go-test.yml ]]; then
+        if [[ ! -f $TARGET_REPO_DIR/.github/workflows/go-test.yml ]]; then
           echo "INITIAL_TEST_DEPLOYMENT=1" >> $GITHUB_ENV
         fi
     - name: remove Travis on initial deployment
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
+        cd $TARGET_REPO_DIR
         if [[ -f .travis.yml ]]; then
           git rm .travis.yml
           git commit -m "disable Travis"
@@ -43,12 +47,14 @@ jobs:
     - name: remove CircleCI on initial deployment
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
+        cd $TARGET_REPO_DIR
         if [[ -d .circleci ]]; then
           git rm -r .circleci
           git commit -m "disable CircleCI"
         fi
     - name: run go mod tidy
       run: |
+        cd $TARGET_REPO_DIR
         go mod edit -go 1.15
         go mod tidy
         if ! git diff --quiet; then
@@ -57,6 +63,7 @@ jobs:
         fi
     - name: gofmt
       run: |
+        cd $TARGET_REPO_DIR
         gofmt -s -w .
         if ! git diff --quiet; then
           git add .
@@ -76,11 +83,11 @@ jobs:
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
-          if [[ ! -f "$f" ]]; then
+          if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
             echo "First deployment.\n"
             commit_msg="add $f"
           else
-            status=$(cmp --silent $f $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f; echo $?)
+            status=$(cmp --silent $TARGET_REPO_DIR/$f $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f; echo $?)
             if [[ $status -ne 0 ]]; then
               echo "Update needed."
               commit_msg="update $f"
@@ -89,19 +96,23 @@ jobs:
               continue
             fi
           fi
-          dir=$(dirname $f)
+          dir="$TARGET_REPO_DIR/"$(dirname $f)
           mkdir -p $dir
           cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f $dir
+          pushd $TARGET_REPO_DIR > /dev/null
           git add $f
           git commit -m "$commit_msg"
+          popd > /dev/null
         done
-        rm -rf $TEMPLATE_REPO_DIR
     - name: Check if we need to create a PR
-      run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count)" >> $GITHUB_ENV
+      run: |
+        cd $TARGET_REPO_DIR
+        echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count)" >> $GITHUB_ENV
     - name: Create Pull Request
       if: ${{ env.NEEDS_UPDATE }}
       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8 #v3.8.2
       with:
+        path: ${{ env.TARGET_REPO_DIR }}
         title: "sync: update CI config files"
         body: |
           Syncing to commit ${{ github.event.client_payload.github_event.head_commit.url }}.
