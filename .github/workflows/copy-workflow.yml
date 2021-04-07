@@ -17,6 +17,8 @@ jobs:
       TEMPLATE_DIR: "templates"
       NEEDS_UPDATE: 0
       INITIAL_TEST_DEPLOYMENT: 0
+      GITHUB_USER: ""
+      GITHUB_EMAIL: ""
     name: Update ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -26,11 +28,22 @@ jobs:
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
+    - name: GitHub user config
+      run: |
+        org=$(echo "${{ matrix.cfg.target }}" | cut -f1 -d"/")
+        user=$(jq -r --arg v "$org" '.[$v].user' $TEMPLATE_REPO_DIR/.github/workflows/github-users.json)
+        if [[ "$user" == "null" ]]; then
+          echo "No configuration found for GitHub org $org."
+          exit 1
+        fi
+        echo "Using GitHub user $user for $org."
+        echo "GITHUB_USER=$user" >> $GITHUB_ENV
+        echo "GITHUB_EMAIL=$user@users.noreply.github.com" >> $GITHUB_ENV
     - name: git config
       run: |
         cd $TARGET_REPO_DIR
-        git config user.name web3-bot
-        git config user.email "web3-bot@users.noreply.github.com"
+        git config user.name ${{ env.GITHUB_USER }}
+        git config user.email ${{ env.GITHUB_EMAIL }}
     - name: is initial test workflow deployment
       run: |
         if [[ ! -f $TARGET_REPO_DIR/.github/workflows/go-test.yml ]]; then
@@ -118,9 +131,9 @@ jobs:
           Syncing to commit ${{ github.event.client_payload.github_event.head_commit.url }}.
           
           ---
-          You can trigger a rebase by commenting `@web3-bot rebase`.
+          You can trigger a rebase by commenting `@${{ env.GITHUB_USER }} rebase`.
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-        committer: web3-bot <web3-bot@users.noreply.github.com>
-        author: web3-bot <web3-bot@users.noreply.github.com>
-        branch: web3-bot/sync
+        committer: ${{ env.GITHUB_USER }} <${{ env.GITHUB_EMAIL }}>
+        author: ${{ env.GITHUB_USER }} <${{ env.GITHUB_EMAIL }}>
+        branch: ${{ env.GITHUB_USER }}/sync
         delete-branch: true
