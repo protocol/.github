@@ -28,6 +28,10 @@ jobs:
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
+    - name: Checkout template repository
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.TEMPLATE_REPO_DIR }}
     - name: GitHub user config
       run: |
         org=$(echo "${{ matrix.cfg.target }}" | cut -f1 -d"/")
@@ -89,10 +93,6 @@ jobs:
           git add .
           git commit -m "run gofmt -s"
         fi
-    - name: Checkout template repository
-      uses: actions/checkout@v2
-      with:
-        path: ${{ env.TEMPLATE_REPO_DIR }}
     - name: Add files
       run: |
         for f in $(jq -r ".[]" <<< '${{ toJson(github.event.client_payload.files) }}'); do 
