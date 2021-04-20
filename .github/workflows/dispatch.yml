@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          TARGETS=$(jq '. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})' .github/workflows/config.json | jq -sc '. | to_entries')
+          TARGETS=$(jq '. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})' config.json | jq -sc '. | to_entries')
           echo "::set-output name=targets::$TARGETS"
   dispatch:
     needs: [ matrix ]
