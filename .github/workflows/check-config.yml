@@ -1,4 +1,4 @@
-on: [ pull_request ]
+on: [ push, pull_request ]
 
 jobs:
   check-config:
@@ -7,5 +7,7 @@ jobs:
       targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
       - uses: actions/checkout@v2
-      - name: check if config.json is sorted alphabetically
+      - name: install jsonlint
+        run: npm install jsonlint
+      - name: check if config.json is valid JSON and sorted alphabetically
         run: .github/workflows/check-config.sh config.json

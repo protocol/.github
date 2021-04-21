@@ -1,6 +1,11 @@
 #!/bin/bash
 
+set -e
+
 file=$1
+
+jsonlint -q config.json
+
 entries=$(mktemp)
 entries_sorted=$(mktemp)
 
