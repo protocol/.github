@@ -8,11 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: check if config.json is sorted alphabetically
-        run: |
-          jq -r ".[].target" config.json > entries.txt
-          sort -u entries.txt > entries_sorted.txt
-          if ! output=$(diff -y entries.txt entries_sorted.txt); then
-            echo "Targets in config.json not sorted alphabetically:"
-            echo "$output"
-            exit 1
-          fi
+        run: .github/workflows/check-config.sh config.json

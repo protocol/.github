@@ -1,0 +1,12 @@
+#!/bin/bash
+
+tmp=$(mktemp)
+git show :config.json > $tmp
+status=0
+if ! output=$(.github/workflows/check-config.sh $tmp); then
+  echo "$output"
+  status=1
+fi
+rm $tmp
+
+exit $status
