@@ -4,11 +4,11 @@
   { "target": "ipld/go-codec-dagpb" },
   { "target": "ipld/go-ipld-adl-hamt" },
   { "target": "ipld/go-ipld-btc" },
-  { "target": "ipld/go-ipld-prime-proto" },
   { "target": "ipld/go-ipld-graphql" },
+  { "target": "ipld/go-ipld-prime-proto" },
   { "target": "libp2p/go-libp2p-core" },
   { "target": "libp2p/go-libp2p-swarm" },
   { "target": "libp2p/go-libp2p-tls" },
-  { "target": "multiformats/go-multistream" },
-  { "target": "multiformats/go-multiaddr" }
+  { "target": "multiformats/go-multiaddr" },
+  { "target": "multiformats/go-multistream" }
 ]
