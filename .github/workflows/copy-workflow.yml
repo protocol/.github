@@ -17,8 +17,8 @@ jobs:
       TEMPLATE_DIR: "templates"
       NEEDS_UPDATE: 0
       INITIAL_TEST_DEPLOYMENT: 0
-      GITHUB_USER: ""
-      GITHUB_EMAIL: ""
+      GITHUB_USER: "web3-bot"
+      GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
     name: Update ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -32,17 +32,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
-    - name: GitHub user config
-      run: |
-        org=$(echo "${{ matrix.cfg.target }}" | cut -f1 -d"/")
-        user=$(jq -r --arg v "$org" '.[$v].user' $TEMPLATE_REPO_DIR/.github/workflows/github-users.json)
-        if [[ "$user" == "null" ]]; then
-          echo "No configuration found for GitHub org $org."
-          exit 1
-        fi
-        echo "Using GitHub user $user for $org."
-        echo "GITHUB_USER=$user" >> $GITHUB_ENV
-        echo "GITHUB_EMAIL=$user@users.noreply.github.com" >> $GITHUB_ENV
     - name: git config
       run: |
         cd $TARGET_REPO_DIR
