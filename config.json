@@ -41,6 +41,7 @@
   { "target": "libp2p/go-libp2p-connmgr" },
   { "target": "libp2p/go-libp2p-consensus" },
   { "target": "libp2p/go-libp2p-core" },
+  { "target": "libp2p/go-libp2p-daemon" },
   { "target": "libp2p/go-libp2p-kad-dht" },
   { "target": "libp2p/go-libp2p-kbucket" },
   { "target": "libp2p/go-libp2p-loggables" },
