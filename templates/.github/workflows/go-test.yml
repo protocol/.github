@@ -1,4 +1,5 @@
 on: [push, pull_request]
+name: Go Test
 
 jobs:
   unit:
@@ -8,7 +9,7 @@ jobs:
         os: [ "ubuntu", "windows", "macos" ]
         go: [ "1.15.x", "1.16.x" ]
     runs-on: ${{ matrix.os }}-latest
-    name: Unit tests (${{ matrix.os}}, Go ${{ matrix.go }})
+    name: ${{ matrix.os}} (go ${{ matrix.go }})
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2

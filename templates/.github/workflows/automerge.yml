@@ -2,6 +2,7 @@
 # This reduces the friction associated with updating with our workflows.
 
 on: [ pull_request ]
+name: Automerge
 
 jobs:
   automerge:
