@@ -62,6 +62,9 @@
   { "target": "libp2p/go-yamux" },
   { "target": "multiformats/go-multiaddr" },
   { "target": "multiformats/go-multiaddr-dns" },
+  { "target": "multiformats/go-multiaddr-fmt" },
+  { "target": "multiformats/go-multibase" },
   { "target": "multiformats/go-multicodec" },
-  { "target": "multiformats/go-multistream" }
+  { "target": "multiformats/go-multistream" },
+  { "target": "multiformats/go-varint" }
 ]
