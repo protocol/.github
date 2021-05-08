@@ -7,6 +7,9 @@ jobs:
       matrix:
         os: [ "ubuntu", "windows", "macos" ]
         go: [ "1.15.x", "1.16.x" ]
+    defaults:
+      run:
+        shell: bash # Git bash on windows.
     runs-on: ${{ matrix.os }}-latest
     name: Unit tests (${{ matrix.os}}, Go ${{ matrix.go }})
     steps:
@@ -19,15 +22,24 @@ jobs:
           go version
           go env
       - name: Run tests
-        run: go test -v -coverprofile coverage.txt ./...
+        run: |
+          while read -r mod; do
+            ( cd "$(dirname "$mod")" && go test -v -coverprofile coverage.txt ./... )
+          done < <(find -name go.mod)
       - name: Run tests (32 bit)
         if: ${{ matrix.os != 'macos' }} # can't run 32 bit tests on OSX.
         env:
           GOARCH: 386
-        run: go test -v ./...
+        run: |
+          while read -r mod; do
+            ( cd "$(dirname "$mod")" && go test -v ./... )
+          done < <(find -name go.mod)
       - name: Run tests with race detector
         if: ${{ matrix.os == 'ubuntu' }} # speed things up. Windows and OSX VMs are slow
-        run: go test -v -race ./...
+        run: |
+          while read -r mod; do
+            ( cd "$(dirname "$mod")" && go test -v -race ./... )
+          done < <(find -name go.mod)
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@967e2b38a85a62bd61be5529ada27ebc109948c2 # v1.4.1
         with:
