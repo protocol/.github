@@ -8,16 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: find deleted repositories
+      - name: find deleted / archived repositories
         run: |
           status=0
           for repo in $(jq -r '.[].target' config.json); do
-            tmp=$(mktemp -d)
-            if ! git clone -q --depth 1 "https://github.com/$repo" "$tmp" 2> /dev/null; then
+            exists=true
+            output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
+            if ! $exists; then
               echo "Repository $repo does not exist."
               status=1
+              continue
             fi
-            rm -rf $tmp || true
+            if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
+              echo "Repository $repo is archived."
+              status=1
+            fi
           done
           exit $status
       
