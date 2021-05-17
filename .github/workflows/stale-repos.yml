@@ -1,0 +1,23 @@
+on:
+  schedule:
+  - cron: "0 */6 * * *" # every 6 hours
+
+jobs:
+  matrix:
+    name: Find stale repositories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: find deleted repositories
+        run: |
+          status=0
+          for repo in $(jq -r '.[].target' config.json); do
+            tmp=$(mktemp -d)
+            if ! git clone -q --depth 1 "https://github.com/$repo" "$tmp" 2> /dev/null; then
+              echo "Repository $repo does not exist."
+              status=1
+            fi
+            rm -rf $tmp || true
+          done
+          exit $status
+      
