@@ -5,7 +5,7 @@ status=0
 
 for line in `sed -ne 's/[[:space:]-]*uses:[[:space:]]*//p' $1 | sed -e 's/\s*#.*$//'`; do
   author=`echo $line | awk -F/ '{print $1}'`
-  if [[ $author == "actions" ]]; then continue; fi
+  if [[ $author == "actions" || $author == "protocol" ]]; then continue; fi
   version=`echo $line | awk -F@ '{print $2}' | awk '{print $1}'`
   if ! [[ "$version" =~ ^[a-f0-9]{40}$ ]]; then
     status=1

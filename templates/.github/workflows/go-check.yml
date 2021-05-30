@@ -12,13 +12,15 @@ jobs:
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@be534f007836a777104a15f2456cd1fffd3ddee8 # v2020.2.2
       - name: Check that go.mod is tidy
-        run: |
-          go mod tidy
-          if [[ -n $(git ls-files --other --exclude-standard --directory -- go.sum) ]]; then
-            echo "go.sum was added by go mod tidy"
-            exit 1
-          fi
-          git diff --exit-code -- go.sum go.mod
+        uses: protocol/multiple-go-modules@master
+        with:
+          run: |
+            go mod tidy
+            if [[ -n $(git ls-files --other --exclude-standard --directory -- go.sum) ]]; then
+              echo "go.sum was added by go mod tidy"
+              exit 1
+            fi
+            git diff --exit-code -- go.sum go.mod
       - name: gofmt
         if: ${{ success() || failure() }} # run this step even if the previous one failed
         run: |
@@ -29,10 +31,14 @@ jobs:
           fi
       - name: go vet
         if: ${{ success() || failure() }} # run this step even if the previous one failed
-        run: go vet ./...
+        uses: protocol/multiple-go-modules@master
+        with:
+          run: go vet ./...
       - name: staticcheck
         if: ${{ success() || failure() }} # run this step even if the previous one failed
-        run: |
-          set -o pipefail
-          staticcheck ./... | sed -e 's@\(.*\)\.go@./\1.go@g'
+        uses: protocol/multiple-go-modules@master
+        with:
+          run: |
+            set -o pipefail
+            staticcheck ./... | sed -e 's@\(.*\)\.go@./\1.go@g'
 
