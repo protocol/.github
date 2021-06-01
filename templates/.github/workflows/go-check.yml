@@ -1,9 +1,10 @@
 on: [push, pull_request]
+name: Go Checks
 
 jobs:
   unit:
     runs-on: ubuntu-latest
-    name: Go checks
+    name: All
     steps:
       - uses: actions/checkout@v2
         with:

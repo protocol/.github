@@ -1,5 +1,7 @@
 on: [ pull_request ]
 
+name: Check 3rd Party
+
 jobs:
   matrix:
     runs-on: ubuntu-latest
@@ -18,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         file: ${{ fromJson(needs.matrix.outputs.targets) }}
-    name: check ${{ matrix.file }}
+    name: ${{ matrix.file }}
     steps:
       - uses: actions/checkout@v2
       - name: Run check
