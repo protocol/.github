@@ -56,6 +56,7 @@
   { "target": "ipfs/interface-go-ipfs-core" },
   { "target": "ipfs/ipfs-ds-convert" },
   { "target": "ipfs/ipfs-update" },
+  { "target": "ipfs/tar-utils" },
   { "target": "ipld/go-car" },
   { "target": "ipld/go-codec-dagpb" },
   { "target": "ipld/go-ipld-adl-hamt" },
