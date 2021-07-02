@@ -66,6 +66,7 @@
   { "target": "ipld/go-ipld-prime-proto" },
   { "target": "libp2p/go-addr-util" },
   { "target": "libp2p/go-buffer-pool" },
+  { "target": "libp2p/go-conn-security-multistream" },
   { "target": "libp2p/go-doh-resolver" },
   { "target": "libp2p/go-flow-metrics" },
   { "target": "libp2p/go-libp2p" },
