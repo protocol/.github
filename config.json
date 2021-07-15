@@ -50,6 +50,7 @@
   { "target": "ipfs/go-metrics-interface" },
   { "target": "ipfs/go-metrics-prometheus" },
   { "target": "ipfs/go-namesys" },
+  { "target": "ipfs/go-netroute" },
   { "target": "ipfs/go-path" },
   { "target": "ipfs/go-peertaskqueue" },
   { "target": "ipfs/go-qringbuf" },
