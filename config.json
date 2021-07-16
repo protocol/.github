@@ -99,6 +99,7 @@
   { "target": "libp2p/go-libp2p-nat" },
   { "target": "libp2p/go-libp2p-netutil" },
   { "target": "libp2p/go-libp2p-noise" },
+  { "target": "libp2p/go-libp2p-peerstore" },
   { "target": "libp2p/go-libp2p-pnet" },
   { "target": "libp2p/go-libp2p-raft" },
   { "target": "libp2p/go-libp2p-routing-helpers" },
