@@ -74,6 +74,7 @@
   { "target": "ipld/go-ipld-btc" },
   { "target": "ipld/go-ipld-graphql" },
   { "target": "ipld/go-ipld-prime-proto" },
+  { "target": "ipld/go-ipld-schema" },
   { "target": "ipld/go-storethehash" },
   { "target": "libp2p/go-addr-util" },
   { "target": "libp2p/go-buffer-pool" },
