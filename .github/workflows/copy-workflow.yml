@@ -72,6 +72,14 @@ jobs:
           git rm -r .circleci
           git commit -m "disable CircleCI"
         fi
+    - name: remove gx on initial deployment
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
+      run: |
+        cd $TARGET_REPO_DIR
+        if [[ -d .gx ]]; then
+          git rm -r .gx
+          git commit -m "remove .gx"
+        fi
     - name: run go mod tidy
       run: |
         cd $TARGET_REPO_DIR
