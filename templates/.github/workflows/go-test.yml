@@ -26,7 +26,7 @@ jobs:
       - name: Run tests
         uses: protocol/multiple-go-modules@v1.0
         with:
-          run: go test -v -coverprofile coverage.txt ./...
+          run: go test -v -coverprofile module-coverage.txt ./...
       - name: Run tests (32 bit)
         if: ${{ matrix.os != 'macos' }} # can't run 32 bit tests on OSX.
         uses: protocol/multiple-go-modules@v1.0
