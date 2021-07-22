@@ -45,5 +45,5 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27 # v1.5.0
         with:
-          file: coverage.txt
+          files: ${{ env.COVERAGES }}
           env_vars: OS=${{ matrix.os }}, GO=${{ matrix.go }}
