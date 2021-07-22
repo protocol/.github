@@ -56,7 +56,7 @@ jobs:
           git rm .github/workflows/autorebase.yml
           git commit -m "remove the autorebase workflow"
         fi
-    - name: remove Travis on initial deployment
+    - name: remove Travis (on initial deployment)
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
         cd $TARGET_REPO_DIR
@@ -64,7 +64,7 @@ jobs:
           git rm .travis.yml
           git commit -m "disable Travis"
         fi
-    - name: remove CircleCI on initial deployment
+    - name: remove CircleCI (on initial deployment)
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
         cd $TARGET_REPO_DIR
@@ -72,7 +72,7 @@ jobs:
           git rm -r .circleci
           git commit -m "disable CircleCI"
         fi
-    - name: remove gx on initial deployment
+    - name: remove gx (on initial deployment)
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
         cd $TARGET_REPO_DIR
@@ -80,7 +80,8 @@ jobs:
           git rm -r .gx
           git commit -m "remove .gx"
         fi
-    - name: run go mod tidy
+    - name: go mod tidy (on initial deployment)
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
         cd $TARGET_REPO_DIR
         go mod edit -go 1.15
@@ -89,7 +90,8 @@ jobs:
           git add .
           git commit -m "set Go version to 1.15 and run go mod tidy"
         fi
-    - name: gofmt
+    - name: gofmt (on initial deployment)
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       run: |
         cd $TARGET_REPO_DIR
         gofmt -s -w .
