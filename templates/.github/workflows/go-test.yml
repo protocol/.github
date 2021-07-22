@@ -41,7 +41,7 @@ jobs:
           run: go test -v -race ./...
       - name: Collect coverage files
         shell: bash
-        run: echo "COVERAGES=`find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/.$//'`" >> $GITHUB_ENV
+        run: echo "COVERAGES=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_ENV
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27 # v1.5.0
         with:
