@@ -2,6 +2,7 @@
   { "target": "filecoin-project/go-amt-ipld" },
   { "target": "filecoin-project/go-fil-commp-hashhash" },
   { "target": "filecoin-project/go-hamt-ipld" },
+  { "target": "filecoin-project/go-indexer-core" },
   { "target": "filecoin-project/storetheindex" },
   { "target": "ipfs/go-bitfield" },
   { "target": "ipfs/go-bitswap" },
