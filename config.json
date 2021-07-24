@@ -112,6 +112,7 @@
   { "target": "libp2p/go-libp2p-raft" },
   { "target": "libp2p/go-libp2p-routing-helpers" },
   { "target": "libp2p/go-libp2p-swarm" },
+  { "target": "libp2p/go-libp2p-testing" },
   { "target": "libp2p/go-libp2p-tls" },
   { "target": "libp2p/go-libp2p-transport-upgrader" },
   { "target": "libp2p/go-libp2p-webrtc-direct" },
