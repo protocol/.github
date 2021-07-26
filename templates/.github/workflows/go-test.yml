@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ "ubuntu", "windows", "macos" ]
-        go: [ "1.15.x", "1.16.x" ]
+        go: [ "1.16.x", "1.17.0-rc1" ]
     env:
       COVERAGES: ""
     runs-on: ${{ matrix.os }}-latest
@@ -18,25 +18,26 @@ jobs:
           submodules: recursive
       - uses: actions/setup-go@v2
         with:
+          stable: 'false'
           go-version: ${{ matrix.go }}
       - name: Go information
         run: |
           go version
           go env
       - name: Run tests
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         with:
           run: go test -v -coverprofile module-coverage.txt ./...
       - name: Run tests (32 bit)
         if: ${{ matrix.os != 'macos' }} # can't run 32 bit tests on OSX.
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         env:
           GOARCH: 386
         with:
           run: go test -v ./...
       - name: Run tests with race detector
         if: ${{ matrix.os == 'ubuntu' }} # speed things up. Windows and OSX VMs are slow
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         with:
           run: go test -v -race ./...
       - name: Collect coverage files
