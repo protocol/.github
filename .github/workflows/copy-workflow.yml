@@ -19,6 +19,7 @@ jobs:
       TEMPLATE_DIR: "templates"
       NEEDS_UPDATE: 0
       INITIAL_TEST_DEPLOYMENT: 0
+      GO_VERSION_BUMP: 0
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
     name: ${{ matrix.cfg.target }}
@@ -38,7 +39,8 @@ jobs:
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        go-version: "1.16.x"
+        stable: 'false'
+        go-version: "1.17.0-rc1"
     - name: git config
       run: |
         cd $TARGET_REPO_DIR
@@ -80,18 +82,52 @@ jobs:
           git rm -r .gx
           git commit -m "remove .gx"
         fi
-    - name: go mod tidy (on initial deployment)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
-      run: |
-        cd $TARGET_REPO_DIR
-        go mod edit -go 1.15
-        go mod tidy
-        if ! git diff --quiet; then
-          git add .
-          git commit -m "set Go version to 1.15 and run go mod tidy"
-        fi
-    - name: gofmt (on initial deployment)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
+    - name: bump go.mod go version if needed
+      uses: protocol/multiple-go-modules@v1.0
+      with:
+        run: |
+          cd $TARGET_REPO_DIR
+
+          # We want our modules to support two Go versions at a time.
+          # As of August 2021, Go 1.17 is the latest stable.
+          # go.mod's Go version declares the language version being used.
+          # As such, it has to be the minimum of all Go versions supported.
+          # Bump this every six months, as new Go versions come out.
+          TARGET_VERSION=1.16
+
+          # Note that the "<" comparison doesn't understand semver,
+          # but it should be good enough for the foreseeable future.
+          CURRENT_VERSION=$(go list -m -f {{.GoVersion}})
+
+          if [[ $CURRENT_VERSION < $TARGET_VERSION ]]; then
+            echo "GO_VERSION_BUMP=1" >> $GITHUB_ENV
+
+            # Update the version in go.mod. This alone ensures there's a diff.
+            go mod edit -go $TARGET_VERSION
+
+            # In the future, "go fix" may make changes to Go code,
+            # such as to adapt to language changes or API deprecations.
+            # This is largely a no-op as of Go 1.17, and that's fine.
+            go fix
+            git add .
+
+            # We don't tidy, because the next step does that.
+            # Separate commits also help with reviews.
+            git commit -m "bump go.mod to go $TARGET_VERSION and run go fix"
+          fi
+    - name: go mod tidy (on new go version)
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
+      uses: protocol/multiple-go-modules@v1.0
+      with:
+        run: |
+          cd $TARGET_REPO_DIR
+          go mod tidy
+          if ! git diff --quiet; then
+            git add .
+            git commit -m "run go mod tidy"
+          fi
+    - name: gofmt -s (on new go version)
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
       run: |
         cd $TARGET_REPO_DIR
         gofmt -s -w .
@@ -101,7 +137,7 @@ jobs:
         fi
     - name: Add files
       run: |
-        for f in $(jq -r ".[]" <<< '${{ toJson(github.event.client_payload.files) }}'); do 
+        for f in $(jq -r ".[]" <<< '${{ toJson(github.event.client_payload.files) }}'); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
