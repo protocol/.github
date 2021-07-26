@@ -28,7 +28,6 @@
   { "target": "ipfs/go-fetcher" },
   { "target": "ipfs/go-filestore" },
   { "target": "ipfs/go-fs-lock" },
-  { "target": "ipfs/go-hamt-ipld" },
   { "target": "ipfs/go-ipfs-blockstore" },
   { "target": "ipfs/go-ipfs-blocksutil" },
   { "target": "ipfs/go-ipfs-chunker" },
