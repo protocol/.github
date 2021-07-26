@@ -18,4 +18,10 @@ In order to help with the distribution of these workflows, this repository defin
 ## Usage
 
 Workflows are distributed to all repositories listed in [config.json](config.json).
+
 If you want your project to participle, please send a PR!
+
+## Development
+
+The `master` branch contains currently deployed workflows.
+When we make minor changes to these workflows, we don't always want these changes to get deployed to all hundreds of repositories, as this creates a lot of unnecessary noise. Minor changes to the workflows are therefore merged into the [`next`](https://github.com/protocol/.github/tree/next) branch. When the time has come, we create a PR from the `next` branch to `master` to trigger a deployment to all repositores.
