@@ -11,11 +11,12 @@ jobs:
           submodules: recursive
       - uses: actions/setup-go@v2
         with:
-          go-version: "1.16.x"
+          stable: 'false'
+          go-version: "1.17.0-rc1"
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@434f5f3816b358fe468fa83dcba62d794e7fe04b # 2021.1 (v0.2.0)
       - name: Check that go.mod is tidy
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         with:
           run: |
             go mod tidy
@@ -34,12 +35,12 @@ jobs:
           fi
       - name: go vet
         if: ${{ success() || failure() }} # run this step even if the previous one failed
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         with:
           run: go vet ./...
       - name: staticcheck
         if: ${{ success() || failure() }} # run this step even if the previous one failed
-        uses: protocol/multiple-go-modules@v1.1
+        uses: protocol/multiple-go-modules@v1.2
         with:
           run: |
             set -o pipefail
