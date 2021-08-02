@@ -74,6 +74,7 @@
   { "target": "ipfs/ipfs-update" },
   { "target": "ipfs/iptb" },
   { "target": "ipfs/iptb-plugins" },
+  { "target": "ipfs/pinbot-irc" },
   { "target": "ipfs/tar-utils" },
   { "target": "ipld/go-car" },
   { "target": "ipld/go-codec-dagpb" },
