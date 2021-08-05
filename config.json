@@ -5,7 +5,6 @@
   { "target": "filecoin-project/go-hamt-ipld" },
   { "target": "filecoin-project/go-indexer-core" },
   { "target": "filecoin-project/storetheindex" },
-  { "target": "ipfs-shipyard/go-ipfs-desktop" },
   { "target": "ipfs-shipyard/ipfs-counter" },
   { "target": "ipfs/bbloom" },
   { "target": "ipfs/go-bitfield" },
