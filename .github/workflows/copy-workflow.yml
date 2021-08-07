@@ -65,13 +65,6 @@ jobs:
         if [[ ! -f $TARGET_REPO_DIR/.github/workflows/go-test.yml ]]; then
           echo "INITIAL_TEST_DEPLOYMENT=1" >> $GITHUB_ENV
         fi
-    - name: remove the autorebase workflow # TODO: remove this step once all autorebase.yml files have been deleted
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
-        if [[ -f .github/workflows/autorebase.yml ]]; then
-          git rm .github/workflows/autorebase.yml
-          git commit -m "remove the autorebase workflow"
-        fi
     - name: remove Travis (on initial deployment)
       if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
