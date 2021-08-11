@@ -145,7 +145,7 @@ jobs:
         fi
     - name: Add files
       run: |
-        for f in $(jq -r ".[]" <<< '${{ toJson(github.event.inputs.files) }}'); do
+        for f in $(jq -r ".[]" <<< ${{ toJson(github.event.inputs.files) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
