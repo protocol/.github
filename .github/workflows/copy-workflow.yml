@@ -31,6 +31,7 @@ jobs:
       GO_VERSION_BUMP: 0
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
+      DEFAULTBRANCH: ""
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -49,6 +50,11 @@ jobs:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
         go-version: "1.17.x"
+    - name: determine GitHub default branch
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        defaultbranch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+        echo "DEFAULTBRANCH=$defaultbranch" >> $GITHUB_ENV
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -149,6 +155,8 @@ jobs:
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
+          # replace $default-branch with this repo's GitHub default branch
+          sed -i "s/\$default-branch/${{ env.DEFAULTBRANCH }}/g" $tmp
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
