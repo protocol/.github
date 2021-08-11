@@ -149,6 +149,7 @@
   { "target": "libp2p/go-yamux" },
   { "target": "libp2p/hydra-booster" },
   { "target": "libp2p/repl" },
+  { "target": "libp2p/zeroconf" },
   { "target": "multiformats/go-base32" },
   { "target": "multiformats/go-base36" },
   { "target": "multiformats/go-multiaddr" },
