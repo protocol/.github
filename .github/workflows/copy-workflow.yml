@@ -179,7 +179,7 @@ jobs:
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count)" >> $GITHUB_ENV
     - name: Create Pull Request
       if: ${{ env.NEEDS_UPDATE }}
-      uses: peter-evans/create-pull-request@89a67b1c69299ccc4dcc2253c3e91001adba29b5 # https://github.com/peter-evans/create-pull-request/pull/856
+      uses: peter-evans/create-pull-request@a3d36d978a8605d71fdb61c96bf0dfd9c9d8f897 # https://github.com/peter-evans/create-pull-request/pull/856
       with:
         path: ${{ env.TARGET_REPO_DIR }}
         title: "sync: update CI config files"
