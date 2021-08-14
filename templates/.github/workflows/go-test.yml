@@ -25,8 +25,8 @@ jobs:
           go version
           go env
       - name: Run repo-specific setup
-        uses: ./.github/actions/go-test_setup
-        if: hashFiles('./.github/actions/go-test_setup') != ''
+        uses: ./.github/actions/go-test-setup
+        if: hashFiles('./.github/actions/go-test-setup') != ''
       - name: Run tests
         uses: protocol/multiple-go-modules@v1.2
         with:

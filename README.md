@@ -8,7 +8,7 @@ By storing them in a central place (here), and distributing them in an automated
 ## Customization
 
 Most repositories won't need any customization, and the workflows defined here will just work fine.
-Some repositories may require some pre-setup steps to be run before tests (or code checks) can be run. Setup steps for `go-test` are defined in `.github/actions/go-test_setup/action.yml`, and setup steps for `go-check` are defined in `.github/actions/go-check_setup/action.yml`, in the following format:
+Some repositories may require some pre-setup steps to be run before tests (or code checks) can be run. Setup steps for `go-test` are defined in `.github/actions/go-test-setup/action.yml`, and setup steps for `go-check` are defined in `.github/actions/go-check-setup/action.yml`, in the following format:
 
 ```yml
 runs:
