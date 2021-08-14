@@ -5,6 +5,8 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     name: All
+    env:
+      RUNGOGENERATE: false
     steps:
       - uses: actions/checkout@v2
         with:
@@ -15,6 +17,12 @@ jobs:
       - name: Run repo-specific setup
         uses: ./.github/actions/go-check-setup
         if: hashFiles('./.github/actions/go-check-setup') != ''
+      - name: Read config
+        if: hashFiles('./.github/workflows/go-check-config.json') != ''
+        run: |
+          if jq -re .gogenerate ./.github/workflows/go-check-config.json; then
+            echo "RUNGOGENERATE=true" >> $GITHUB_ENV
+          fi
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@434f5f3816b358fe468fa83dcba62d794e7fe04b # 2021.1 (v0.2.0)
       - name: Check that go.mod is tidy
@@ -47,4 +55,17 @@ jobs:
           run: |
             set -o pipefail
             staticcheck ./... | sed -e 's@\(.*\)\.go@./\1.go@g'
+      - name: go generate
+        uses: protocol/multiple-go-modules@v1.2
+        if: (success() || failure()) && env.RUNGOGENERATE == 'true'
+        with:
+          run: |
+            git clean -fd # make sure there aren't untracked files / directories
+            go generate ./...
+            gitstatus=$(git status --porcelain)
+            if [[ -n "$gitstatus" ]]; then
+              echo "go generated caused changes to the repository:"
+              echo "$gitstatus"
+              exit 1
+            fi
 
