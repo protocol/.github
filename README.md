@@ -5,6 +5,26 @@ By storing them in a central place (here), and distributing them in an automated
 1. Consistency: Every participating repository uses the same workflow, ensuring that our code adheres to the same coding standards and is properly tested.
 2. Maintainability: Workflows change over time. We need to be able to make changes without manually updating dozens of repositories.
 
+## Customization
+
+Most repositories won't need any customization, and the workflows defined here will just work fine.
+Some repositories may require some pre-setup steps to be run before tests (or code checks) can be run. Setup steps for `go-test` are defined in `.github/actions/go-test-setup/action.yml`, and setup steps for `go-check` are defined in `.github/actions/go-check-setup/action.yml`, in the following format:
+
+```yml
+runs:
+  using: "composite"
+  steps:
+    - name: Step 1 
+      shell: bash
+      run: echo "do some initial setup"
+    - name: Step 2
+      shell: bash
+      run: echo "do some Linux-specific setup"
+      if: ${{ matrix.os == 'ubuntu' }}
+```
+
+These setup steps are run after the repository has been checked out and after Go has been installed, but before any tests or checks are run.
+
 ## Technical Details
 
 This repository currently defines two workflows for Go repositories:
