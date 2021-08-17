@@ -62,10 +62,10 @@ jobs:
           run: |
             git clean -fd # make sure there aren't untracked files / directories
             go generate ./...
-            gitstatus=$(git status --porcelain)
-            if [[ -n "$gitstatus" ]]; then
+            # check if go generate modified or added any files
+            if ! $(git add . && git diff-index HEAD --exit-code --quiet); then
               echo "go generated caused changes to the repository:"
-              echo "$gitstatus"
+              git status --short
               exit 1
             fi
 
