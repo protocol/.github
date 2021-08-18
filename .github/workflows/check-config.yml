@@ -1,4 +1,8 @@
-on: [ pull_request ]
+on: 
+  pull_request:
+    paths:
+      - './config.json'
+
 name: Check Config
 
 jobs:
