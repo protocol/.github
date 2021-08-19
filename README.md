@@ -58,6 +58,8 @@ Workflows are distributed to all repositories listed in [config.json](config.jso
 
 If you want your project to participle, please send a PR!
 
+In order for the CI to be fully integrated, remember to grant write access permissions to the `web3-bot` user.
+
 ## Development
 
 The `master` branch contains currently deployed workflows.
