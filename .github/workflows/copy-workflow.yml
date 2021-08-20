@@ -48,8 +48,7 @@ jobs:
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        stable: 'false'
-        go-version: "1.17.0-rc1"
+        go-version: "1.17.x"
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -116,7 +115,7 @@ jobs:
             # In the future, "go fix" may make changes to Go code,
             # such as to adapt to language changes or API deprecations.
             # This is largely a no-op as of Go 1.17, and that's fine.
-            go fix
+            go fix ./...
             git add .
 
             # We don't tidy, because the next step does that.
