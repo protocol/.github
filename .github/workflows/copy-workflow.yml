@@ -111,6 +111,7 @@ jobs:
 
             # Update the version in go.mod. This alone ensures there's a diff.
             go mod edit -go $TARGET_VERSION
+            go mod tidy
 
             # In the future, "go fix" may make changes to Go code,
             # such as to adapt to language changes or API deprecations.
@@ -120,10 +121,10 @@ jobs:
 
             # We don't tidy, because the next step does that.
             # Separate commits also help with reviews.
-            git commit -m "bump go.mod to Go $TARGET_VERSION and run go fix"
+            git commit -m "bump go.mod to Go $TARGET_VERSION, run go fix and go mod tidy"
           fi
-    - name: go mod tidy (on initial deployment and on new Go version)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
+    - name: go mod tidy (on initial deployment)
+      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 && env.GO_VERSION_BUMP != 1 }}
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
