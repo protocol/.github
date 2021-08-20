@@ -115,7 +115,7 @@ jobs:
             # In the future, "go fix" may make changes to Go code,
             # such as to adapt to language changes or API deprecations.
             # This is largely a no-op as of Go 1.17, and that's fine.
-            go fix
+            go fix ./...
             git add .
 
             # We don't tidy, because the next step does that.
