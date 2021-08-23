@@ -6,6 +6,7 @@
   { "target": "filecoin-project/go-indexer-core" },
   { "target": "filecoin-project/indexer-reference-provider" },
   { "target": "filecoin-project/storetheindex" },
+  { "target": "filecoin-shipyard/js-lotus-client-schema" },
   { "target": "ipfs-shipyard/ipfs-counter" },
   { "target": "ipfs/bbloom" },
   { "target": "ipfs/go-bitfield" },
