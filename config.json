@@ -74,6 +74,7 @@
   { "target": "ipfs/interface-go-ipfs-core" },
   { "target": "ipfs/ipfs-ds-convert" },
   { "target": "ipfs/ipfs-update" },
+  { "target": "ipfs/ipget" },
   { "target": "ipfs/iptb" },
   { "target": "ipfs/iptb-plugins" },
   { "target": "ipfs/pinbot-irc" },
