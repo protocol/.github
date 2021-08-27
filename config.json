@@ -8,6 +8,7 @@
   { "target": "filecoin-project/indexer-reference-provider" },
   { "target": "filecoin-project/storetheindex" },
   { "target": "filecoin-shipyard/js-lotus-client-schema" },
+  { "target": "ipfs-shipyard/dnslink-dnsimple" },
   { "target": "ipfs-shipyard/git-remote-ipld" },
   { "target": "ipfs-shipyard/ipfs-counter" },
   { "target": "ipfs/bbloom" },
