@@ -1,6 +1,12 @@
 import {Octokit} from '@octokit/rest'
+import { Command } from 'commander/esm.mjs';
 
-const LANGUAGES = ["JavaScript", "Go"]
+const program = new Command();
+program.option('-l, --languages [lang...]', 'languages (e.g. JavaScript, Go)', ['JavaScript', 'Go'])
+program.parse(process.argv);
+const opts = program.opts();
+
+const LANGUAGES = opts.languages;
 const ORGS = ["ipfs", "ipfs-shipyard", "ipld", "libp2p", "multiformats"]
 
 const options = {}
