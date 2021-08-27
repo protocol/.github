@@ -141,6 +141,7 @@
   { "target": "libp2p/go-msgio" },
   { "target": "libp2p/go-nat" },
   { "target": "libp2p/go-netroute" },
+  { "target": "libp2p/go-openssl" },
   { "target": "libp2p/go-reuseport" },
   { "target": "libp2p/go-reuseport-transport" },
   { "target": "libp2p/go-routing-language" },
