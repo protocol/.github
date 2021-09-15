@@ -33,6 +33,7 @@
   { "target": "ipfs/go-filestore" },
   { "target": "ipfs/go-fs-lock" },
   { "target": "ipfs/go-graphsync" },
+  { "target": "ipfs/go-ipfs-api" },
   { "target": "ipfs/go-ipfs-blockstore" },
   { "target": "ipfs/go-ipfs-blocksutil" },
   { "target": "ipfs/go-ipfs-chunker" },
