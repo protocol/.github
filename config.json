@@ -29,6 +29,7 @@
   { "target": "ipfs/go-ds-leveldb" },
   { "target": "ipfs/go-ds-measure" },
   { "target": "ipfs/go-ds-pebble" },
+  { "target": "ipfs/go-ds-redis" },
   { "target": "ipfs/go-ds-s3" },
   { "target": "ipfs/go-fetcher" },
   { "target": "ipfs/go-filestore" },
