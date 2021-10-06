@@ -90,6 +90,16 @@ jobs:
           git rm -r .gx
           git commit -m "remove .gx"
         fi
+    - name: add version.json, if needed
+      if: matrix.cfg.deploy_versioning && hashFiles('./version.json') == ''
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        version=$(go list -m -versions | rev | cut -d ' ' -f 1 | rev)
+        echo "Version: $version"
+        # TODO: figure out what to do if there's no tagged version
+        echo "{ \"version\": \"$version\" }" | jq . > version.json
+        git add version.json
+        git commit -m "add version.json file"
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
