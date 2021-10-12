@@ -7,7 +7,7 @@ env:
   ISSUE_BODY: |
     @{{ env.PUSHER }} just pushed a release tag: {{ env.TAGNAME }}.
     Please manually verify validity (using [\`gorelease\`](https://pkg.go.dev/golang.org/x/exp/cmd/gorelease)), and update \`version.json\` to reflect the manually released version, if necessary.
-    In the future, please use the automated process.
+    In the future, please use the [automated process](https://github.com/protocol/.github/blob/master/VERSIONING.md).
 
 jobs:
   unit:
