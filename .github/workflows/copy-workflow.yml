@@ -149,7 +149,7 @@ jobs:
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
           # replace $default-branch with this repo's GitHub default branch
-          sed -i "s/\$default-branch/${{ env.DEFAULTBRANCH }}/g" $tmp
+          sed -i "s:\$default-branch:${{ env.DEFAULTBRANCH }}:g" $tmp
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
