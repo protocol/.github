@@ -1,4 +1,4 @@
-name: Tag Push Checker
+name: Manual Release Nag
 on: [ workflow_call ]
 
 env:
