@@ -104,7 +104,7 @@ jobs:
       working-directory: ${{ env.TARGET_REPO_DIR }}
       if: env.HIGHEST_VERSION != '' && hashFiles('./version.json') == ''
       run: |
-        echo "{ \"version\": \"$version\" }" | jq . > version.json
+        printf '{"version": "%s"}' "$version" | jq . > version.json
         git add version.json
         git commit -m "add version.json file"
     - name: bump go.mod go version if needed
