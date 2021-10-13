@@ -165,7 +165,7 @@ jobs:
       if: matrix.cfg.deploy_versioning
       run: |
         files=$(jq -r '.[]' <<< ${{ env.FILES }})
-        files+=(".github/workflows/releaser.yml" ".github/workflows/tagpush.yml")
+        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
         echo "FILES='$(jq -nc '$ARGS.positional' --args ${files[@]})'" >> $GITHUB_ENV
     - name: Add files
       run: |
