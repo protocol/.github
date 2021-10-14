@@ -30,7 +30,7 @@ jobs:
         # When trying to cut a release v0.3.1 or v0.4.0, we need to base our comparisons on v0.3.0.
         run: |
           git fetch origin --tags
-          go install github.com/marten-seemann/semver-highest@latest
+          go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
           v=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
           echo "COMPARETO=$v" >> $GITHUB_ENV
       - name: Post output
@@ -55,21 +55,17 @@ jobs:
             output="(empty)"
           fi
           printf "GOMODDIFF<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - name: Install gorelease
-        if: env.COMPARETO != ''
-        # see https://github.com/golang/exp/commits/master/cmd/gorelease
-        run: go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
       - name: Run gorelease
         if: env.COMPARETO != ''
+        # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
+          go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
           output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
           printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - name: Install gocompat
-        if: env.COMPARETO != ''
-        run: go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # 2021.7 (v0.3.0)
       - name: Check Compatibility
         if: env.COMPARETO != ''
         run: |
+          go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
           output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }}" ./... || true)
           if [[ -z "$output" ]]; then
             output="(empty)"
