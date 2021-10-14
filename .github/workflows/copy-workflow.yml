@@ -41,6 +41,7 @@ jobs:
         repository: ${{ matrix.cfg.target }}
         token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
         persist-credentials: true
+        submodules: recursive
     - name: Checkout template repository
       uses: actions/checkout@v2
       with:
