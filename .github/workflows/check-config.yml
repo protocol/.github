@@ -1,7 +1,7 @@
 on: 
   pull_request:
     paths:
-      - './config.json'
+      - 'config.json'
 
 name: Check Config
 
