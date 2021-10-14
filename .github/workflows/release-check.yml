@@ -54,10 +54,7 @@ jobs:
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
-          # dealing with multi-line strings in GitHub Actions is a pain
-          echo "GOMODDIFF<<EOF" >> $GITHUB_ENV
-          echo "$output" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf "GOMODDIFF<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Install gorelease
         if: env.COMPARETO != ''
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
@@ -66,10 +63,7 @@ jobs:
         if: env.COMPARETO != ''
         run: |
           output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
-          # dealing with multi-line strings in GitHub Actions is a pain
-          echo "GORELEASE<<EOF" >> $GITHUB_ENV
-          echo "$output" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Install gocompat
         if: env.COMPARETO != ''
         run: go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # 2021.7 (v0.3.0)
@@ -80,10 +74,7 @@ jobs:
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
-          # dealing with multi-line strings in GitHub Actions is a pain
-          echo "GOCOMPAT<<EOF" >> $GITHUB_ENV
-          echo "$output" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          printf "GOCOMPAT<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Post output
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
         if: env.COMPARETO != ''
