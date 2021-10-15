@@ -29,7 +29,6 @@ jobs:
       NEEDS_UPDATE: 0
       INITIAL_TEST_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
-      HIGHEST_VERSION: ""
       FILES: ""
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
@@ -92,21 +91,17 @@ jobs:
           git rm -r .gx
           git commit -m "remove .gx"
         fi
-    - name: determine highest version (in order to deploy versioning workflows)
-      if: matrix.cfg.deploy_versioning
+    - name: add version.json file (in order to deploy versioning workflows)
+      if: matrix.cfg.deploy_versioning && hashFiles(format('{0}/version.json', env.TARGET_REPO_DIR)) == ''
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
-        git fetch origin --tags
+        git fetch origin --unshallow # we need the entire commit history
         version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
-        echo "Version: $version"
-        echo "HIGHEST_VERSION=$version" >> $GITHUB_ENV
-    - name: add version.json file
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      if: env.HIGHEST_VERSION != '' && hashFiles('./version.json') == ''
-      run: |
-        printf '{"version": "%s"}' "$version" | jq . > version.json
-        git add version.json
-        git commit -m "add version.json file"
+        if [[ -n "$version" ]]; then # only deply version.json if there's at least one release
+          printf '{"version": "%s"}' "$version" | jq . > version.json
+          git add version.json
+          git commit -m "add version.json file"
+        fi
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
