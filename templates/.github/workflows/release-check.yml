@@ -1,0 +1,9 @@
+name: Release Checker
+on:
+  pull_request:
+    paths: [ 'version.json' ]
+    branches: [ $default-branch ]
+
+jobs:
+  release-check:
+    uses: protocol/.github/.github/workflows/release-check.yml@master

@@ -29,6 +29,7 @@ jobs:
       NEEDS_UPDATE: 0
       INITIAL_TEST_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
+      FILES: ""
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
       DEFAULTBRANCH: ""
@@ -90,6 +91,17 @@ jobs:
           git rm -r .gx
           git commit -m "remove .gx"
         fi
+    - name: add version.json file (in order to deploy versioning workflows)
+      if: matrix.cfg.deploy_versioning && hashFiles(format('{0}/version.json', env.TARGET_REPO_DIR)) == ''
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        git fetch origin --unshallow # we need the entire commit history
+        version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
+        if [[ -n "$version" ]]; then # only deply version.json if there's at least one release
+          printf '{"version": "%s"}' "$version" | jq . > version.json
+          git add version.json
+          git commit -m "add version.json file"
+        fi
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
@@ -142,9 +154,17 @@ jobs:
           git add .
           git commit -m "run gofmt -s"
         fi
+    - name: determine files to add
+      run: echo "FILES='${{ toJson(github.event.inputs.files) }}'" >> $GITHUB_ENV
+    - name: add more versioning workflows files, if necessary
+      if: matrix.cfg.deploy_versioning
+      run: |
+        files=$(jq -r '.[]' <<< ${{ env.FILES }})
+        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
+        echo "FILES='$(jq -nc '$ARGS.positional' --args ${files[@]})'" >> $GITHUB_ENV
     - name: Add files
       run: |
-        for f in $(jq -r ".[]" <<< ${{ toJson(github.event.inputs.files) }}); do
+        for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
