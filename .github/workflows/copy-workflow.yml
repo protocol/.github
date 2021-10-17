@@ -155,13 +155,13 @@ jobs:
           git commit -m "run gofmt -s"
         fi
     - name: determine files to add
-      run: echo "FILES='${{ toJson(github.event.inputs.files) }}'" >> $GITHUB_ENV
+      run: echo "FILES=${{ toJson(github.event.inputs.files) }}" >> $GITHUB_ENV
     - name: add more versioning workflows files, if necessary
       if: matrix.cfg.deploy_versioning
       run: |
-        files=$(jq -r '.[]' <<< ${{ env.FILES }})
+        files=$(jq -r '.[]' <<< '${{ env.FILES }}')
         files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
-        echo "FILES='$(jq -nc '$ARGS.positional' --args ${files[@]})'" >> $GITHUB_ENV
+        echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV
     - name: Add files
       run: |
         for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do
