@@ -32,6 +32,11 @@ jobs:
           git fetch origin --tags
           go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
           v=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
+          status=$?
+          if [[ $status != 0 ]]; then
+            echo $v
+            exit $status
+          fi
           echo "COMPARETO=$v" >> $GITHUB_ENV
       - name: Post output
         if: env.COMPARETO == ''
