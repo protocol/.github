@@ -19,11 +19,17 @@ jobs:
       - name: Determine version
         run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
       - name: Check if this is the initial deployment
-        # if this is the initial deployment of this workflow, we don't need to run any checks
+        # This is the initial run (deploying the version.json to this repo) if
+        # 1. version.json didn't exist before, AND
+        # 2. there doesn't exist a git tag for the version (as read from version.json)
+        # In that case, we don't need to run the rest of the workflow.
         run: |
           git fetch origin ${{ github.event.pull_request.base.sha }}
+          git fetch origin --tags
           read -ra arr <<< $(git diff-index ${{ github.event.pull_request.base.sha }} -- version.json)
-          if [[ "${arr[4]}" == "A" ]]; then 
+          status=0
+          git rev-list $VERSION &> /dev/null || status=$?
+          if [[ "${arr[4]}" == "A" && $status == 0 ]]; then 
             echo "INITIAL_RUN=true" >> $GITHUB_ENV
           fi
       - name: Install semver (node command line tool)
