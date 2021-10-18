@@ -5,6 +5,7 @@ jobs:
   releaser:
     runs-on: ubuntu-latest
     env:
+      INITIAL_RUN: "false"
       VERSION: "" # the version number read from version.json
       COMPARETO: "" # the version number to compare this version to
       GORELEASE: ""
@@ -17,11 +18,28 @@ jobs:
           go-version: "1.17.x"
       - name: Determine version
         run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
+      - name: Check if this is the initial deployment
+        # This is the initial run (deploying the version.json to this repo) if
+        # 1. version.json didn't exist before, AND
+        # 2. there doesn't exist a git tag for the version (as read from version.json)
+        # In that case, we don't need to run the rest of the workflow.
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.sha }}
+          git fetch origin --tags
+          read -ra arr <<< $(git diff-index ${{ github.event.pull_request.base.sha }} -- version.json)
+          status=0
+          git rev-list $VERSION &> /dev/null || status=$?
+          if [[ "${arr[4]}" == "A" && $status == 0 ]]; then 
+            echo "INITIAL_RUN=true" >> $GITHUB_ENV
+          fi
       - name: Install semver (node command line tool)
+        if: env.INITIAL_RUN == 'false'
         run: npm install -g "https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569" # v7.3.5
       - name: Check version
+        if: env.INITIAL_RUN == 'false'
         run: semver ${{ env.VERSION }} # fails if the version is not a valid semver version (e.g. v0.1 would fail)
       - name: Determine version number to compare to
+        if: env.INITIAL_RUN == 'false'
         # We need to determine the version number we want to compare to, 
         # taking into account that this might be a (patch) release on a release branch.
         # Example:
@@ -34,7 +52,7 @@ jobs:
           v=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
           echo "COMPARETO=$v" >> $GITHUB_ENV
       - name: Post output
-        if: env.COMPARETO == ''
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO == ''
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
         with:
           header: release-check
@@ -44,7 +62,7 @@ jobs:
 
             This is the first release of this module.
       - name: run git diff on go.mod file(s)
-        if: env.COMPARETO != ''
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         run: |
           # First get the diff for the go.mod file in the root directory...
           output=$(git diff ${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }} -- './go.mod')
@@ -56,14 +74,14 @@ jobs:
           fi
           printf "GOMODDIFF<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Run gorelease
-        if: env.COMPARETO != ''
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
           go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
           output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
           printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Check Compatibility
-        if: env.COMPARETO != ''
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
           output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }}" ./... || true)
@@ -73,7 +91,7 @@ jobs:
           printf "GOCOMPAT<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
       - name: Post output
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: env.COMPARETO != ''
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         with:
           header: release-check
           recreate: true
