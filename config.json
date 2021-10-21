@@ -94,6 +94,7 @@
   { "target": "ipld/go-ipld-prime-proto" },
   { "target": "ipld/go-ipld-schema" },
   { "target": "ipld/go-ipld-selector-text-lite" },
+  { "target": "ipld/go-ipldtool" },
   { "target": "ipld/go-storethehash" },
   { "target": "libp2p/dht-tracer1" },
   { "target": "libp2p/dht-utils" },
