@@ -11,6 +11,7 @@
   { "target": "ipfs-shipyard/dnslink-dnsimple" },
   { "target": "ipfs-shipyard/git-remote-ipld" },
   { "target": "ipfs-shipyard/ipfs-counter" },
+  { "target": "ipfs-shipyard/w3rc" },
   { "target": "ipfs/bbloom" },
   { "target": "ipfs/go-bitfield" },
   { "target": "ipfs/go-bitswap", "deploy_versioning": true },
