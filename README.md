@@ -21,11 +21,8 @@ runs:
       run: echo "do some initial setup"
     - name: Step 2
       shell: bash
-      run: |
-        # note that it's not possible to use if: on the step, see https://github.com/actions/runner/issues/834
-        if [[ "${{ matrix.os }}" == "ubuntu" ]]; then
-          echo "do some Linux-specific setup"
-        fi
+      run: echo "do some Linux-specific setup"
+      if: ${{ matrix.os == 'ubuntu' }}
 ```
 
 These setup steps are run after the repository has been checked out and after Go has been installed, but before any tests or checks are run.
