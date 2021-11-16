@@ -34,6 +34,7 @@
   { "target": "ipfs/go-ds-measure", "deploy_versioning": true },
   { "target": "ipfs/go-ds-pebble" },
   { "target": "ipfs/go-ds-redis" },
+  { "target": "ipfs/go-ds-sql" },
   { "target": "ipfs/go-ds-s3" },
   { "target": "ipfs/go-fetcher", "deploy_versioning": true },
   { "target": "ipfs/go-filestore", "deploy_versioning": true },
