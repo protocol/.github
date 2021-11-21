@@ -6,11 +6,34 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ""
+      CREATETAG: "false"
+      BRANCH: ""
     steps:
       - uses: actions/checkout@v2
       - name: Determine version
         run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
+      - name: Determine branch
+        run: echo "BRANCH=refs/heads/${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
+      - name: Create a release, if we're on the default branch
+        run: echo "CREATETAG=true" >> $GITHUB_ENV
+        if: env.BRANCH == github.ref
+      - name: Determine if this is commit is a merged PR (if we're not on a non-default branch)
+        if: env.BRANCH != github.ref
+        id: getmergedpr
+        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if the "release" label was set on the PR
+        if: steps.getmergedpr.outputs.number != '' && env.BRANCH != github.ref
+        run: |
+          while IFS= read -r label; do
+            if [[ "$label" == "release" ]]; then
+              echo "CREATETAG=true" >> $GITHUB_ENV
+              break
+            fi
+          done <<< "${{ steps.getmergedpr.outputs.labels }}"
       - name: Create release
+        if: env.CREATETAG == 'true'
         run: |
           git fetch origin --tags
           if ! $(git rev-list ${{ env.VERSION}}.. &> /dev/null); then
