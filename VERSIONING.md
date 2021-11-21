@@ -34,6 +34,10 @@ The [release check workflow](.github/workflows/release-check.yml) will comment o
 
 As soon as the PR is merged into the default branch, the [releaser workflow](.github/workflows/releaser.yml) is run. This workflow cuts a new release on CI and pushes the tag.
 
+### Using a Release Branch
+
+Sometimes it's necessary to cut releases on a release branch. If you open a Pull Request targeting a branch other than the default branch, a new release will only be created if the PR has the `release` label.
+
 ### Dealing with Manual Pushes
 
 Unfortunately, GitHub doesn't allow us to disable / restrict pushing of Git tags (see this long-standing [Feature Request](https://github.community/t/feature-request-protected-tags/1742), and consider upvoting it ;)). We can however run a [workflow](.github/workflows/tagpush.yml) when a version tag is pushed.
