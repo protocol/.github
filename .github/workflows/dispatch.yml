@@ -7,8 +7,12 @@ on:
     branches: [ master, testing ]
 
 env:
-  # We could use a higher number here. We use a small number just to make sure to create multiple batches.
-  MAX_REPOS_PER_WORKFLOW: 16
+  # Number of repositories in a batch.
+  # Deployment jobs in the same batch use the same concurrency group,
+  # and are therefore run sequentially.
+  # With ~180 repos, this means we'll run around 9 instances of the copy workflow in parallel.
+  # This is (hopefully) sufficient to prevent us from triggering GitHub Action's abuse detection mechanism.
+  MAX_REPOS_PER_WORKFLOW: 20
   FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml" ]' # a JSON array of the files to distribute
 
 jobs:
@@ -48,4 +52,4 @@ jobs:
         with:
           workflow: "Deploy" # "name" attribute of copy-workflow.yml
           token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-          inputs: '{ "head_commit_url": ${{ toJson(github.event.head_commit.url) }}, "files": ${{ toJson(env.FILES) }}, "targets": ${{ toJson(toJson(matrix.cfg.value)) }} }'
+          inputs: '{ "head_commit_url": ${{ toJson(github.event.head_commit.url) }}, "files": ${{ toJson(env.FILES) }}, "targets": ${{ toJson(toJson(matrix.cfg.value)) }}, "concurrency_group": "${{ matrix.cfg.key }}" }'
