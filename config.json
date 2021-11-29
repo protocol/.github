@@ -138,7 +138,7 @@
   { "target": "libp2p/go-libp2p-quic-transport", "deploy_versioning": true },
   { "target": "libp2p/go-libp2p-raft" },
   { "target": "libp2p/go-libp2p-record" },
-  { "target": "libp2p/go-libp2p-relay-daemon" },
+  { "target": "libp2p/go-libp2p-relay-daemon", "deploy_versioning": true },
   { "target": "libp2p/go-libp2p-routing-helpers" },
   { "target": "libp2p/go-libp2p-swarm", "deploy_versioning": true },
   { "target": "libp2p/go-libp2p-testing", "deploy_versioning": true },
