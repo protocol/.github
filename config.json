@@ -40,7 +40,7 @@
   { "target": "ipfs/go-filestore", "deploy_versioning": true },
   { "target": "ipfs/go-fs-lock" },
   { "target": "ipfs/go-graphsync", "deploy_versioning": true },
-  { "target": "ipfs/go-ipfs-api" , "deploy_versioning": true },
+  { "target": "ipfs/go-ipfs-api", "deploy_versioning": true },
   { "target": "ipfs/go-ipfs-blockstore", "deploy_versioning": true },
   { "target": "ipfs/go-ipfs-blocksutil" },
   { "target": "ipfs/go-ipfs-chunker" },
