@@ -65,7 +65,7 @@
   { "target": "ipfs/go-ipld-git" },
   { "target": "ipfs/go-ipld-legacy" },
   { "target": "ipfs/go-ipns", "deploy_versioning": true },
-  { "target": "ipfs/go-log" },
+  { "target": "ipfs/go-log", "deploy_versioning": true },
   { "target": "ipfs/go-merkledag", "deploy_versioning": true },
   { "target": "ipfs/go-metrics-interface" },
   { "target": "ipfs/go-metrics-prometheus" },
