@@ -24,9 +24,9 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          CONFIG=config.json
+          CONFIG=configs/go.json
           if [[ $GITHUB_REF == refs/heads/testing ]]; then
-            CONFIG=config-testing.json
+            CONFIG=configs/testing.json
           fi
           TARGETS=$(jq '. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})' $CONFIG | jq -sc '. | to_entries')
           echo "::set-output name=targets::$TARGETS"

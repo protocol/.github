@@ -11,7 +11,7 @@ jobs:
       - name: find deleted / archived repositories
         run: |
           status=0
-          for repo in $(jq -r '.[].target' config.json); do
+          for repo in $(jq -r '.[].target' configs/go.json); do
             exists=true
             output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
             if ! $exists; then

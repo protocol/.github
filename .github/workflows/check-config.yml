@@ -1,7 +1,7 @@
 on: 
   pull_request:
     paths:
-      - 'config.json'
+      - 'configs/go.json'
 
 name: Check Config
 
@@ -12,5 +12,5 @@ jobs:
       targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
       - uses: actions/checkout@v2
-      - name: check if config.json is sorted alphabetically
-        run: .github/workflows/check-config.sh config.json
+      - name: check if configs/go.json is sorted alphabetically
+        run: .github/workflows/check-config.sh configs/go.json
