@@ -1,12 +1,15 @@
 #!/bin/bash
 
-tmp=$(mktemp)
-git show :configs/go.json > $tmp
-status=0
-if ! output=$(.github/workflows/check-config.sh $tmp); then
-  echo "$output"
-  status=1
-fi
-rm $tmp
+for config in configs/*.json; do
+  tmp=$(mktemp)
+  git show :$config > $tmp
+  status=0
+  if ! output=$(.github/workflows/check-config.sh $tmp); then
+    echo "$tmp contains git show :$config output."
+    echo "$output"
+    status=1
+  fi
+  rm $tmp
+done
 
 exit $status
