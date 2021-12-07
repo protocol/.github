@@ -8,9 +8,6 @@ on:
       head_commit_url:
         description: "github.event.head_commit.url of the dispatcher"
         required: true
-      files:
-        description: "List of files to deploy"
-        required: true
       targets:
         description: "List of repositories to deploy to"
         required: true
@@ -158,7 +155,13 @@ jobs:
     - name: determine files to add
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
-      run: echo "FILES=${{ toJson(github.event.inputs.files) }}" >> $GITHUB_ENV
+      run: echo "FILES=${{ matrix.cfg.files }}" >> $GITHUB_ENV
+    - name: add more versioning workflows files, if necessary
+      if: matrix.cfg.deploy_versioning
+      run: |
+        files=$(jq -r '.[]' <<< '${{ env.FILES }}')
+        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
+        echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV
     - name: Add files
       run: |
         for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do

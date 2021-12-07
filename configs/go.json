@@ -1,4 +1,15 @@
 {
+  "defaults": {
+    "files": [
+      ".github/workflows/automerge.yml", 
+      ".github/workflows/go-test.yml", 
+      ".github/workflows/go-check.yml", 
+      ".github/workflows/releaser.yml", 
+      ".github/workflows/release-check.yml", 
+      ".github/workflows/tagpush.yml"
+    ],
+    "deploy_versioning": false
+  },
   "repositories": [
     { "target": "filecoin-project/go-amt-ipld" },
     { "target": "filecoin-project/go-bitfield" },
