@@ -6,7 +6,7 @@ file=$1
 entries=$(mktemp)
 entries_sorted=$(mktemp)
 
-jq -r ".[].target" $file > $entries
+jq -r ".repositories[].target" $file > $entries
 sort -u $entries > $entries_sorted
 status=0
 if ! output=$(diff -y $entries $entries_sorted); then
