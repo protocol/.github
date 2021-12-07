@@ -23,11 +23,16 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          CONFIG=configs/go.json
-          if [[ $GITHUB_REF == refs/heads/testing ]]; then
-            CONFIG=configs/testing.json
-          fi
-          TARGETS=$(jq ".repositories[] | $(jq '.defaults' $CONFIG) + . | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})" $CONFIG | jq -sc '. | to_entries')
+          TARGETS=()
+          for config in configs/*.json; do
+            if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
+              continue
+            fi
+            if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
+              continue
+            fi
+            TARGETS+=$(jq "[.repositories[] | $(jq '.defaults' $CONFIG) + .] | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})" $CONFIG | jq -sc '. | to_entries')
+          done
           echo "::set-output name=targets::$TARGETS"
   dispatch:
     needs: [ matrix ]
@@ -44,6 +49,7 @@ jobs:
         #     {"target": "repo2", "files": [".github/workflows/go-check.yml", ".github/workflows/go-test.yml"]}
         #   ]
         #
+        # All array item in a batch are sourced from the same json config file.
         # The triggered copy-workflow jobs use that final array as their matrix.
         # As such, we'll end up with one copy-workflow parallel job per target.
         cfg: ${{ fromJson(needs.matrix.outputs.targets) }}
