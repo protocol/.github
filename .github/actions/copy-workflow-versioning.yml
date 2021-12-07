@@ -1,0 +1,22 @@
+name: copy workflow versioning
+description: Copy workflow steps specific to versioning
+
+runs:
+  using: "composite"
+  steps:
+    - name: add version.json file (in order to deploy versioning workflows)
+      if: hashFiles(format('{0}/version.json', env.TARGET_REPO_DIR)) == ''
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        git fetch origin --unshallow # we need the entire commit history
+        version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
+        if [[ -n "$version" ]]; then # only deply version.json if there's at least one release
+          printf '{"version": "%s"}' "$version" | jq . > version.json
+          git add version.json
+          git commit -m "add version.json file"
+        fi
+    - name: add more versioning workflows files
+      run: |
+        files=$(jq -r '.[]' <<< '${{ env.FILES }}')
+        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
+        echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV

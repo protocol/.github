@@ -25,7 +25,7 @@ jobs:
       TEMPLATE_REPO_DIR: "template-repo"
       TEMPLATE_DIR: "templates"
       NEEDS_UPDATE: 0
-      INITIAL_TEST_DEPLOYMENT: 0
+      INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
       GITHUB_USER: "web3-bot"
@@ -45,11 +45,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
-    - uses: actions/setup-go@v2
-      with:
-        # This should be the same Go version we use in the go-check workflow.
-        # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        go-version: "1.17.x"
     - name: determine GitHub default branch
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -60,108 +55,50 @@ jobs:
       run: |
         git config user.name ${{ env.GITHUB_USER }}
         git config user.email ${{ env.GITHUB_EMAIL }}
-    - name: is initial test workflow deployment
+    - name: determine files to add
+      # By setting the environment variable, it's possible to programmatically add / modify this list.
+      # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
+      run: echo "FILES=${{ toJson(matrix.cfg.files) }}" >> $GITHUB_ENV
+    - name: is initial workflow deployment
       run: |
-        if [[ ! -f $TARGET_REPO_DIR/.github/workflows/go-test.yml ]]; then
-          echo "INITIAL_TEST_DEPLOYMENT=1" >> $GITHUB_ENV
-        fi
-    - name: remove Travis (on initial deployment)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
+        INITIAL_WORKFLOW_DEPLOYMENT=1
+        for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do
+          if [[ -f $TARGET_REPO_DIR/$f ]]; then
+            INITIAL_WORKFLOW_DEPLOYMENT=0
+            break
+          fi
+        done
+        echo "INITIAL_WORKFLOW_DEPLOYMENT=$INITIAL_WORKFLOW_DEPLOYMENT" >> $GITHUB_ENV
+    - name: remove Travis (on initial workflow deployment)
+      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -f .travis.yml ]]; then
           git rm .travis.yml
           git commit -m "disable Travis"
         fi
-    - name: remove CircleCI (on initial deployment)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
+    - name: remove CircleCI (on initial workflow deployment)
+      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .circleci ]]; then
           git rm -r .circleci
           git commit -m "disable CircleCI"
         fi
-    - name: remove gx (on initial deployment)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 }}
+    - name: remove gx (on initial workflow deployment)
+      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .gx ]]; then
           git rm -r .gx
           git commit -m "remove .gx"
         fi
-    - name: add version.json file (in order to deploy versioning workflows)
-      if: hashFiles(format('{0}/version.json', env.TARGET_REPO_DIR)) == ''
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
-        git fetch origin --unshallow # we need the entire commit history
-        version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
-        if [[ -n "$version" ]]; then # only deply version.json if there's at least one release
-          printf '{"version": "%s"}' "$version" | jq . > version.json
-          git add version.json
-          git commit -m "add version.json file"
-        fi
-    - name: bump go.mod go version if needed
-      uses: protocol/multiple-go-modules@v1.2
-      with:
-        working-directory: ${{ env.TARGET_REPO_DIR }}
-        run: |
-          # We want our modules to support two Go versions at a time.
-          # As of August 2021, Go 1.17 is the latest stable.
-          # go.mod's Go version declares the language version being used.
-          # As such, it has to be the minimum of all Go versions supported.
-          # Bump this every six months, as new Go versions come out.
-          TARGET_VERSION=1.16
-
-          # Note that the "<" comparison doesn't understand semver,
-          # but it should be good enough for the foreseeable future.
-          CURRENT_VERSION=$(go list -m -f {{.GoVersion}})
-
-          if [[ $CURRENT_VERSION < $TARGET_VERSION ]]; then
-            echo "GO_VERSION_BUMP=1" >> $GITHUB_ENV
-
-            # Update the version in go.mod. This alone ensures there's a diff.
-            go mod edit -go $TARGET_VERSION
-
-            # In the future, "go fix" may make changes to Go code,
-            # such as to adapt to language changes or API deprecations.
-            # This is largely a no-op as of Go 1.17, and that's fine.
-            go fix ./...
-            git add .
-
-            # We don't tidy, because the next step does that.
-            # Separate commits also help with reviews.
-            git commit -m "bump go.mod to Go $TARGET_VERSION and run go fix"
-          fi
-    - name: go mod tidy (on initial deployment and on new Go version)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
-      uses: protocol/multiple-go-modules@v1.2
-      with:
-        working-directory: ${{ env.TARGET_REPO_DIR }}
-        run: |
-          go mod tidy
-          if ! git diff --quiet; then
-            git add .
-            git commit -m "run go mod tidy"
-          fi
-    - name: gofmt -s (on initial deployment and on new Go version)
-      if: ${{ env.INITIAL_TEST_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
-        gofmt -s -w .
-        if ! git diff --quiet; then
-          git add .
-          git commit -m "run gofmt -s"
-        fi
-    - name: determine files to add
-      # By setting the environment variable, it's possible to programmatically add / modify this list.
-      # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
-      run: echo "FILES=${{ matrix.cfg.files }}" >> $GITHUB_ENV
-    - name: add more versioning workflows files, if necessary
+    - name: Run steps specific to go
+      if: matrix.cfg.deploy_go
+      uses: .github/actions/copy-workflow-go
+    - name: Run steps specific to versioning
       if: matrix.cfg.deploy_versioning
-      run: |
-        files=$(jq -r '.[]' <<< '${{ env.FILES }}')
-        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
-        echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV
+      uses: .github/actions/copy-workflow-versioning
     - name: Add files
       run: |
         for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do

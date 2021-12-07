@@ -8,7 +8,8 @@
       ".github/workflows/release-check.yml", 
       ".github/workflows/tagpush.yml"
     ],
-    "deploy_versioning": false
+    "deploy_versioning": false,
+    "deploy_go": true
   },
   "repositories": [
     { "target": "filecoin-project/go-amt-ipld" },
