@@ -23,6 +23,14 @@ jobs:
         run: |
           go version
           go env
+      - name: Use msys2 on windows
+        if: ${{ matrix.os == 'windows' }}
+        shell: bash
+        # The executable for msys2 is also called bash.cmd
+        #   https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#shells
+        # If we prepend its location to the PATH
+        #   subsequent 'shell: bash' steps will use msys2 instead of gitbash
+        run: echo "C:/msys64/usr/bin" >> $GITHUB_PATH
       - name: Run repo-specific setup
         uses: ./.github/actions/go-test-setup
         if: hashFiles('./.github/actions/go-test-setup') != ''
