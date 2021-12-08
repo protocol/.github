@@ -60,4 +60,4 @@ jobs:
         with:
           workflow: "Deploy" # "name" attribute of copy-workflow.yml
           token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-          inputs: '{ "head_commit_url": ${{ toJson(github.event.head_commit.url) }}, "targets": ${{ toJson(matrix.cfg.value) }} }'
+          inputs: '{ "head_commit_url": ${{ toJson(github.event.head_commit.url) }}, "targets": ${{ toJson(toJson(matrix.cfg.value)) }} }'
