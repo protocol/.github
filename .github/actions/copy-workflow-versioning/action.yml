@@ -17,6 +17,6 @@ runs:
         fi
     - name: add more versioning workflows files
       run: |
-        files=$(jq -r '.[]' <<< '${{ env.FILES }}')
+        files=($(jq -r '.[]' <<< $FILES))
         files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
         echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV

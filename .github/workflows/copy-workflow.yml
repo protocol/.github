@@ -58,11 +58,14 @@ jobs:
     - name: determine files to add
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
-      run: echo "FILES=$(jq -c '.' <<< ${{ toJson(matrix.cfg.files) }})" >> $GITHUB_ENV
+      run: |
+        files=${{ toJson(toJson(matrix.cfg.files)) }}
+        files=$(echo -e "$files" | jq -c '.')
+        echo "FILES=$files" >> $GITHUB_ENV
     - name: is initial workflow deployment
       run: |
         INITIAL_WORKFLOW_DEPLOYMENT=1
-        for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do
+        for f in $(jq -r '.[]' <<< $FILES); do
           if [[ -f $TARGET_REPO_DIR/$f ]]; then
             INITIAL_WORKFLOW_DEPLOYMENT=0
             break
@@ -95,13 +98,13 @@ jobs:
         fi
     - name: Run steps specific to go
       if: matrix.cfg.deploy_go
-      uses: ./.github/actions/copy-workflow-go
+      uses: ./actions/copy-workflow-go
     - name: Run steps specific to versioning
       if: matrix.cfg.deploy_versioning
-      uses: ./.github/actions/copy-workflow-versioning
+      uses: ./actions/copy-workflow-versioning
     - name: Add files
       run: |
-        for f in $(jq -r ".[]" <<< ${{ toJson(env.FILES) }}); do
+        for f in $(jq -r '.[]' <<< $FILES); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
