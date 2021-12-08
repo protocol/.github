@@ -98,10 +98,10 @@ jobs:
         fi
     - name: Run steps specific to go
       if: matrix.cfg.deploy_go
-      uses: ./actions/copy-workflow-go
+      uses: ./template-repo/.github/actions/copy-workflow-go
     - name: Run steps specific to versioning
       if: matrix.cfg.deploy_versioning
-      uses: ./actions/copy-workflow-versioning
+      uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
         for f in $(jq -r '.[]' <<< $FILES); do
