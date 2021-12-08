@@ -7,6 +7,7 @@ runs:
     - name: add version.json file (in order to deploy versioning workflows)
       if: hashFiles(format('{0}/version.json', env.TARGET_REPO_DIR)) == ''
       working-directory: ${{ env.TARGET_REPO_DIR }}
+      shell: bash
       run: |
         git fetch origin --unshallow # we need the entire commit history
         version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
@@ -16,6 +17,7 @@ runs:
           git commit -m "add version.json file"
         fi
     - name: add more versioning workflows files
+      shell: bash
       run: |
         files=($(jq -r '.[]' <<< $FILES))
         files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
