@@ -31,7 +31,8 @@ jobs:
             if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
               continue
             fi
-            TARGETS+=($(jq -c ".repositories[] | $(jq '.defaults' $CONFIG) + ." $CONFIG))
+            DEFAULTS=$(jq -c '.defaults' $config)
+            TARGETS+=($(jq -c ".repositories[] | $DEFAULTS + ." $config))
           done
           BATCHES=$(jq -sc '[. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})] | to_entries' <<< $TARGETS)
           echo "::set-output name=batches::$BATCHES"
