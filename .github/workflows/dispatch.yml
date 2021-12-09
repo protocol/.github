@@ -9,7 +9,7 @@ on:
 env:
   # We could use a higher number here. We use a small number just to make sure to create multiple batches.
   MAX_REPOS_PER_WORKFLOW: 16
-  FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml" ]' # a JSON array of the files to distribute
+  FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml", ".github/workflows/releaser.yml", ".github/workflows/release-check.yml", ".github/workflows/tagpush.yml" ]' # a JSON array of the files to distribute
 
 jobs:
   matrix:
