@@ -83,7 +83,7 @@
   { "target": "ipfs/interface-go-ipfs-core", "deploy_versioning": true },
   { "target": "ipfs/ipfs-ds-convert" },
   { "target": "ipfs/ipfs-update" },
-  { "target": "ipfs/ipget" },
+  { "target": "ipfs/ipget", "deploy_versioning": true },
   { "target": "ipfs/iptb" },
   { "target": "ipfs/iptb-plugins" },
   { "target": "ipfs/pinbot-irc" },
