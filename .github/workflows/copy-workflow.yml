@@ -22,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         cfg: ${{ fromJson(github.event.inputs.targets) }}
+      max-parallel: 1
     env:
       TARGET_REPO_DIR: "target-repo"
       TEMPLATE_REPO_DIR: "template-repo"
