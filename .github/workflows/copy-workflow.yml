@@ -22,6 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         cfg: ${{ fromJson(github.event.inputs.targets) }}
+      # This controls how many matrix jobs can run in parallel.
+      # We keep it low trying not to hit GitHub's secondary rate limit mechanism.
       max-parallel: 1
     env:
       TARGET_REPO_DIR: "target-repo"
@@ -207,3 +209,7 @@ jobs:
         author: ${{ env.GITHUB_USER }} <${{ env.GITHUB_EMAIL }}>
         branch: ${{ env.GITHUB_USER }}/sync
         delete-branch: true
+    - name: Sleep
+      if: ${{ env.NEEDS_UPDATE }}
+      run: sleep 10
+      shell: bash

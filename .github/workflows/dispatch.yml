@@ -7,11 +7,9 @@ on:
     branches: [ master, testing ]
 
 env:
-  # Number of repositories in a batch.
-  # Deployment jobs in the same batch are run sequentially.
-  # With ~180 repos, this means we'll run around 9 instances of the copy workflow in parallel.
-  # This is (hopefully) sufficient to prevent us from triggering GitHub Action's abuse detection mechanism.
-  MAX_REPOS_PER_WORKFLOW: 20
+  # The downstream workflow creates a matrix job per repository.
+  # 256 is the limit for number of matrix jobs a workflow can create.
+  MAX_REPOS_PER_WORKFLOW: 256
   FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml", ".github/workflows/releaser.yml", ".github/workflows/release-check.yml", ".github/workflows/tagpush.yml" ]' # a JSON array of the files to distribute
 
 jobs:
@@ -45,8 +43,11 @@ jobs:
         # The triggered copy-workflow jobs use that final array as their matrix.
         # As such, we'll end up with one copy-workflow parallel job per target.
         cfg: ${{ fromJson(needs.matrix.outputs.targets) }}
+      max-parallel: 1
     name: Start copy workflow (batch ${{ matrix.cfg.key }})
     steps:
+      # We want only one copy-workflow running at a time
+      # For this to be true workflow-dispatch would have to wait for the result
       - uses: benc-uk/workflow-dispatch@4c044c1613fabbe5250deadc65452d54c4ad4fc7 # v1.1.0
         with:
           workflow: "Deploy" # "name" attribute of copy-workflow.yml
