@@ -14,9 +14,6 @@ on:
       targets:
         description: "List of repositories to deploy to"
         required: true
-      concurrency_group:
-        description: "Concurrency Group"
-        required: true
 
 jobs:
   copy:
@@ -25,7 +22,6 @@ jobs:
       fail-fast: false
       matrix:
         cfg: ${{ fromJson(github.event.inputs.targets) }}
-    concurrency: copy-${{ github.event.inputs.concurrency_group }}
     env:
       TARGET_REPO_DIR: "target-repo"
       TEMPLATE_REPO_DIR: "template-repo"
