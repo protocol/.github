@@ -13,7 +13,7 @@ env:
   # With ~180 repos, this means we'll run around 9 instances of the copy workflow in parallel.
   # This is (hopefully) sufficient to prevent us from triggering GitHub Action's abuse detection mechanism.
   MAX_REPOS_PER_WORKFLOW: 20
-  FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml" ]' # a JSON array of the files to distribute
+  FILES: '[ ".github/workflows/automerge.yml", ".github/workflows/go-test.yml", ".github/workflows/go-check.yml", ".github/workflows/releaser.yml", ".github/workflows/release-check.yml", ".github/workflows/tagpush.yml" ]' # a JSON array of the files to distribute
 
 jobs:
   matrix:
