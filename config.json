@@ -79,7 +79,6 @@
   { "target": "ipfs/go-unixfsnode" },
   { "target": "ipfs/go-verifcid" },
   { "target": "ipfs/hang-fds" },
-  { "target": "ipfs/http-api-docs" },
   { "target": "ipfs/interface-go-ipfs-core" },
   { "target": "ipfs/ipfs-ds-convert" },
   { "target": "ipfs/ipfs-update" },
