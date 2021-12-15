@@ -16,9 +16,3 @@ runs:
           git add version.json
           git commit -m "add version.json file"
         fi
-    - name: add more versioning workflows files
-      shell: bash
-      run: |
-        files=($(jq -r '.[]' <<< $FILES))
-        files+=(".github/workflows/releaser.yml" ".github/workflows/release-check.yml" ".github/workflows/tagpush.yml")
-        echo "FILES=$(jq -nc '$ARGS.positional' --args ${files[@]})" >> $GITHUB_ENV

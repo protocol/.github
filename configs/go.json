@@ -8,7 +8,7 @@
       ".github/workflows/release-check.yml", 
       ".github/workflows/tagpush.yml"
     ],
-    "deploy_versioning": false,
+    "deploy_versioning": true,
     "deploy_go": true
   },
   "repositories": [
