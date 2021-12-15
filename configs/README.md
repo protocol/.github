@@ -33,3 +33,7 @@ When adding a new JSON config file, please follow the structure of other config 
 ```
 
 To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_versioning` or `deploy_go` in [go.json](go.json) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.
+
+## Testing
+
+You can use [testing](https://github.com/protocol/.github/tree/testing) branch for worklow/configuration testing. Once you push your changes to the branch, a [dispatch](../.github/workflows/dispatch.yml) workflow will be triggered. The workflow will use [testing.json](testing.json) configuration file only. You can manipalate that configuration file as needed(you can copy all the `defaults` from [go.json](go.json) for [example](https://github.com/protocol/.github/commit/43476995428996a90ca95bf838f084ba1a710c68)).
