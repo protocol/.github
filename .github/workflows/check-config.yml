@@ -12,8 +12,10 @@ jobs:
       targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
       - uses: actions/checkout@v2
-      - name: check if configs/*.json is sorted alphabetically
+      - name: check if config files are sorted alphabetically
         run: |
           for config in configs/*.json; do
+            echo "::group::$config"
             .github/workflows/check-config.sh $config
+            echo "::endgroup::"
           done

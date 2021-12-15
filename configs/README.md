@@ -14,7 +14,7 @@ To add a new repository to an existing config file, add a new JSON object to the
 _**IMPORTANT**: Please remember to keep `repositories` sorted alphabetically by `target` value._
 
 *JSON object example:*
-```
+```json
 { "target": "NEW REPOSITORY NAME" }
 ```
 
@@ -25,11 +25,11 @@ After the PR with your change is merged, a copy workflow that runs in this repos
 When adding a new JSON config file, please follow the structure of other config files. In particular, `defaults.files` array and `repositories` array are required fields.
 
 *JSON config file example:*
-```
+```json
 {
     "defaults": { "files": [] },
     "repositories": []
 }
 ```
 
-To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_versioning` or `deploy_go` in [go.json](go.json#L8-L9) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml#L100-L105) for example.
+To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_versioning` or `deploy_go` in [go.json](go.json) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.

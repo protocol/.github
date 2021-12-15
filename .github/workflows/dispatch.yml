@@ -23,19 +23,23 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-matrix
         run: |
-          TARGETS=()
+          targets=()
           for config in configs/*.json; do
+            echo "::group::$config"
             if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
               continue
             fi
             if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
               continue
             fi
-            DEFAULTS=$(jq -c '.defaults' $config)
-            TARGETS+=($(jq -c ".repositories[] | $DEFAULTS + ." $config))
+            defaults=$(jq -c '.defaults' $config)
+            # values defined in the repository object will override the default values
+            # e.g. { "files": ["a", "b"] } + { "files": ["c"] } = { "files": ["c"] }
+            targets+=($(jq -c ".repositories[] | $defaults + ." $config))
+            echo "::endgroup::"
           done
-          BATCHES=$(jq -sc '[. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})] | to_entries' <<< $TARGETS)
-          echo "::set-output name=batches::$BATCHES"
+          batches=$(jq -sc '[. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})] | to_entries' <<< $targets)
+          echo "::set-output name=batches::$batches"
   dispatch:
     needs: [ matrix ]
     runs-on: ubuntu-latest

@@ -12,6 +12,7 @@ jobs:
         run: |
           status=0
           for config in configs/*.json; do
+            echo "::group::$config"
             for repo in $(jq -r '.repositories[].target' $config); do
               exists=true
               output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
@@ -25,5 +26,6 @@ jobs:
                 status=1
               fi
             done
+            echo "::endgroup::"
           done
           exit $status

@@ -63,15 +63,16 @@ jobs:
         files=$(echo -e "$files" | jq -c '.')
         echo "FILES=$files" >> $GITHUB_ENV
     - name: is initial workflow deployment
+      # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
       run: |
-        INITIAL_WORKFLOW_DEPLOYMENT=1
+        initial_workflow_deployment=1
         for f in $(jq -r '.[]' <<< $FILES); do
           if [[ -f $TARGET_REPO_DIR/$f ]]; then
-            INITIAL_WORKFLOW_DEPLOYMENT=0
+            initial_workflow_deployment=0
             break
           fi
         done
-        echo "INITIAL_WORKFLOW_DEPLOYMENT=$INITIAL_WORKFLOW_DEPLOYMENT" >> $GITHUB_ENV
+        echo "INITIAL_WORKFLOW_DEPLOYMENT=$initial_workflow_deployment" >> $GITHUB_ENV
     - name: remove Travis (on initial workflow deployment)
       if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
@@ -98,13 +99,13 @@ jobs:
         fi
     - name: Run steps specific to go
       if: matrix.cfg.deploy_go
-      uses: ./template-repo/.github/actions/copy-workflow-go
+      uses: ./${{ env.TEMPATE_REPO_DIR }}/.github/actions/copy-workflow-go
     - name: Run steps specific to versioning
       if: matrix.cfg.deploy_versioning
-      uses: ./template-repo/.github/actions/copy-workflow-versioning
+      uses: ./${{ env.TEMPATE_REPO_DIR }}/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
-        for f in $(jq -r '.[]' <<< $FILES); do
+        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
