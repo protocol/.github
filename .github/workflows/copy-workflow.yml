@@ -66,7 +66,7 @@ jobs:
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
       run: |
         initial_workflow_deployment=1
-        for f in $(jq -r '.[]' <<< $FILES); do
+        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           if [[ -f $TARGET_REPO_DIR/$f ]]; then
             initial_workflow_deployment=0
             break
