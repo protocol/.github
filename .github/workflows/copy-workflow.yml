@@ -139,9 +139,9 @@ jobs:
         done
     - name: Check if we need to create a PR
       working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count)" >> $GITHUB_ENV
+      run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
     - name: Create Pull Request
-      if: ${{ env.NEEDS_UPDATE }}
+      if: ${{ env.NEEDS_UPDATE != 0 }}
       uses: peter-evans/create-pull-request@83dbed188f76ab04433c639ec214df65e26bc15c # https://github.com/peter-evans/create-pull-request/pull/856
       with:
         path: ${{ env.TARGET_REPO_DIR }}
