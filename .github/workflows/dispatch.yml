@@ -62,7 +62,7 @@ jobs:
     steps:
       - env:
           GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-          WORKFLOW_REF: ${{ env.GITHUB_REF }}
+          WORKFLOW_REF: ${{ github.ref }}
           WORKFLOW_YML: copy-workflow.yml
           WORKFLOW_REPO: protocol/.github
           # 2 toJson calls are needed to turn the array of targets into a string
