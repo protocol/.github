@@ -115,8 +115,9 @@ jobs:
 
             # check if step called $STEP_NAME has been executed
             if gh run view --job "$job_id" --repo "$WORKFLOW_REPO" | grep -q "✓ $STEP_NAME"; then
+              base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
               # try to create a PR and sleep for a while afterwards
-              if gh pr create --body "$PR_BODY" --head "$PR_BRANCH" --title "$PR_TITLE" --repo "$job_name"; then
+              if gh api "/repos/$job_name/pulls" -f title="$PR_TITLE" -f body="$PR_BODY" -f head="$PR_BRANCH" -f base="$base"; then
                 echo "::debug::Successfully created a PR for '$job_name'"
               else
                 echo "::error ::Failed to create a PR for '$job_name'"
