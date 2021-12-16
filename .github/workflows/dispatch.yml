@@ -118,8 +118,10 @@ jobs:
               base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
               # try to create a PR and sleep for a while afterwards
               if gh api "/repos/$job_name/pulls" -f title="$PR_TITLE" -f body="$PR_BODY" -f head="$PR_BRANCH" -f base="$base"; then
+                echo ""
                 echo "::debug::Successfully created a PR for '$job_name'"
               else
+                echo ""
                 echo "::error ::Failed to create a PR for '$job_name'"
               fi
               sleep 3
