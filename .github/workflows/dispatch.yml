@@ -75,7 +75,7 @@ jobs:
           echo "::group::Dispatch workflow"
           # record the time before the workflow dispatch even has been issued
           start="$(date +%s)"
-          echo "$WORKFLOW_JSON" | gh workflow run "$WORKFLOW_YML" --ref "$WORKFLOW_BRANCH" --repo "$WORKFLOW_REPO" --json
+          echo "$WORKFLOW_JSON" | gh workflow run "$WORKFLOW_YML" --ref "$WORKFLOW_REF" --repo "$WORKFLOW_REPO" --json
           echo "::endgroup::"
 
           echo "::group::Wait for workflow to start"
