@@ -5,9 +5,6 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      head_commit_url:
-        description: "github.event.head_commit.url of the dispatcher"
-        required: true
       targets:
         description: "List of repositories to deploy to"
         required: true
