@@ -9,13 +9,12 @@ on:
 env:
   # Number of repositories in a batch.
   # Deployment jobs in the same batch are run sequentially.
-  # With ~180 repos, this means we'll run around 9 instances of the copy workflow in parallel.
-  # This is (hopefully) sufficient to prevent us from triggering GitHub Action's abuse detection mechanism.
-  MAX_REPOS_PER_WORKFLOW: 20
+  # 256 is the upper limit on the number of matrix jobs.
+  MAX_REPOS_PER_WORKFLOW: 256
 
 jobs:
   matrix:
-    name: Trigger copy workflows
+    name: Batch targets
     runs-on: ubuntu-latest
     outputs:
       batches: ${{ steps.set-matrix.outputs.batches }}
@@ -42,6 +41,7 @@ jobs:
           echo "::set-output name=batches::$batches"
   dispatch:
     needs: [ matrix ]
+    name: Dispatch copy workflow(batch ${{ matrix.cfg.key }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -51,18 +51,78 @@ jobs:
         # For each "dispatch" job, matrix.cfg.value is an array, like:
         #
         #   [
-        #     {"target": "repo1", "files": [".github/workflows/go-check.yml"]}, 
+        #     {"target": "repo1", "files": [".github/workflows/go-check.yml"]},
         #     {"target": "repo2", "files": [".github/workflows/go-check.yml", ".github/workflows/go-test.yml"]}
         #   ]
         #
         # The triggered copy-workflow jobs use that final array as their matrix.
-        # As such, we'll end up with one copy-workflow parallel job per target.
+        # Since max-parallel here is 1, we'll end up with at most copy-workflow@max-parallel + 1 parallel jobs.
         cfg: ${{ fromJson(needs.matrix.outputs.batches) }}
-    name: Start copy workflow (batch ${{ matrix.cfg.key }})
+      max-parallel: 1
     steps:
-      - uses: benc-uk/workflow-dispatch@4c044c1613fabbe5250deadc65452d54c4ad4fc7 # v1.1.0
-        with:
-          workflow: "Deploy" # "name" attribute of copy-workflow.yml
-          token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-          # double toJson on matrix.cfg.value is here on purpose
-          inputs: '{ "head_commit_url": ${{ toJson(github.event.head_commit.url) }}, "targets": ${{ toJson(toJson(matrix.cfg.value)) }} }'
+      - env:
+          GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+          WORKFLOW_REF: ${{ env.GITHUB_REF }}
+          WORKFLOW_YML: copy-workflow.yml
+          WORKFLOW_REPO: protocol/.github
+          # 2 toJson calls are needed to turn the array of targets into a string
+          WORKFLOW_JSON: '{"targets":${{ toJson(toJson(matrix.cfg.value)) }}}'
+          STEP_NAME: 'Force push web3-bot/sync branch'
+          PR_TITLE: 'sync: update CI config files'
+          PR_BODY: 'Syncing to commit ${{ github.event.head_commit.url }}.'
+          PR_BRANCH: 'web3-bot/sync'
+        run: |
+          echo "::group::Dispatch workflow"
+          # record the time before the workflow dispatch even has been issued
+          start="$(date +%s)"
+          echo "$WORKFLOW_JSON" | gh workflow run "$WORKFLOW_YML" --ref "$WORKFLOW_BRANCH" --repo "$WORKFLOW_REPO" --json
+          echo "::endgroup::"
+
+          echo "::group::Wait for workflow to start"
+          # checks every 3 seconds until the most recent run of the workflow has started after the dispatch
+          while sleep 3; do
+            # prints 'STATUS NAME WORKFLOW BRANCH EVENT ID ELAPSED AGE'
+            run="$(gh run list --workflow="$WORKFLOW_YML" --repo "$WORKFLOW_REPO" --limit=1)"
+            # will skip this part if there are no runs of the workflow yet
+            if [[ ! -z "$run" ]]; then
+              age="$(echo "$run" | cut -f9)"
+              age="$(echo "$age" | sed 's/s$/ seconds/')"
+              age="$(echo "$age" | sed 's/m$/ minutes/')"
+              age="$(echo "$age" | sed 's/h$/ hours/')"
+              age="$(echo "$age" | sed 's/d$/ days/')"
+              # if the run happened more than a month ago, age is the exact date
+              age="$(date -d "-$age" +%s)"
+              if [[ "$age" > "$start" ]]; then
+                run_id="$(echo "$run" | cut -f7)"
+                break
+              fi
+            fi
+          done
+          echo "::endgroup::"
+
+          echo "::group::Wait for workflow to complete"
+          # refreshes run status every 3 seconds until completion
+          # we're redirecting the stdout to /dev/null because this call is very chatty
+          # we might want to consider writing out this check ourselves to make the interval longer
+          gh run watch "$run_id" --repo "$WORKFLOW_REPO" > /dev/null
+          echo "::endgroup::"
+
+          echo "::group::Create PRs if needed"
+          # looking for lines like '✓ $job_name in $job_elapsed (ID $job_id)' and looping over '$job_name $job_id'
+          gh run view "$run_id" --repo "$WORKFLOW_REPO" | sed -nr 's/✓ (.+) in .+ \(ID (.+)\)/\1\t\2/p' | while read line; do
+            job_name="$(echo "$line" | cut -f1)"
+            job_id="$(echo "$line" | cut -f2)"
+
+            # check if step called $STEP_NAME has been executed
+            if gh run view --job "$job_id" --repo "$WORKFLOW_REPO" | grep -q "✓ $STEP_NAME"; then
+              # try to create a PR and sleep for a while afterwards
+              if gh pr create --body "$PR_BODY" --head "$PR_BRANCH" --title "$PR_TITLE" --repo "$job_name"; then
+                echo "::debug::Successfully created a PR for '$job_name'"
+              else
+                echo "::error ::Failed to create a PR for '$job_name'"
+              fi
+              sleep 3
+            fi
+          done
+          echo "::endgroup::"
+        shell: bash
