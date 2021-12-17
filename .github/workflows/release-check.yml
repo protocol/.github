@@ -30,7 +30,7 @@ jobs:
           read -ra arr <<< $(git diff-index ${{ github.event.pull_request.base.sha }} -- version.json)
           status=0
           git rev-list $VERSION &> /dev/null || status=$?
-          if [[ "${arr[4]}" == "A" && $status == 0 ]]; then 
+          if [[ "${arr[4]}" == "A" && $status == 0 ]]; then
             echo "INITIAL_RUN=true" >> $GITHUB_ENV
           fi
       - name: Install semver (node command line tool)
@@ -41,7 +41,7 @@ jobs:
         run: semver ${{ env.VERSION }} # fails if the version is not a valid semver version (e.g. v0.1 would fail)
       - name: Determine version number to compare to
         if: env.INITIAL_RUN == 'false'
-        # We need to determine the version number we want to compare to, 
+        # We need to determine the version number we want to compare to,
         # taking into account that this might be a (patch) release on a release branch.
         # Example:
         # Imagine a module that has releases for v0.1.0, v0.2.0 and v0.3.0.
@@ -71,10 +71,10 @@ jobs:
         if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         run: |
           # First get the diff for the go.mod file in the root directory...
-          output=$(git diff ${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }} -- './go.mod')
+          output=$(git diff ${{ env.COMPARETO }}..HEAD -- './go.mod')
           # ... then get the diff for all go.mod files in subdirectories.
-          # Note that this command also finds go.mod files more than one level deep in the directory structure. 
-          output+=$(git diff ${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }} -- '*/go.mod')
+          # Note that this command also finds go.mod files more than one level deep in the directory structure.
+          output+=$(git diff ${{ env.COMPARETO }}..HEAD -- '*/go.mod')
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
@@ -90,7 +90,7 @@ jobs:
         if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
-          output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..${{ github.event.pull_request.head.sha }}" ./... || true)
+          output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..HEAD" ./... || true)
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
@@ -129,4 +129,3 @@ jobs:
             ${{ env.GOCOMPAT }}
             ```
             ${{ env.RELEASE_BRANCH_NOTE }}
-
