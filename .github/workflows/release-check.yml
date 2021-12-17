@@ -104,28 +104,39 @@ jobs:
           If you wish to cut a release once this PR is merged, please add the \`release\` label to this PR.
           EOF" >> $GITHUB_ENV
         if: github.base_ref != github.event.repository.default_branch
-      - name: Post output
-        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
+      - run: |
+          echo 'MESSAGE<<EOF
+          Suggested version: `${{ env.VERSION }}`
+          Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.ref }}))
+
+          Changes in `go.mod` file(s):
+          ```diff
+          ${{ env.GOMODDIFF }}
+          ```
+
+          `gorelease` says:
+          ```
+          ${{ env.GORELEASE }}
+          ```
+
+          `gocompat` says:
+          ```
+          ${{ env.GOCOMPAT }}
+          ```
+          ${{ env.RELEASE_BRANCH_NOTE }}
+          EOF' >> $GITHUB_ENV
         if: env.INITIAL_RUN == 'false' && env.COMPARETO != ''
+      - name: Post message on PR
+        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name == github.repository
         with:
           header: release-check
           recreate: true
-          message: |
-            Suggested version: `${{ env.VERSION }}`
-            Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.ref }}))
-
-            Changes in `go.mod` file(s):
-            ```diff
-            ${{ env.GOMODDIFF }}
-            ```
-
-            `gorelease` says:
-            ```
-            ${{ env.GORELEASE }}
-            ```
-
-            `gocompat` says:
-            ```
-            ${{ env.GOCOMPAT }}
-            ```
-            ${{ env.RELEASE_BRANCH_NOTE }}
+          message: ${{ env.MESSAGE }}
+      - name: Set a notice message on run
+        run: |
+          MESSAGE="${MESSAGE//'%'/'%25'}"
+          MESSAGE="${MESSAGE//$'\n'/'%0A'}"
+          MESSAGE="${MESSAGE//$'\r'/'%0D'}"
+          echo "::notice ::$MESSAGE"
+        if: env.INITIAL_RUN == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name != github.repository
