@@ -32,7 +32,7 @@ When adding a new JSON config file, please follow the structure of other config 
 }
 ```
 
-To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_versioning` or `deploy_go` in [go.json](go.json) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.
+To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_go` in [go.json](go.json) and how it is used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.
 
 ## Testing
 

@@ -101,9 +101,6 @@ jobs:
       if: matrix.cfg.deploy_go
       # use of ${{ env.TEMPATE_REPO_DIR }} is not allowed here
       uses: ./template-repo/.github/actions/copy-workflow-go
-    - name: Run steps specific to versioning
-      if: matrix.cfg.deploy_versioning
-      uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
