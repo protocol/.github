@@ -107,7 +107,7 @@ jobs:
       - run: |
           echo 'MESSAGE<<EOF
           Suggested version: `${{ env.VERSION }}`
-          Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.ref }}))
+          Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.label }}))
 
           Changes in `go.mod` file(s):
           ```diff
@@ -145,6 +145,6 @@ jobs:
         uses: actions/upload-artifact@v2
         if: env.INITIAL_RUN == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name != github.repository
         with:
-          name: message
+          name: message.md
           path: message.md
           retention-days: 1
