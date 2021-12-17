@@ -1,11 +1,11 @@
 {
   "defaults": {
     "files": [
-      ".github/workflows/automerge.yml", 
-      ".github/workflows/go-test.yml", 
-      ".github/workflows/go-check.yml", 
-      ".github/workflows/releaser.yml", 
-      ".github/workflows/release-check.yml", 
+      ".github/workflows/automerge.yml",
+      ".github/workflows/go-test.yml",
+      ".github/workflows/go-check.yml",
+      ".github/workflows/releaser.yml",
+      ".github/workflows/release-check.yml",
       ".github/workflows/tagpush.yml"
     ],
     "deploy_versioning": true,
@@ -53,6 +53,16 @@
     { "target": "ipfs/go-filestore" },
     { "target": "ipfs/go-fs-lock" },
     { "target": "ipfs/go-graphsync" },
+    {
+      "target": "ipfs/go-ipfs",
+      "files": [
+        ".github/workflows/automerge.yml",
+        ".github/workflows/sync-release-assets.yml"
+      ],
+      "sync_release_assets": {
+        "dist": "go-ipfs"
+      }
+    },
     { "target": "ipfs/go-ipfs-api" },
     { "target": "ipfs/go-ipfs-blockstore" },
     { "target": "ipfs/go-ipfs-blocksutil" },
@@ -150,7 +160,15 @@
     { "target": "libp2p/go-libp2p-quic-transport" },
     { "target": "libp2p/go-libp2p-raft" },
     { "target": "libp2p/go-libp2p-record" },
-    { "target": "libp2p/go-libp2p-relay-daemon" },
+    {
+      "target": "libp2p/go-libp2p-relay-daemon",
+      "extra_files": [
+        ".github/workflows/sync-release-assets.yml"
+      ],
+      "sync_release_assets": {
+        "dist": "libp2p-relay-daemon"
+      }
+    },
     { "target": "libp2p/go-libp2p-routing-helpers" },
     { "target": "libp2p/go-libp2p-swarm" },
     { "target": "libp2p/go-libp2p-testing" },

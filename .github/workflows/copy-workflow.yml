@@ -60,7 +60,8 @@ jobs:
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
       run: |
         files=${{ toJson(toJson(matrix.cfg.files)) }}
-        files=$(echo -e "$files" | jq -c '.')
+        extra_files=${{ toJson(toJson(matrix.cfg.extra_files)) }}
+        files=$(echo -e "$files" "$extra_files" | jq -nc '[inputs] | add')
         echo "FILES=$files" >> $GITHUB_ENV
     - name: is initial workflow deployment
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
@@ -113,6 +114,7 @@ jobs:
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
           # replace $default-branch with this repo's GitHub default branch
           sed -i "s:\$default-branch:${{ env.DEFAULTBRANCH }}:g" $tmp
+          sed -i "s:\$config:${{ toJson(toJson(matrix.cfg)) }}:g" $tmp
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
