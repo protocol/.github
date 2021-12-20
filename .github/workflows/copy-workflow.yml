@@ -107,9 +107,10 @@ jobs:
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
-        config="$(echo -e '${{ toJson(toJson(matrix.cfg)) }}' | jq -c '.')"
+        config=${{ toJson(toJson(matrix.cfg)) }}
+        config=$(echo -e "$config" | jq -c '.')
         github="{\"repo\":{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}}"
-        context="{\"config\":\"$config\",\"github\":\"$github\"}"
+        context="{\"config\":$config,\"github\":$github}"
         regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
         replacement="qx/context='$context'; jq -jc '.\$1' <<< \"\\\$context\"/"
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
