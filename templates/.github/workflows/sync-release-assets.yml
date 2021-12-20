@@ -8,4 +8,4 @@ jobs:
   sync-github-and-dist-ipfs-io:
     uses: protocol/.github/.github/workflows/sync-release-assets.yml@master
     with:
-      dist: ${{ fromJson('$config').sync_release_assets.dist }}
+      dist: ${{{ config.sync_release_assets.dist }}}

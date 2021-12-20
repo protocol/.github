@@ -30,7 +30,7 @@ jobs:
       FILES: ""
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
-      DEFAULTBRANCH: ""
+      DEFAULT_BRANCH: ""
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -48,8 +48,8 @@ jobs:
     - name: determine GitHub default branch
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
-        defaultbranch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-        echo "DEFAULTBRANCH=$defaultbranch" >> $GITHUB_ENV
+        default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+        echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -107,14 +107,18 @@ jobs:
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
+        config="$(echo -e '${{ toJson(toJson(matrix.cfg)) }}' | jq -c '.')"
+        github="{\"repo\":{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}}"
+        context="{\"config\":\"$config\",\"github\":\"$github\"}"
+        regexp='\${{{\s*(.*?)\s*}}}'
+        replacement="qx/context='$context'; jq -jc '.\$1' <<< \"\\\$context\"/"
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace $default-branch with this repo's GitHub default branch
-          sed -i "s:\$default-branch:${{ env.DEFAULTBRANCH }}:g" $tmp
-          sed -i "s:\$config:${{ toJson(toJson(matrix.cfg)) }}:g" $tmp
+          # replace ${{{ SELECTOR }}} with a value from the JSON context object
+          perl -pi -e "s#$regex#$replacement#ge" $tmp
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
