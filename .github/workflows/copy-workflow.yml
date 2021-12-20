@@ -110,14 +110,14 @@ jobs:
         config="$(echo -e '${{ toJson(toJson(matrix.cfg)) }}' | jq -c '.')"
         github="{\"repo\":{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}}"
         context="{\"config\":\"$config\",\"github\":\"$github\"}"
-        regexp='\${{{\s*(.*?)\s*}}}'
+        regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
         replacement="qx/context='$context'; jq -jc '.\$1' <<< \"\\\$context\"/"
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace ${{{ SELECTOR }}} with a value from the JSON context object
+          # replace template expressions with values from the JSON context object
           perl -pi -e "s#$regex#$replacement#ge" $tmp
           mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
