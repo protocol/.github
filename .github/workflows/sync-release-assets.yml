@@ -55,7 +55,7 @@ jobs:
               }
 
               // fetch asset info from dist.ipfs.io
-              p = '/ipns/dist.ipfs.io/${{ inputs.di }}/' + release.tag_name
+              p = '/ipns/dist.ipfs.io/${{ inputs.dist }}/' + release.tag_name
               let stdout = ''
               const options = {}
               options.listeners = {
