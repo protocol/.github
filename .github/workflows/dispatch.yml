@@ -59,83 +59,79 @@ jobs:
         # Since max-parallel here is 1, we'll end up with at most copy-workflow@max-parallel + 1 parallel jobs.
         cfg: ${{ fromJson(needs.matrix.outputs.batches) }}
       max-parallel: 1
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+      WORKFLOW_YML: copy-workflow.yml
+      WORKFLOW_REPO: protocol/.github
+    defaults:
+      run:
+        shell: bash
     steps:
-      - env:
-          GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-          WORKFLOW_REF: ${{ github.ref }}
-          WORKFLOW_YML: copy-workflow.yml
-          WORKFLOW_REPO: protocol/.github
-          # 2 toJson calls are needed to turn the array of targets into a string
-          WORKFLOW_JSON: '{"targets":${{ toJson(toJson(matrix.cfg.value)) }}}'
-          STEP_NAME: 'Force push web3-bot/sync branch'
-          PR_TITLE: 'sync: update CI config files'
-          PR_BODY: 'Syncing to commit ${{ github.event.head_commit.url }}.'
-          PR_BRANCH: 'web3-bot/sync'
+      - id: dispatch
+        name: Dispatch workflow
         run: |
-          echo "::group::Dispatch workflow"
-          # record the time before the workflow dispatch is issued
-          # it will be used to find the id of the run this job triggered
-          start="$(date +%s)"
-          echo "$WORKFLOW_JSON" | gh workflow run "$WORKFLOW_YML" --ref "$WORKFLOW_REF" --repo "$WORKFLOW_REPO" --json
-          echo "::endgroup::"
-
-          echo "::group::Wait for workflow to start"
+          start_date="$(date +%s)"
+          # 2 toJson calls are needed to turn the array of targets into a string
+          echo '{"targets":${{ toJson(toJson(matrix.cfg.value)) }}}' | gh workflow run "${{ env.WORKFLOW_YML }}" --ref "${{ github.ref }}" --repo "${{ env.WORKFLOW_REPO }}" --json
+          echo "::set-output name=start_date::$start_date"
+      - id: run
+        name: Wait for run to start
+        run: |
           # checks every 3 seconds until the most recent workflow's age
           # is smaller than the time passed since this job has started
           while sleep 3; do
             # output format: STATUS NAME WORKFLOW BRANCH EVENT ID ELAPSED AGE
-            run="$(gh run list --workflow="$WORKFLOW_YML" --repo "$WORKFLOW_REPO" --limit=1)"
+            run="$(gh run list --workflow="${{ env.WORKFLOW_YML }}" --repo "${{ env.WORKFLOW_REPO }}" --limit=1)"
+
             # nothing to check if no run was returned
             if [[ ! -z "$run" ]]; then
               # retrieve age and format it for use with date
-              age="$(echo "$run" | cut -f9)"
-              age="$(echo "$age" | sed 's/s$/ seconds/')"
-              age="$(echo "$age" | sed 's/m$/ minutes/')"
-              age="$(echo "$age" | sed 's/h$/ hours/')"
-              age="$(echo "$age" | sed 's/d$/ days/')"
               # if the run happened more than a month ago, age is the exact date
-              run_start="$(date -d "-$age" +%s)"
-              if [[ "$run_start" > "$start" ]]; then
-                run_id="$(echo "$run" | cut -f7)"
+              age="$(echo "$run" | cut -f9 | sed 's/s$/ seconds/' | sed 's/m$/ minutes/' | sed 's/h$/ hours/' |  sed 's/d$/ days/')"
+
+
+              run_start_date="$(date -d "-$age" +%s)"
+              if [[ "$run_start_date" > "${{ steps.dispatch.outputs.start_date }}" ]]; then
+                echo "::set-output name=id::$(echo "$run" | cut -f7)"
                 break
               fi
             fi
           done
-          echo "::endgroup::"
-
-          echo "::group::Wait for workflow to complete"
+      - name: Wait for run to complete
+        run: |
           # refreshes run status every 3 seconds until completion
           # we're redirecting the stdout to /dev/null because this call is very chatty
           # we might want to consider writing this check ourselves to make the interval longer
-          gh run watch "$run_id" --repo "$WORKFLOW_REPO" > /dev/null
-          echo "::endgroup::"
-
-          echo "::group::Create PRs if needed"
+          gh run watch "$run_id" --repo "${{ env.WORKFLOW_REPO }}" > /dev/null
+      - id: jobs
+        name: Retrieve jobs from the run
+        env:
+          STEP_NAME: 'Force push web3-bot/sync branch'
+        run: |
           targets=()
           page=1
           per_page=100
-          # retrieve all the matrix jobs
-          while jobs="$(gh api -X GET "/repos/$WORKFLOW_REPO/actions/runs/$run_id/jobs" -f page="$page" -f per_page="$per_page")"; do
-            total_count=$(jq -c '.total_count' <<< "$jobs")
+          while jobs="$(gh api -X GET "/repos/${{ env.WORKFLOW_REPO }}/actions/runs/$run_id/jobs" -f page="$page" -f per_page="$per_page")"; do
             # add jobs that successfully executed $STEP_NAME to targets
-            targets+=($(jq -r '.jobs[] | select(.steps[] | select(.name == "$STEP_NAME") and select(.conclusion == "success")) | .name' <<< "$jobs" ))
-            if (( page * per_page < total_count )); then
-              per_page+=1
-            else
-              break
-            fi
+            targets+=($(jq -r '.jobs[] | select(.steps[] | select(.name == "${{ env.STEP_NAME }}") and select(.conclusion == "success")) | .name' <<< "$jobs" ))
+            per_page+=1
           done
-          for target in "${targets[@]}"; do
-            base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
-            # try to create a PR and sleep for a while afterwards
-            if gh api "/repos/$job_name/pulls" -f title="$PR_TITLE" -f body="$PR_BODY" -f head="$PR_BRANCH" -f base="$base"; then
+          echo "::set-output name=targets::$(jq -nc '$ARGS.positional' --args ${targets[@]})"
+      - name: Create PRs if needed
+        env:
+          PR_TITLE: 'sync: update CI config files'
+          PR_BODY: 'Syncing to commit ${{ github.event.head_commit.url }}.'
+          PR_BRANCH: 'web3-bot/sync'
+        run: |
+          for target in $(jq -r '.[]' <<< ${{ toJson(steps.jobs.outputs.targets) }}); do
+            base="$(gh api "/repos/${target}" --jq '.default_branch')"
+            # try to create a PR
+            if gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f body="${{ env.PR_BODY }}" -f head="${{ env.PR_BRANCH }}" -f base="$base"; then
               echo ""
-              echo "\n::debug::Successfully created a PR for '$job_name'"
+              echo "\n::debug::Successfully created a PR for '$target'"
             else
               echo ""
-              echo "::error ::Failed to create a PR for '$job_name'"
+              echo "::error ::Failed to create a PR for '$target'"
             fi
             sleep 3
           done
-          echo "::endgroup::"
-        shell: bash
