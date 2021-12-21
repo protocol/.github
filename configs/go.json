@@ -59,9 +59,7 @@
         ".github/workflows/automerge.yml",
         ".github/workflows/sync-release-assets.yml"
       ],
-      "sync_release_assets": {
-        "dist": "go-ipfs"
-      }
+      "dist": "go-ipfs"
     },
     { "target": "ipfs/go-ipfs-api" },
     { "target": "ipfs/go-ipfs-blockstore" },
@@ -165,9 +163,7 @@
       "extra_files": [
         ".github/workflows/sync-release-assets.yml"
       ],
-      "sync_release_assets": {
-        "dist": "libp2p-relay-daemon"
-      }
+      "dist": "libp2p-relay-daemon"
     },
     { "target": "libp2p/go-libp2p-routing-helpers" },
     { "target": "libp2p/go-libp2p-swarm" },
