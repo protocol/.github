@@ -73,26 +73,29 @@ jobs:
           PR_BRANCH: 'web3-bot/sync'
         run: |
           echo "::group::Dispatch workflow"
-          # record the time before the workflow dispatch even has been issued
+          # record the time before the workflow dispatch is issued
+          # it will be used to find the id of the run this job triggered
           start="$(date +%s)"
           echo "$WORKFLOW_JSON" | gh workflow run "$WORKFLOW_YML" --ref "$WORKFLOW_REF" --repo "$WORKFLOW_REPO" --json
           echo "::endgroup::"
 
           echo "::group::Wait for workflow to start"
-          # checks every 3 seconds until the most recent run of the workflow has started after the dispatch
+          # checks every 3 seconds until the most recent workflow's age
+          # is smaller than the time passed since this job has started
           while sleep 3; do
-            # prints 'STATUS NAME WORKFLOW BRANCH EVENT ID ELAPSED AGE'
+            # output format: STATUS NAME WORKFLOW BRANCH EVENT ID ELAPSED AGE
             run="$(gh run list --workflow="$WORKFLOW_YML" --repo "$WORKFLOW_REPO" --limit=1)"
-            # will skip this part if there are no runs of the workflow yet
+            # nothing to check if no run was returned
             if [[ ! -z "$run" ]]; then
+              # retrieve age and format it for use with date
               age="$(echo "$run" | cut -f9)"
               age="$(echo "$age" | sed 's/s$/ seconds/')"
               age="$(echo "$age" | sed 's/m$/ minutes/')"
               age="$(echo "$age" | sed 's/h$/ hours/')"
               age="$(echo "$age" | sed 's/d$/ days/')"
               # if the run happened more than a month ago, age is the exact date
-              age="$(date -d "-$age" +%s)"
-              if [[ "$age" > "$start" ]]; then
+              run_start="$(date -d "-$age" +%s)"
+              if [[ "$run_start" > "$start" ]]; then
                 run_id="$(echo "$run" | cut -f7)"
                 break
               fi
@@ -103,17 +106,22 @@ jobs:
           echo "::group::Wait for workflow to complete"
           # refreshes run status every 3 seconds until completion
           # we're redirecting the stdout to /dev/null because this call is very chatty
-          # we might want to consider writing out this check ourselves to make the interval longer
+          # we might want to consider writing this check ourselves to make the interval longer
           gh run watch "$run_id" --repo "$WORKFLOW_REPO" > /dev/null
           echo "::endgroup::"
 
           echo "::group::Create PRs if needed"
-          # looking for lines like '✓ $job_name in $job_elapsed (ID $job_id)' and looping over '$job_name $job_id'
+          # looking for lines like '✓ $job_name in $job_elapsed (ID $job_id)'
+          # looping over '$job_name $job_id'
+          # alternatively
+          #   gh api "/repos/$WORKFLOW_REPO/actions/runs/$run_id/jobs" --jq '.jobs[] | select(.steps[] | select(.name == "$STEP_NAME") and select(.conclusion == "success")) | .name'
+          # returns a list of jobs that successfully executed $STEP NAME
+          # but it can only return 100 results at a time so we'd have to deal with pagination
           gh run view "$run_id" --repo "$WORKFLOW_REPO" | sed -nr 's/✓ (.+) in .+ \(ID (.+)\)/\1\t\2/p' | while read line; do
             job_name="$(echo "$line" | cut -f1)"
             job_id="$(echo "$line" | cut -f2)"
 
-            # check if step called $STEP_NAME has been executed
+            # check if the step called $STEP_NAME was executed in the job
             if gh run view --job "$job_id" --repo "$WORKFLOW_REPO" | grep -q "✓ $STEP_NAME"; then
               base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
               # try to create a PR and sleep for a while afterwards
