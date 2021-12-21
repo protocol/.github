@@ -2,6 +2,10 @@
 
 This directory contains template files that can be expanded and copied over to the configured repositories.
 
+## Header
+
+The [header](header.yml) is prepended to all the files before they are copied to the target repositories.
+
 ## Contexts
 
 You can access context information during template expansion(before copy is performed).
@@ -38,7 +42,7 @@ The `config` context is the configuration object because of which the file is be
 The `github` context contains information about the target repository the file is being copied to.
 
 | Property name | Type | Always present | Description |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | `github` | `object` | `true` | The top-level context. |
 | `github.default_branch` | `string` | `true` | The name of the default branch of the target repository. |
 
@@ -53,7 +57,7 @@ The `github` context contains information about the target repository the file i
             "greeting": "Hello"
         },
         "files": [],
-        "extra_files": [".github/workflows/example.yml"]
+        "extra_files": [".github/workflows/example.yml"],
         "target": "protocol/.github-test-target"
     },
     "github": {
