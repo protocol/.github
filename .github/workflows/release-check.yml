@@ -1,3 +1,7 @@
+# This workflow cannot post sticky comments on PRs from forked repositories.
+# Instead, it outputs the message it would have posted as a workflow notice.
+# See https://github.com/protocol/.github/issues/254 for details.
+
 name: Release Checker
 on: [ workflow_call ]
 
