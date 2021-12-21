@@ -112,7 +112,7 @@ jobs:
         github="{\"repo\":{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}}"
         context="{\"config\":$config,\"github\":$github}"
         regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
-        replacement="qx/echo '${context//\//\\\/}' | jq -jc '.\$1'/"
+        replacement="\`echo '$context' | jq -jc '.\$1'\`"
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
