@@ -136,10 +136,10 @@ jobs:
       - name: Set a notice message on run
         run: |
           echo "$MESSAGE" > message.md
-          MESSAGE="${MESSAGE//'%'/'%25'}"
-          MESSAGE="${MESSAGE//$'\n'/'%0A'}"
-          MESSAGE="${MESSAGE//$'\r'/'%0D'}"
-          echo "::notice ::$MESSAGE"
+          message="${MESSAGE//'%'/'%25'}"
+          message="${message//$'\n'/'%0A'}"
+          message="${message//$'\r'/'%0D'}"
+          echo "::notice ::$message"
         if: env.INITIAL_RUN == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name != github.repository
       - name: Archive message
         uses: actions/upload-artifact@v2
