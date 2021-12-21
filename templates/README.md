@@ -23,21 +23,24 @@ ${{{ <context> }}}
 
 The `config` context is the configuration object because of which the file is being copied.
 
-| Property name | Type | Description |
-| --- | --- | --- |
-| `config` | `object` | The top-level context. |
-| `config.files` | `array` | The files that are being copied. |
-| `config.extra_files` | `object` | The additional files that are also being copied. |
-| `config.target` | `string` | The name of the target repository in `{owner}/{repo}` format. |
+| Property name | Type | Always present | Description |
+| --- | --- | --- | --- |
+| `config` | `object` | `true` | The top-level context. | true |
+| `config.files` | `array` | `true` | The files that are being copied. |
+| `config.extra_files` | `array` | `false` | The additional files that are also being copied. |
+| `config.target` | `string` | `true` | The name of the target repository in `{owner}/{repo}` format. |
+| `config.deploy_go` | `boolean` | `false` | Flag controling if Go specific setup should be applied to the repository. |
+| `config.deploy_versioning` | `boolean` | `false` | Flag controling if `versions.json` file should be deployed to the repository. |
+| `config.dist` | `string` | `false` | The name of the distribution built from the repository. |
 
 #### `github` context
 
 The `github` context contains information about the target repository the file is being copied to.
 
-| Property name | Type | Description |
+| Property name | Type | Always present | Description |
 | --- | --- | --- |
-| `github` | `object` | The top-level context. |
-| `github.default_branch` | `string` | The name of the default branch of the target repository. |
+| `github` | `object` | `true` | The top-level context. |
+| `github.default_branch` | `string` | `true` | The name of the default branch of the target repository. |
 
 ### Examples
 
