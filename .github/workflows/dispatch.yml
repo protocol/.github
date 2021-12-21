@@ -111,29 +111,31 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Create PRs if needed"
-          # looking for lines like '✓ $job_name in $job_elapsed (ID $job_id)'
-          # looping over '$job_name $job_id'
-          # alternatively
-          #   gh api "/repos/$WORKFLOW_REPO/actions/runs/$run_id/jobs" --jq '.jobs[] | select(.steps[] | select(.name == "$STEP_NAME") and select(.conclusion == "success")) | .name'
-          # returns a list of jobs that successfully executed $STEP NAME
-          # but it can only return 100 results at a time so we'd have to deal with pagination
-          gh run view "$run_id" --repo "$WORKFLOW_REPO" | sed -nr 's/✓ (.+) in .+ \(ID (.+)\)/\1\t\2/p' | while read line; do
-            job_name="$(echo "$line" | cut -f1)"
-            job_id="$(echo "$line" | cut -f2)"
-
-            # check if the step called $STEP_NAME was executed in the job
-            if gh run view --job "$job_id" --repo "$WORKFLOW_REPO" | grep -q "✓ $STEP_NAME"; then
-              base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
-              # try to create a PR and sleep for a while afterwards
-              if gh api "/repos/$job_name/pulls" -f title="$PR_TITLE" -f body="$PR_BODY" -f head="$PR_BRANCH" -f base="$base"; then
-                echo ""
-                echo "::debug::Successfully created a PR for '$job_name'"
-              else
-                echo ""
-                echo "::error ::Failed to create a PR for '$job_name'"
-              fi
-              sleep 3
+          targets=()
+          page=1
+          per_page=100
+          # retrieve all the matrix jobs
+          while jobs="$(gh api -X GET "/repos/$WORKFLOW_REPO/actions/runs/$run_id/jobs" -f page="$page" -f per_page="$per_page")"; do
+            total_count=$(jq -c '.total_count' <<< "$jobs")
+            # add jobs that successfully executed $STEP_NAME to targets
+            targets+=($(jq -r '.jobs[] | select(.steps[] | select(.name == "$STEP_NAME") and select(.conclusion == "success")) | .name' <<< "$jobs" ))
+            if (( page * per_page < total_count )); then
+              per_page+=1
+            else
+              break
             fi
+          done
+          for target in "${targets[@]}"; do
+            base="$(gh api "/repos/${job_name}" --jq '.default_branch')"
+            # try to create a PR and sleep for a while afterwards
+            if gh api "/repos/$job_name/pulls" -f title="$PR_TITLE" -f body="$PR_BODY" -f head="$PR_BRANCH" -f base="$base"; then
+              echo ""
+              echo "\n::debug::Successfully created a PR for '$job_name'"
+            else
+              echo ""
+              echo "::error ::Failed to create a PR for '$job_name'"
+            fi
+            sleep 3
           done
           echo "::endgroup::"
         shell: bash
