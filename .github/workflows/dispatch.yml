@@ -131,8 +131,15 @@ jobs:
             base="$(gh api "/repos/${target}" --jq '.default_branch')"
             # tries to create a PR in target
             if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f body="${{ env.PR_BODY }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
-              echo "$result"
-              echo "::debug::Successfully created a PR for '$target'"
+              echo "Successfully created a PR for '$target'"
+            elif [[ "$(jq -r '.errors[0].message' <<< "$result")" == 'A pull request already exists'* ]]; then
+              number="$(gh api "/repos/$target/pulls?head=${{ env.PR_BRANCH }}&per_page=1&state=open" --jq '.[0].number')"
+              if result="$(gh api -X PATCH "/repos/$target/pulls/$number" -f body="${{ env.PR_BODY }}" -f base="$base")"; then
+                echo "Successfully updated the PR for '$target'"
+              else
+                echo "$result"
+                echo "::error ::Failed to update the PR for '$target'"
+              fi
             else
               echo "$result"
               echo "::error ::Failed to create a PR for '$target'"
