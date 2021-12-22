@@ -1,4 +1,4 @@
-# Trigger the execution of copy-workflow.yml, in batches of 256 repositories.
+# Trigger the execution of copy workflow in batches.
 # This workflow is needed since GitHub Actions limits the matrix size to 256 jobs.
 # We use one job per repository per batch.
 
@@ -8,13 +8,13 @@ on:
 
 env:
   # Number of repositories in a batch.
-  # Deployment jobs in the same batch are run sequentially.
+  # Matrix jobs within a copy workflow run are run in parallel.
   # 256 is the upper limit on the number of matrix jobs.
-  # Batching too many targets together can result in
+  # Batching too many repositories together can result in
   #  could not create workflow dispatch event: HTTP 422: inputs are too large.
-  #  when issueing dispatch_workflow event.
+  # This value should be higher than max-parallel in copy workflow.
   MAX_REPOS_PER_WORKFLOW: 100
-  # Number of seconds to wait before starting to watch workflow status.
+  # Number of seconds to wait before starting to watch copy workflow run.
   # Unfortunately, the interval on the watch is not configurable.
   # The delay helps us save on GH API requests.
   WORKFLOW_COMPLETION_CHECK_DELAY: 60
@@ -62,8 +62,9 @@ jobs:
         #     {"target": "repo2", "files": [".github/workflows/go-check.yml", ".github/workflows/go-test.yml"]}
         #   ]
         #
-        # The triggered copy-workflow jobs use that final array as their matrix.
-        # Since max-parallel here is 1, we'll end up with at most copy-workflow@max-parallel + 1 parallel jobs.
+        # The triggered copy workflow runs use that final array as their matrix.
+        # Since max-parallel here is 1, we'll end up with at most max-parallel from copy workflow + 1 parallel jobs.
+        # 20 is the upper limit on parallel jobs on a free plan.
         cfg: ${{ fromJson(needs.matrix.outputs.batches) }}
       max-parallel: 1
     env:
@@ -72,20 +73,19 @@ jobs:
       WORKFLOW_REPO: protocol/.github
     steps:
       - id: dispatch
-        name: Dispatch workflow
+        name: Dispatch copy workflow
         run: |
           start_date="$(date +%s)"
           # 2 toJson calls are needed to turn the array of targets into a string
           echo '{"targets":${{ toJson(toJson(matrix.cfg.value)) }}}' | jq -c '.' | gh workflow run "${{ env.WORKFLOW_YML }}" --ref "${{ github.ref }}" --repo "${{ env.WORKFLOW_REPO }}" --json
           echo "::set-output name=start_date::$start_date"
       - id: run
-        name: Wait for run to start
+        name: Wait for copy workflow run to start
         run: |
-          # checks every 3 seconds until the most recent run's created_at
-          # is later than the time this job started
+          # checks every 3 seconds until the most recent copy workflow run's created_at is later than this job's start_date
           while sleep 3; do
             run="$(gh api "/repos/${{ env.WORKFLOW_REPO }}/actions/workflows/${{ env.WORKFLOW_YML }}/runs?per_page=1" --jq '.workflow_runs[0]')"
-            # nothing to check if no run was returned
+            # nothing to check if no copy workflow run was returned
             if [[ ! -z "$run" ]]; then
               run_start_date="$(date --date="$(jq -r '.created_at' <<< "$run")" +%s)"
               if [[ "$run_start_date" > "${{ steps.dispatch.outputs.start_date }}" ]]; then
@@ -94,32 +94,34 @@ jobs:
               fi
             fi
           done
-      - name: Wait for run to complete
+      - name: Wait for copy workflow run to complete
         run: |
-          # it is not expected for the run to finish immediately so we add delay before checking on it
+          # delays checking copy workflow's run status to save on GH API requests
           sleep ${{ env.WORKFLOW_COMPLETION_CHECK_DELAY }}
-          # refreshes run status every 3 seconds until completion
-          # redirecting the stdout to /dev/null because this call is very chatty
-          # interval is not configurable
+
+          # checks every 3 seconds until the copy workflow run's status is completed
+          # redirects the stdout to /dev/null because it is very chatty
           gh run watch "${{ steps.run.outputs.id }}" --repo "${{ env.WORKFLOW_REPO }}" > /dev/null
       - id: jobs
-        name: Retrieve jobs from the run
+        name: Find copy workflow jobs that pushed changes
         env:
           STEP_NAME: 'Force push web3-bot/sync branch'
         run: |
           targets=()
           page=1
+          # 100 is the upper limit on number of jobs returned per page
           per_page=100
           while jobs="$(gh api -X GET "/repos/${{ env.WORKFLOW_REPO }}/actions/runs/${{ steps.run.outputs.id }}/jobs" -f page="$page" -f per_page="$per_page")"; do
-            # add jobs that successfully executed $STEP_NAME to targets
+            # adds copy workflow jobs that successfully executed $STEP_NAME to targets
             targets+=($(jq -r '.jobs[] | select(.steps[] | select(.name == "${{ env.STEP_NAME }}") and select(.conclusion == "success")) | .name' <<< "$jobs" ))
+            # exits when all the copy workflow jobs have been processed
             if (( page * per_page >= $(jq -r '.total_count' <<< "$jobs") )); then
               break
             fi
             (( page+=1 ))
           done
           echo "::set-output name=targets::$(jq -nc '$ARGS.positional' --args ${targets[@]})"
-      - name: Create PRs if needed
+      - name: Create PRs in targets that need it
         env:
           PR_TITLE: 'sync: update CI config files'
           PR_BODY: 'Syncing to commit ${{ github.event.head_commit.url }}.'
@@ -127,7 +129,7 @@ jobs:
         run: |
           for target in $(jq -r '.[]' <<< ${{ toJson(steps.jobs.outputs.targets) }}); do
             base="$(gh api "/repos/${target}" --jq '.default_branch')"
-            # try to create a PR
+            # tries to create a PR in target
             if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f body="${{ env.PR_BODY }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
               echo "$result"
               echo "::debug::Successfully created a PR for '$target'"
