@@ -80,22 +80,15 @@ jobs:
       - id: run
         name: Wait for run to start
         run: |
-          # checks every 3 seconds until the most recent workflow's age
-          #  is smaller than the time passed since this job has started
+          # checks every 3 seconds until the most recent run's created_at
+          # is later than the time this job started
           while sleep 3; do
-            # output format: STATUS NAME WORKFLOW BRANCH EVENT ID ELAPSED AGE
-            run="$(gh run list --workflow="${{ env.WORKFLOW_YML }}" --repo "${{ env.WORKFLOW_REPO }}" --limit=1)"
-
+            run="$(gh api "/repos/${{ env.WORKFLOW_REPO }}/actions/workflows/${{ env.WORKFLOW_YML }}/runs?per_page=1" --jq '.workflow_runs[0]')"
             # nothing to check if no run was returned
             if [[ ! -z "$run" ]]; then
-              # retrieve age and format it for use with date
-              # if the run happened more than a month ago, age is the exact date
-              age="$(echo "$run" | cut -f9 | sed 's/s$/ seconds/' | sed 's/m$/ minutes/' | sed 's/h$/ hours/' |  sed 's/d$/ days/')"
-
-
-              run_start_date="$(date -d "-$age" +%s)"
+              run_start_date="$(date --date="$(jq -r '.created_at' <<< "$run")" +%s)"
               if [[ "$run_start_date" > "${{ steps.dispatch.outputs.start_date }}" ]]; then
-                echo "::set-output name=id::$(echo "$run" | cut -f7)"
+                echo "::set-output name=id::$(jq -r '.id' <<< "$run")"
                 break
               fi
             fi
