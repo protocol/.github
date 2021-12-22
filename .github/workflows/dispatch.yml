@@ -14,6 +14,10 @@ env:
   #  could not create workflow dispatch event: HTTP 422: inputs are too large.
   #  when issueing dispatch_workflow event.
   MAX_REPOS_PER_WORKFLOW: 100
+  # Number of seconds to wait before starting to watch workflow status.
+  # Unfortunately, the interval on the watch is not configurable.
+  # The delay helps us save on GH API requests.
+  WORKFLOW_COMPLETION_CHECK_DELAY: 60
 
 jobs:
   matrix:
@@ -66,9 +70,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
       WORKFLOW_YML: copy-workflow.yml
       WORKFLOW_REPO: protocol/.github
-    defaults:
-      run:
-        shell: bash
     steps:
       - id: dispatch
         name: Dispatch workflow
@@ -95,6 +96,8 @@ jobs:
           done
       - name: Wait for run to complete
         run: |
+          # it is not expected for the run to finish immediately so we add delay before checking on it
+          sleep ${{ env.WORKFLOW_COMPLETION_CHECK_DELAY }}
           # refreshes run status every 3 seconds until completion
           # redirecting the stdout to /dev/null because this call is very chatty
           # interval is not configurable
