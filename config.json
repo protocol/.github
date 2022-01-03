@@ -127,7 +127,6 @@
   { "target": "libp2p/go-libp2p-loggables" },
   { "target": "libp2p/go-libp2p-mplex" },
   { "target": "libp2p/go-libp2p-nat" },
-  { "target": "libp2p/go-libp2p-netutil" },
   { "target": "libp2p/go-libp2p-noise" },
   { "target": "libp2p/go-libp2p-peerstore" },
   { "target": "libp2p/go-libp2p-pnet" },
