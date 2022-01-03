@@ -100,7 +100,6 @@
   { "target": "ipld/go-storethehash" },
   { "target": "libp2p/dht-tracer1" },
   { "target": "libp2p/dht-utils" },
-  { "target": "libp2p/go-addr-util" },
   { "target": "libp2p/go-buffer-pool" },
   { "target": "libp2p/go-cidranger" },
   { "target": "libp2p/go-composable-routing" },
