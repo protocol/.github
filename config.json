@@ -28,7 +28,6 @@
   { "target": "ipfs/go-ds-badger" },
   { "target": "ipfs/go-ds-badger2" },
   { "target": "ipfs/go-ds-bitcask" },
-  { "target": "ipfs/go-ds-crdt" },
   { "target": "ipfs/go-ds-flatfs" },
   { "target": "ipfs/go-ds-leveldb" },
   { "target": "ipfs/go-ds-measure" },
