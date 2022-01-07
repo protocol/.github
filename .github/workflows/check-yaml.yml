@@ -1,0 +1,22 @@
+on:
+  pull_request:
+    paths:
+      - '.github/actions/*/*.yml'
+      - '.github/workflows/*.yml'
+      - 'templates/.github/actions/*/*.yml'
+      - 'templates/.github/workflows/*.yml'
+
+name: Check YAML
+
+jobs:
+  check-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: galargh/validate-yaml-schema@0be36a8865108d9fc0b2cae260dc0f9f649fac96 # forked v1.0.3
+        with:
+          yamlSchemasJson: |
+            {
+              "https://json.schemastore.org/github-action.json": [".github/actions/*/*.yml", "templates/.github/actions/*/*.yml"],
+              "https://json.schemastore.org/github-workflow.json": [".github/workflows/*.yml", "templates/.github/workflows/*.yml"]
+            }
