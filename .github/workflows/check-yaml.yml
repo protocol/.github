@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: nwisbeta/validate-yaml-schema@d6d0e9a1ff5fceb6f59b9751c79f899b324730fc # v1.0.3
+      - uses: galargh/validate-yaml-schema@d9f74811876b048138e2fd9b4eb43326eeb661a1
         with:
           yamlSchemasJson: |
             {
