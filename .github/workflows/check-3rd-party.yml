@@ -1,8 +1,7 @@
 on: 
   pull_request:
     paths-ignore:
-      - 'config.json'
-      - 'config-testing.json'
+      - 'configs/*.json'
 
 name: Check 3rd Party
 

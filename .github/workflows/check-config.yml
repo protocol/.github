@@ -1,7 +1,7 @@
 on: 
   pull_request:
     paths:
-      - 'config.json'
+      - 'configs/*.json'
 
 name: Check Config
 
@@ -12,5 +12,10 @@ jobs:
       targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
       - uses: actions/checkout@v2
-      - name: check if config.json is sorted alphabetically
-        run: .github/workflows/check-config.sh config.json
+      - name: check if config files are sorted alphabetically
+        run: |
+          for config in configs/*.json; do
+            echo "::group::$config"
+            .github/workflows/check-config.sh $config
+            echo "::endgroup::"
+          done

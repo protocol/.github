@@ -54,7 +54,7 @@ In order to help with the distribution of these workflows, this repository defin
 
 ## Usage
 
-Workflows are distributed to all repositories listed in [config.json](config.json).
+Workflows are distributed to all repositories listed in [configs/go.json](configs/go.json).
 
 If you want your project to participle, please send a PR!
 
