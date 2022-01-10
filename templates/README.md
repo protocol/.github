@@ -8,7 +8,7 @@ The [header](header.yml) is prepended to all the files before they are copied to
 
 ## Contexts
 
-You can access context information during template expansion(before copy is performed).
+You can access context information during template expansion (before copy is performed).
 
 ### About contexts
 
