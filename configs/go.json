@@ -52,16 +52,6 @@
     { "target": "ipfs/go-filestore" },
     { "target": "ipfs/go-fs-lock" },
     { "target": "ipfs/go-graphsync" },
-    {
-      "target": "ipfs/go-ipfs",
-      "files": [
-        ".github/workflows/automerge.yml",
-        ".github/workflows/sync-release-assets.yml"
-      ],
-      "dist": "go-ipfs",
-      "deploy_versioning": false,
-      "deploy_go": false
-    },
     { "target": "ipfs/go-ipfs-api" },
     { "target": "ipfs/go-ipfs-blockstore" },
     { "target": "ipfs/go-ipfs-blocksutil" },

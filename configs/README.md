@@ -6,6 +6,7 @@ This directory contains config files used for workflow dispatch.
 | --- | --- |
 | go | repositories containing Go code |
 | testing | repositories used for testing unified CI workflows |
+| custom | repositories not ready for full unified CI |
 
 ## Adding new repository to existing config file
 
