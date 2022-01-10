@@ -67,4 +67,4 @@ When we make minor changes to these workflows, we don't always want these change
 
 ### IDE
 
-If you're using [Visual Studio Code](https://code.visualstudio.com/) for development, you might want to install the [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension. It is configured to perform GitHub workflow/action linting out-of-the-box.
+If you're using [Visual Studio Code](https://code.visualstudio.com/) for development, you might want to install the [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension. It is configured to perform GitHub workflow/action linting out-of-the-box. If you're using a different IDE, you can check if a [client](https://github.com/redhat-developer/yaml-language-server#clients) for it exists.
