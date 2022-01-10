@@ -1,0 +1,14 @@
+{
+  "defaults": {
+    "files": [
+      ".github/workflows/automerge.yml",
+      ".github/workflows/js-test-and-release.yml"
+    ]
+  },
+  "repositories": [
+    { "target": "ipfs/js-blockstore-core" },
+    { "target": "libp2p/js-libp2p-crypto" },
+    { "target": "libp2p/js-libp2p-interfaces" },
+    { "target": "libp2p/js-libp2p-tcp" }
+  ]
+}
