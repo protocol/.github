@@ -23,9 +23,11 @@ ${{{ <context> }}}
 | `config` | `object` | Configuration object because of which the file is being copied. For more information, see [config context](#config-context) |
 | `github` | `object` | Information about the target repository the file is being copied to. For more information, see [github context](#github-context) |
 
+The context container is generated automatically before template expansion is performed.
+
 #### `config` context
 
-The `config` context is the configuration object because of which the file is being copied.
+The `config` context is the configuration object because of which the file is being copied. It is created by merging the `defaults` object with a `repository` object (from the `repositories` array) from a JSON configuration file.
 
 | Property name | Type | Always present | Description |
 | --- | --- | --- | --- |
@@ -39,7 +41,7 @@ The `config` context is the configuration object because of which the file is be
 
 #### `github` context
 
-The `github` context contains information about the target repository the file is being copied to.
+The `github` context contains information about the target repository the file is being copied to. It is created on the fly before template expansion is performed.
 
 | Property name | Type | Always present | Description |
 | --- | --- | --- | --- |
@@ -48,25 +50,49 @@ The `github` context contains information about the target repository the file i
 
 ### Examples
 
-#### Context container
+#### JSON configuration
 
 ```json
 {
-    "config": {
-        "example": {
-            "greeting": "Hello"
-        },
-        "files": [],
-        "extra_files": [".github/workflows/example.yml"],
-        "target": "protocol/.github-test-target"
-    },
-    "github": {
-        "default_branch": "master"
+  "defaults": {
+    "files": [".github/workflows/automerge.yml"],
+    "is_example": false
+  },
+  "repositories": [
+    {
+      "target": "protocol/.github-test-target",
+      "extra_files": [".github/workflows/example.yml"],
+      "example": {
+        "greeting": "Hello"
+      },
+      "is_example": true
     }
+  ]
 }
 ```
 
-#### Template expanding context
+#### Context container
+
+*created automatically before template expansion is performed*
+
+```json
+{
+  "config": {
+    "target": "protocol/.github-test-target",
+    "files": [".github/workflows/automerge.yml"],
+    "extra_files": [".github/workflows/example.yml"],
+    "example": {
+      "greeting": "Hello"
+    },
+    "is_example": true
+  },
+  "github": {
+    "default_branch": "master"
+  }
+}
+```
+
+#### Template
 
 ```yaml
 name: Hello
@@ -79,5 +105,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ${{{ config.example.greeting }}}
+        shell: bash
+```
+
+#### Expanded template
+
+```yaml
+name: Hello
+on:
+  push:
+    branches:
+      - master
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Hello
         shell: bash
 ```
