@@ -1,4 +1,4 @@
-on: 
+on:
   pull_request:
     paths:
       - 'configs/*.json'
@@ -8,8 +8,6 @@ name: Check Config
 jobs:
   check-config:
     runs-on: ubuntu-latest
-    outputs:
-      targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
       - uses: actions/checkout@v2
       - name: check if config files are sorted alphabetically
