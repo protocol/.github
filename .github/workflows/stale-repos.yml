@@ -11,18 +11,21 @@ jobs:
       - name: find deleted / archived repositories
         run: |
           status=0
-          for repo in $(jq -r '.[].target' config.json); do
-            exists=true
-            output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
-            if ! $exists; then
-              echo "Repository $repo does not exist."
-              status=1
-              continue
-            fi
-            if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
-              echo "Repository $repo is archived."
-              status=1
-            fi
+          for config in configs/*.json; do
+            echo "::group::$config"
+            for repo in $(jq -r '.repositories[].target' $config); do
+              exists=true
+              output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
+              if ! $exists; then
+                echo "Repository $repo does not exist."
+                status=1
+                continue
+              fi
+              if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
+                echo "Repository $repo is archived."
+                status=1
+              fi
+            done
+            echo "::endgroup::"
           done
           exit $status
-      
