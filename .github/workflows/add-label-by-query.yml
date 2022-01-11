@@ -17,7 +17,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
     steps:
       - id: content
-        uses: protocol/github-api-action-library/find-content-by-query@beb79c79362921a1c90e3a2d3bce5a134b6b80c6
+        uses: protocol/github-api-action-library/find-content-by-query@v1
         with:
           query: ${{ github.event.inputs.query }}
       - run: |
