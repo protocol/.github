@@ -1,10 +1,10 @@
 on:
   pull_request:
     paths:
-      - '.github/actions/*/*.yml'
-      - '.github/workflows/*.yml'
-      - 'templates/.github/actions/*/*.yml'
-      - 'templates/.github/workflows/*.yml'
+      - '**/action.yml'
+      - '**/action.yaml'
+      - '**/.github/workflows/*.yml'
+      - '**/.github/workflows/*.yaml'
 
 name: Check YAML
 
@@ -13,10 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: galargh/validate-yaml-schema@0be36a8865108d9fc0b2cae260dc0f9f649fac96 # forked v1.0.3
+      # TODO: switch to mainline once https://github.com/nwisbeta/validate-yaml-schema/pull/21 is merged
+      - uses: galargh/validate-yaml-schema@c8060d4a389d0eec986a90665bf0c496bf1f52e8
         with:
           yamlSchemasJson: |
             {
-              "https://json.schemastore.org/github-action.json": [".github/actions/*/*.yml", "templates/.github/actions/*/*.yml"],
-              "https://json.schemastore.org/github-workflow.json": [".github/workflows/*.yml", "templates/.github/workflows/*.yml"]
+              "https://json.schemastore.org/github-action.json": ["**/action.yml", "**/action.yaml"],
+              "https://json.schemastore.org/github-workflow.json": ["**/.github/workflows/*.yml", "**/.github/workflows/*.yaml"]
             }
