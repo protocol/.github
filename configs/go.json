@@ -6,9 +6,12 @@
       ".github/workflows/go-check.yml",
       ".github/workflows/releaser.yml",
       ".github/workflows/release-check.yml",
-      ".github/workflows/tagpush.yml"
+      ".github/workflows/tagpush.yml",
+      {
+        "source": "version.json",
+        "update": false
+      }
     ],
-    "deploy_versioning": true,
     "deploy_go": true
   },
   "repositories": [

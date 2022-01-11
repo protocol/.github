@@ -47,6 +47,7 @@ The `github` context contains information about the target repository the file i
 | --- | --- | --- | --- |
 | `github` | `object` | `true` | The top-level context. |
 | `github.default_branch` | `string` | `true` | The name of the default branch of the target repository. |
+| `github.latest_tag` | `string` | `true` | The name of the latest tag created on the target repository. Can be empty. |
 
 ### Examples
 
@@ -79,15 +80,24 @@ The `github` context contains information about the target repository the file i
 {
   "config": {
     "target": "protocol/.github-test-target",
-    "files": [".github/workflows/automerge.yml"],
-    "extra_files": [".github/workflows/example.yml"],
+    "files": [{
+      "source": ".github/workflows/automerge.yml",
+      "destination": ".github/workflows/automerge.yml",
+      "update": true
+    }],
+    "extra_files": [{
+      "source": ".github/workflows/example.yml",
+      "destination": ".github/workflows/example.yml",
+      "update": true
+    }],
     "example": {
       "greeting": "Hello"
     },
     "is_example": true
   },
   "github": {
-    "default_branch": "master"
+    "default_branch": "master",
+    "latest_tag": ""
   }
 }
 ```

@@ -31,6 +31,7 @@ jobs:
       GITHUB_USER: "web3-bot"
       GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
       DEFAULT_BRANCH: ""
+      LATEST_TAG: ""
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -49,7 +50,9 @@ jobs:
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+        latest_tag=$(git ls-remote --tags --sort -creatordate --refs 2> /dev/null | head -n 1 | cut -f2 | sed -e 's/refs\/tags\///' || '')
         echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+        echo "LATEST_TAG=$latest_tag" >> $GITHUB_ENV
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -67,7 +70,7 @@ jobs:
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
       run: |
         initial_workflow_deployment=1
-        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
+        for f in $(jq -r '.[] | .source' <<< ${{ toJson(env.FILES) }}); do
           if [[ -f $TARGET_REPO_DIR/$f ]]; then
             initial_workflow_deployment=0
             break
@@ -102,54 +105,50 @@ jobs:
       if: matrix.cfg.deploy_go
       # use of ${{ env.TEMPATE_REPO_DIR }} is not allowed here
       uses: ./template-repo/.github/actions/copy-workflow-go
-    - name: Run steps specific to versioning
-      if: matrix.cfg.deploy_versioning
-      uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
         config=${{ toJson(toJson(matrix.cfg)) }}
         config=$(echo -e "$config" | jq -c '.')
-        github="{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}"
+        github="{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\",\"latest_tag\":\"${{ env.LATEST_TAG }}\"}"
         context="{\"config\":$config,\"github\":$github}"
-        # matches trimmed string between template context delimiters
-        regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
-        # replacement is a perl script that:
-        # 1. prepends . to the matched string to create a filter
-        # 2. escapes single quotes by replacing ' with '"'"' in filter
-        # 3. prints context escaped in the same manner
-        # 4. applies jq with filter to the stdout
-        replacement="\$filter = \".\$1\"; \$filter =~ s/'/'\"'\"'/g; \`echo '${context//\'/\'\"\'\"\'}' | jq -jc '\$filter'\`"
-        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
-          echo -e "\nProcessing $f."
+        while read file; do
+          source="$(jq '.source' <<< "$file")"
+          destination="$(jq '.destination' <<< "$file")"
+          update="$(jq '.update' <<< "$file")"
+          echo -e "\nProcessing $source."
           # add DO NOT EDIT header
-          tmp=$(mktemp)
-          cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace template contexts with values from the JSON context object
-          perl -pi -e "s#$regexp#$replacement#ge" $tmp
-          mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
+          template="$(cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$source)"
+          $TEMPLATE_REPO_DIR/scripts/render-template.sh "$template" "$context" > $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$source
           # create commit, if necessary
           commit_msg=""
-          if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
+          if [[ ! -f "$TARGET_REPO_DIR/$destination" ]]; then
             echo "First deployment.\n"
-            commit_msg="add $f"
-          else
-            status=$(cmp --silent $TARGET_REPO_DIR/$f $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f; echo $?)
+            commit_msg="add $destination"
+          elif $update; then
+            status=$(cmp --silent $TARGET_REPO_DIR/$destination $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$source; echo $?)
             if [[ $status -ne 0 ]]; then
               echo "Update needed."
-              commit_msg="update $f"
+              commit_msg="update $destination"
             else
               echo "File identical. Skipping."
               continue
             fi
+          else
+            echo "File should not be updated. Skipping."
+            continue
           fi
-          dir="$TARGET_REPO_DIR/"$(dirname $f)
+          dir="$TARGET_REPO_DIR/"$(dirname $destination)
           mkdir -p $dir
-          cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f $dir
+          cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$source $dir
           pushd $TARGET_REPO_DIR > /dev/null
-          git add $f
-          git commit -m "$commit_msg"
+          if git check-ignore $destination > /dev/null; then
+            echo "File is .gitignored. Skipping."
+          else
+            git add $destination
+            git commit -m "$commit_msg"
+          fi
           popd > /dev/null
-        done
+        done <<< jq -c '.[]' <<< '${{ env.FILES }}'
     - name: Check if we need to create a PR
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV

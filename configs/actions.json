@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "files": [
+      ".github/workflows/automerge.yml",
+      {
+        "source": ".github/workflows/changelog-release.yml",
+        "destination": ".github/workflows/release.yml"
+      },
+      {
+        "source": ".github/workflows/changelog-pre-release.yml",
+        "destination": ".github/workflows/pre-release.yml"
+      },
+      {
+        "source": "CHANGELOG.md",
+        "update": false
+      }
+    ]
+  },
+  "repositories": [
+    { "target": "ipfs/download-ipfs-distribution-action" },
+    { "target": "ipfs/start-ipfs-daemon-action" },
+    { "target": "protocol/cache-go-action" },
+    { "target": "protocol/github-api-actions-library" }
+  ]
+}

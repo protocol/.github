@@ -4,6 +4,7 @@ This directory contains config files used for workflow dispatch.
 
 | name | description |
 | --- | --- |
+| actions | repositories containing GitHub Actions code |
 | go | repositories containing Go code |
 | testing | repositories used for testing unified CI workflows |
 | custom | repositories not ready for full unified CI |
@@ -28,12 +29,12 @@ When adding a new JSON config file, please follow the structure of other config 
 *JSON config file example:*
 ```json
 {
-    "defaults": { "files": [] },
+    "defaults": { "files": ["", {"source": "", "destination": "", "update": true}] },
     "repositories": []
 }
 ```
 
-To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_versioning` or `deploy_go` in [go.json](go.json) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.
+To customise the copy workflow further, you can add more fields to the `defaults` object. See `deploy_go` in [go.json](go.json) and how they are used in [copy-workflow.yml](../.github/workflows/copy-workflow.yml) for example.
 
 ## Testing
 

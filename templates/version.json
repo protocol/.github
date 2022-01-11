@@ -1,0 +1,1 @@
+{"version": "${{{ github.latest_tag }}}"}

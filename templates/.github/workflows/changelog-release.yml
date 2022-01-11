@@ -1,0 +1,33 @@
+name: Release
+on:
+  workflow_dispatch:
+  push:
+    paths: [CHANGELOG.md]
+    branches: [master]
+jobs:
+  Publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          source .github/scripts/changelog.sh
+          git fetch origin --tags
+          if [[ -z "$(git tag -l "v$version")" ]]; then
+            git tag "v$major.$minor.$patch"
+            git tag "v$major.$minor" --force
+            git tag "v$major" --force
+            git push --tags --force
+            echo "BODY<<EOF" >> $GITHUB_ENV
+            echo "$(IFS=$'\n'; echo "${log[*]}")" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "TAG=v$version" >> $GITHUB_ENV
+          fi
+        shell: bash
+      - if: ${{ env.TAG != '' }}
+        uses: ncipollo/release-action@40bb172bd05f266cf9ba4ff965cb61e9ee5f6d01 # v1.9.0
+        with:
+          body: |
+            ${{ env.BODY }}
+          tag: ${{ env.TAG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
