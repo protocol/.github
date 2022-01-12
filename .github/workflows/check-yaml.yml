@@ -13,8 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      # TODO: switch to mainline once https://github.com/nwisbeta/validate-yaml-schema/pull/21 is merged
-      - uses: galargh/validate-yaml-schema@c8060d4a389d0eec986a90665bf0c496bf1f52e8
+      - uses: nwisbeta/validate-yaml-schema@c3734e647d2a3beb98b9132330067e900fdbd1a2 # v2.0.0
         with:
           yamlSchemasJson: |
             {
