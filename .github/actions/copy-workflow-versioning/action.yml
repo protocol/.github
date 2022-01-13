@@ -11,8 +11,6 @@ runs:
       run: |
         git fetch origin --unshallow # we need the entire commit history
         version=$(git describe --tags --abbrev=0 || true) # highest released version on current branch
-        if [[ -n "$version" ]]; then # only deply version.json if there's at least one release
-          printf '{"version": "%s"}' "$version" | jq . > version.json
-          git add version.json
-          git commit -m "add version.json file"
-        fi
+        printf '{"version": "%s"}' "$version" | jq . > version.json
+        git add version.json
+        git commit -m "add version.json file"
