@@ -40,7 +40,7 @@ jobs:
     if: github.event.pull_request.user.login == 'web3-bot' && needs.automerge-check.outputs.status == 'true'
     steps:
     - name: Wait on tests
-      uses: lewagon/wait-on-check-action@bafe56a6863672c681c3cf671f5e10b20abf2eaa # v0.2
+      uses: lewagon/wait-on-check-action@752bfae19aef55dab12a00bc36d48acc46b77e9d # v1.1.1
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
