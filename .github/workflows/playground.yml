@@ -1,0 +1,14 @@
+name: Playground
+on: [push]
+
+jobs:
+  playground:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - run: |
+          # gh api user/repository_invitations
+          # gh api -X PATCH user/repository_invitations/117544972
+          gh pr merge 210 --repo filecoin-project/index-provider --squash
+        shell: bash
