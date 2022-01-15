@@ -165,7 +165,6 @@
     { "target": "libp2p/go-reuseport-transport" },
     { "target": "libp2p/go-routing-language" },
     { "target": "libp2p/go-smart-record" },
-    { "target": "libp2p/go-sockaddr" },
     { "target": "libp2p/go-socket-activation" },
     { "target": "libp2p/go-stream-muxer-multistream" },
     { "target": "libp2p/go-tcp-transport" },
