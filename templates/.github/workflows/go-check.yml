@@ -47,7 +47,7 @@ jobs:
         if: ${{ success() || failure() }} # run this step even if the previous one failed
         uses: protocol/multiple-go-modules@v1.2
         with:
-          run: go vet ./...
+          run: go vet $GOVETFLAGS ./...
       - name: staticcheck
         if: ${{ success() || failure() }} # run this step even if the previous one failed
         uses: protocol/multiple-go-modules@v1.2
@@ -68,4 +68,3 @@ jobs:
               git status --short
               exit 1
             fi
-
