@@ -105,7 +105,6 @@
     { "target": "ipld/go-ipld-adl-hamt" },
     { "target": "ipld/go-ipld-btc" },
     { "target": "ipld/go-ipld-graphql" },
-    { "target": "ipld/go-ipld-prime-proto" },
     { "target": "ipld/go-ipld-schema" },
     { "target": "ipld/go-ipld-selector-text-lite" },
     { "target": "ipld/go-ipldtool" },
