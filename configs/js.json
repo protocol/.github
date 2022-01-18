@@ -6,9 +6,15 @@
     ]
   },
   "repositories": [
+    { "target": "ipfs-shipyard/check-aegir-project" },
     { "target": "ipfs/js-blockstore-core" },
+    { "target": "ipfs/js-ipfs-utils" },
     { "target": "libp2p/js-libp2p-crypto" },
+    { "target": "libp2p/js-libp2p-floodsub" },
     { "target": "libp2p/js-libp2p-interfaces" },
-    { "target": "libp2p/js-libp2p-tcp" }
+    { "target": "libp2p/js-libp2p-kad-dht" },
+    { "target": "libp2p/js-libp2p-mplex" },
+    { "target": "libp2p/js-libp2p-tcp" },
+    { "target": "libp2p/js-libp2p-utils" }
   ]
 }
