@@ -92,6 +92,7 @@
     { "target": "ipfs/go-verifcid" },
     { "target": "ipfs/hang-fds" },
     { "target": "ipfs/interface-go-ipfs-core" },
+    { "target": "ipfs/ipfs-ds-postgres" },
     { "target": "ipfs/ipfs-ds-convert" },
     { "target": "ipfs/ipfs-update" },
     { "target": "ipfs/ipget" },
