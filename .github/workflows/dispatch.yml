@@ -107,20 +107,8 @@ jobs:
         env:
           STEP_NAME: 'Force push web3-bot/sync branch'
         run: |
-          targets=()
-          page=1
-          # 100 is the upper limit on number of jobs returned per page
-          per_page=100
-          while jobs="$(gh api -X GET "/repos/${{ env.WORKFLOW_REPO }}/actions/runs/${{ steps.run.outputs.id }}/jobs" -f page="$page" -f per_page="$per_page")"; do
-            # adds copy workflow jobs that successfully executed $STEP_NAME to targets
-            targets+=($(jq -r '.jobs[] | select(.steps[] | select(.name == "${{ env.STEP_NAME }}") and select(.conclusion == "success")) | .name' <<< "$jobs" ))
-            # exits when all the copy workflow jobs have been processed
-            if (( page * per_page >= $(jq -r '.total_count' <<< "$jobs") )); then
-              break
-            fi
-            (( page+=1 ))
-          done
-          echo "::set-output name=targets::$(jq -nc '$ARGS.positional' --args ${targets[@]})"
+          targets="$(gh api --paginate '/repos/${{ env.WORKFLOW_REPO }}/actions/runs/${{ steps.run.outputs.id }}/jobs' | jq '.jobs | map(select(.steps[] | select(.name == "${{ env.STEP_NAME }}") and select(.conclusion == "success"))) | map(.name)' | jq -sc 'add')"
+          echo "::set-output name=targets::$targets"
       - name: Sync PRs in targets that need it
         env:
           PR_TITLE: 'sync: update CI config files'
