@@ -1,7 +1,3 @@
-# This workflow cannot post sticky comments on PRs from forked repositories.
-# Instead, it outputs the message it would have posted as a workflow notice.
-# See https://github.com/protocol/.github/issues/254 for details.
-
 name: Release Checker
 on: [ workflow_call ]
 
@@ -22,8 +18,12 @@ jobs:
         with:
           go-version: "1.17.x"
       - name: Determine version
-        if: hashFiles('version.json')
-        run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          version="$(gh api -X GET 'repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version')"
+          echo "version=$version"
+          echo "VERSION=$version" >> $GITHUB_ENV
       - name: Check if the tag already exists
         # Check if a git tag for the version (as read from version.json) exists
         # If that is the case, we don't need to run the rest of the workflow.
@@ -52,13 +52,13 @@ jobs:
         run: |
           git fetch origin --tags
           go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
-          v=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
+          compareto=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
           status=$?
+          echo "compareto=$compareto"
           if [[ $status != 0 ]]; then
-            echo $v
             exit $status
           fi
-          echo "COMPARETO=$v" >> $GITHUB_ENV
+          echo "COMPARETO=$compareto" >> $GITHUB_ENV
       - name: Post output
         if: env.TAG_EXISTS == 'false' && env.COMPARETO == ''
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
@@ -106,39 +106,28 @@ jobs:
           If you wish to cut a release once this PR is merged, please add the \`release\` label to this PR.
           EOF" >> $GITHUB_ENV
         if: github.base_ref != github.event.repository.default_branch
-      - run: |
-          echo 'MESSAGE<<EOF
-          Suggested version: `${{ env.VERSION }}`
-          Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.label }}))
-
-          Changes in `go.mod` file(s):
-          ```diff
-          ${{ env.GOMODDIFF }}
-          ```
-
-          `gorelease` says:
-          ```
-          ${{ env.GORELEASE }}
-          ```
-
-          `gocompat` says:
-          ```
-          ${{ env.GOCOMPAT }}
-          ```
-          ${{ env.RELEASE_BRANCH_NOTE }}
-          EOF' >> $GITHUB_ENV
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
       - name: Post message on PR
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name == github.repository
+        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
         with:
           header: release-check
           recreate: true
-          message: ${{ env.MESSAGE }}
-      - name: Set a notice message on run
-        run: |
-          message="${MESSAGE//'%'/'%25'}"
-          message="${message//$'\n'/'%0A'}"
-          message="${message//$'\r'/'%0D'}"
-          echo "::notice ::$message"
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != '' && github.event.pull_request.head.repo.full_name != github.repository
+          message: |
+            Suggested version: `${{ env.VERSION }}`
+            Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.label }}))
+
+            Changes in `go.mod` file(s):
+            ```diff
+            ${{ env.GOMODDIFF }}
+            ```
+
+            `gorelease` says:
+            ```
+            ${{ env.GORELEASE }}
+            ```
+
+            `gocompat` says:
+            ```
+            ${{ env.GOCOMPAT }}
+            ```
+            ${{ env.RELEASE_BRANCH_NOTE }}
