@@ -21,7 +21,7 @@ jobs:
             base="$(jq '{"\(input_filename)":(.repositories | map(.target))}' configs/*.json | jq -sc 'add')"
             repos="$(jq -nc '$head | to_entries | map({"key":"\(.key)","value":(.value - ($base["\(.key)"] // []))}) | from_entries' --argjson head "$repos" --argjson base "$base")"
           fi
-          echo "::set-output this=$repos"
+          echo "::set-output name=this::$repos"
       - name: find deleted / archived repositories
         run: |
           status=0
