@@ -1,6 +1,9 @@
 on:
   schedule:
-  - cron: "0 */6 * * *" # every 6 hours
+    - cron: "0 */6 * * *" # every 6 hours
+  pull_request:
+    paths:
+      - 'configs/*.json'
 
 jobs:
   matrix:
@@ -8,24 +11,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - id: repos
+        name: find repositories to check
+        run: |
+          repos="$(jq '.repositories | map(.target)' configs/*.json | jq -sc 'add | unique')"
+          if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            git reset '${{ github.event.pull_request.base.sha }}' --hard
+            base="$(jq '.repositories | map(.target)' configs/*.json | jq -sc 'add | unique')"
+            repos="$(jq -nc '$head - $base' --argjson head "$repos" --argjson base "$base")"
+          fi
+          echo "::set-output this=$repos"
       - name: find deleted / archived repositories
         run: |
           status=0
-          for config in configs/*.json; do
-            echo "::group::$config"
-            for repo in $(jq -r '.repositories[].target' $config); do
-              exists=true
-              output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
-              if ! $exists; then
-                echo "Repository $repo does not exist."
-                status=1
-                continue
-              fi
-              if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
-                echo "Repository $repo is archived."
-                status=1
-              fi
-            done
-            echo "::endgroup::"
-          done
+          while read repo; do
+            exists=true
+            output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
+            if ! $exists; then
+              echo "Repository $repo does not exist."
+              status=1
+              continue
+            fi
+            if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
+              echo "Repository $repo is archived."
+              status=1
+            fi
+          done <<< "$(jq -r '.[]' <<< '${{ steps.repos.outputs.this }}')"
           exit $status
