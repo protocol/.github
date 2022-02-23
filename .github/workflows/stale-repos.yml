@@ -16,13 +16,23 @@ jobs:
       - id: repos
         name: find repositories to check
         run: |
+          # retrieves names of target repositories per JSON config file
+          # returns a JSON object with the following schema:
+          #  { "$JSON_CONFIG_FILE_PATH": ["$GITHUB_REPOSITORY_FULL_NAME"] }
           repos="$(jq '{"\(input_filename)":(.repositories | map(.target))}' configs/*.json | jq -sc 'add')"
+
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            # resets the checkout to PR target commit
             git fetch origin ${{ github.event.pull_request.base.sha }}
             git reset --hard ${{ github.event.pull_request.base.sha }}
+            # retrieves names of target repositories per JSON config file
+            #  on PR target commit
             base="$(jq '{"\(input_filename)":(.repositories | map(.target))}' configs/*.json | jq -sc 'add')"
+            # removes names of target repositories that were present in JSON config files
+            #  on PR target commit from the JSON object created on PR head commit
             repos="$(jq -nc '$head | to_entries | map({"key":"\(.key)","value":(.value - ($base["\(.key)"] // []))}) | from_entries' --argjson head "$repos" --argjson base "$base")"
           fi
+
           echo "::set-output name=this::$repos"
       - name: find deleted / archived repositories
         run: |
