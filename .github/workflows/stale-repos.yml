@@ -41,5 +41,5 @@ jobs:
               fi
             done <<< "$(jq -r '.["\($key)"][]' --arg key "$config" <<< '${{ steps.repos.outputs.this }}')"
             echo "::endgroup::"
-          done <<< "$(jq -r 'keys' <<< '${{ steps.repos.outputs.this }}')"
+          done <<< "$(jq -r 'keys[]' <<< '${{ steps.repos.outputs.this }}')"
           exit $status
