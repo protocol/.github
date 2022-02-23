@@ -14,27 +14,31 @@ jobs:
       - id: repos
         name: find repositories to check
         run: |
-          repos="$(jq '.repositories | map(.target)' configs/*.json | jq -sc 'add | unique')"
+          repos="$(jq '{"\(input_filename)":(.repositories | map(.target))}' configs/*.json | jq -sc 'add')"
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             git reset '${{ github.event.pull_request.base.sha }}' --hard
-            base="$(jq '.repositories | map(.target)' configs/*.json | jq -sc 'add | unique')"
-            repos="$(jq -nc '$head - $base' --argjson head "$repos" --argjson base "$base")"
+            base="$(jq '{"\(input_filename)":(.repositories | map(.target))}' configs/*.json | jq -sc 'add')"
+            repos="$(jq -nc '$head | to_entries | map({"key":"\(.key)","value":(.value - ($base["\(.key)"] // []))}) | from_entries' --argjson head "$repos" --argjson base "$base")"
           fi
           echo "::set-output this=$repos"
       - name: find deleted / archived repositories
         run: |
           status=0
-          while read repo; do
-            exists=true
-            output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
-            if ! $exists; then
-              echo "Repository $repo does not exist."
-              status=1
-              continue
-            fi
-            if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
-              echo "Repository $repo is archived."
-              status=1
-            fi
-          done <<< "$(jq -r '.[]' <<< '${{ steps.repos.outputs.this }}')"
+          while read config; do
+            echo "::group::$config"
+            while read repo; do
+              exists=true
+              output=$(curl -s -f -H "Accept: application/vnd.github.v3+json" -H "authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/$repo") || exists=false
+              if ! $exists; then
+                echo "Repository $repo does not exist."
+                status=1
+                continue
+              fi
+              if [[ $(echo "$output" | jq ".archived") == "true" ]]; then
+                echo "Repository $repo is archived."
+                status=1
+              fi
+            done <<< "$(jq -r '.["\($key)"][]' --arg key "$config" <<< '${{ steps.repos.outputs.this }}')"
+            echo "::endgroup::"
+          done <<< "$(jq -r 'keys' <<< '${{ steps.repos.outputs.this }}')"
           exit $status
