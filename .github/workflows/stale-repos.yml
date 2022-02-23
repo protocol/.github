@@ -5,6 +5,8 @@ on:
     paths:
       - 'configs/*.json'
 
+name: Check Stale Repos
+
 jobs:
   matrix:
     name: Find stale repositories
