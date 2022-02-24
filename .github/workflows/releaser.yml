@@ -5,38 +5,31 @@ jobs:
   releaser:
     runs-on: ubuntu-latest
     env:
-      VERSION: ""
-      CREATETAG: "false"
-      DEFAULT_BRANCH: ""
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Determine version
-        run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
-      - name: Determine branch
-        run: echo "DEFAULT_BRANCH=refs/heads/${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
-      - name: Create a release, if we're on the default branch
-        run: echo "CREATETAG=true" >> $GITHUB_ENV
-        if: env.DEFAULT_BRANCH == github.ref
-      - name: Determine if this commit is a merged PR (if we're not on a default branch)
-        if: env.DEFAULT_BRANCH != github.ref
-        id: getmergedpr
-        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check if the "release" label was set on the PR
-        if: steps.getmergedpr.outputs.number != '' && env.DEFAULT_BRANCH != github.ref
+      - id: version
         run: |
-          while IFS= read -r label; do
-            if [[ "$label" == "release" ]]; then
-              echo "CREATETAG=true" >> $GITHUB_ENV
-              break
-            fi
-          done <<< "${{ steps.getmergedpr.outputs.labels }}"
-      - name: Create release
-        if: env.CREATETAG == 'true'
+          version="$(gh api -X GET '/repos/${{ github.repository }}/contents/version.json' -f ref='${{ github.ref }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          echo "version=$version"
+          echo "::set-output name=this::$version"
+      - id: label_exists
+        if: github.ref_name != github.event.repository.default_branch
         run: |
-          git fetch origin --tags
-          if ! $(git rev-list ${{ env.VERSION}}.. &> /dev/null); then
-            git tag ${{ env.VERSION }}
-            git push --tags
+          label_exists="$(gh api -X GET '/search/issues' -f 'q=repository:${{ github.repository }} is:pr is:merged ${{ github.sha }}' -F 'per_page=1' --jq '.items[0].labels // [] | map(select(.name == "release")) | length')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          echo "label_exists=$label_exists"
+          echo "::set-output name=this::$label_exists"
+      - if: github.ref_name == github.event.repository.default_branch || steps.label_exists.outputs.this == '1'
+        run: |
+          release="$(gh api graphql -f query='query { repository(owner: "${{ github.event.repository.owner.name }}", name: "${{ github.event.repository.name }}") { release(tagName: "${{ steps.version.outputs.this }}") { databaseId } } }' --jq '.data.repository.release.databaseId // ""')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          echo "release=$release"
+          if [[ -z "$release" ]]; then
+            gh api '/repos/${{ github.repository }}/git/refs' -f 'ref=refs/tags/${{ steps.version.outputs.this }}' -f 'sha=${{ github.sha }}'
+          else
+            gh api -X PATCH "/repos/${{ github.repository }}/releases/$release" -f 'target_commitish=${{ github.sha }}' -F 'draft=false'
           fi
