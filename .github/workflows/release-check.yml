@@ -2,47 +2,61 @@ name: Release Checker
 on: [ workflow_call ]
 
 jobs:
-  releaser:
+  prepare:
     runs-on: ubuntu-latest
     env:
-      TAG_EXISTS: "true"
-      VERSION: "" # the version number read from version.json
-      COMPARETO: "" # the version number to compare this version to
-      GORELEASE: ""
-      GOCOMPAT: ""
-      GOMODDIFF: ""
-      RELEASE_BRANCH_NOTE: ""
+      GITHUB_TOKEN: ${{ github.token }}
+    outputs:
+      version: ${{ steps.version.outputs.this }}
+      tag_exists: ${{ steps.tag_exists.outputs.this }}
     steps:
-      - uses: actions/checkout@v2
+      - id: version
+        run: |
+          version="$(gh api -X GET '/repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          echo "version=$version"
+          echo "::set-output name=this::$version"
+      - name: Check version
+        run: |
+          npm install -g 'https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569' # v7.3.5
+
+          semver '${{ steps.version.outputs.this }}' # fails if the version is not a valid semver version (e.g. v0.1 would fail)
+      - id: tag_exists
+        run: |
+          gh api '/repos/${{ github.repository }}/git/ref/tags/${{ steps.version.outputs.this }}' && tag_exists='true' || tag_exists='false'
+
+          echo "tag_exists=$tag_exists"
+          echo "::set-output name=this::$tag_exists"
+  check:
+    needs: [prepare]
+    if: needs.prepare.outputs.tag_exists != 'true'
+    runs-on: ubuntu-latest
+    env:
+      COMMENT: "Suggested version: `${{ needs.prepare.outputs.version }}`"
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - id: release
+        run: |
+          release="$(gh api graphql -f query='query { repository(owner: "${{ github.event.repository.owner.login }}", name: "${{ github.event.repository.name }}") { release(tagName: "${{ needs.prepare.outputs.version }}") { url } } }' --jq '.data.repository.release.url // ""')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          if [[ -z "$release" ]]; then
+            release="$(gh api '/repos/${{ github.repository }}/releases' -F 'draft=true' -f 'tag_name=${{ needs.prepare.outputs.version }}' -F 'generate_release_notes=true' --jq '.html_url')"
+            status=$? && ([[ $status == 0 ]] || exit $status)
+          fi
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          Draft GitHub Release: [\`${{ needs.prepare.outputs.version }}\`](https://github.com/${{ github.repository }}/releases?q=draft%3Atrue+tag%3A${{ needs.prepare.outputs.version }})
+          Merging the PR will publish the release. All modifications to the draft will be preserved. In particular, deleting the draft will prevent the release from getting published.
+          EOF" >> $GITHUB_ENV
       - uses: actions/setup-go@v2
         with:
           go-version: "1.17.x"
-      - name: Determine version
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          version="$(gh api -X GET 'repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version')"
-          echo "version=$version"
-          echo "VERSION=$version" >> $GITHUB_ENV
-      - name: Check if the tag already exists
-        # Check if a git tag for the version (as read from version.json) exists
-        # If that is the case, we don't need to run the rest of the workflow.
-        if: env.VERSION != ''
-        run: |
-          git fetch origin --tags
-          status=0
-          git rev-list $VERSION &> /dev/null || status=$?
-          if [[ $status != 0 ]]; then
-            echo "TAG_EXISTS=false" >> $GITHUB_ENV
-          fi
-      - name: Install semver (node command line tool)
-        if: env.TAG_EXISTS == 'false'
-        run: npm install -g "https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569" # v7.3.5
-      - name: Check version
-        if: env.TAG_EXISTS == 'false'
-        run: semver ${{ env.VERSION }} # fails if the version is not a valid semver version (e.g. v0.1 would fail)
-      - name: Determine version number to compare to
-        if: env.TAG_EXISTS == 'false'
+      - id: prev_version
+        name: Determine version number to compare to
         # We need to determine the version number we want to compare to,
         # taking into account that this might be a (patch) release on a release branch.
         # Example:
@@ -50,84 +64,99 @@ jobs:
         # When trying to cut a release v0.2.1, we need to base our comparisons on v0.2.0.
         # When trying to cut a release v0.3.1 or v0.4.0, we need to base our comparisons on v0.3.0.
         run: |
-          git fetch origin --tags
           go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
-          compareto=$(semver-highest -target ${{ env.VERSION }} -versions $(git tag | paste -sd , -))
-          status=$?
-          echo "compareto=$compareto"
-          if [[ $status != 0 ]]; then
-            exit $status
-          fi
-          echo "COMPARETO=$compareto" >> $GITHUB_ENV
-      - name: Post output
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO == ''
-        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        with:
-          header: release-check
-          recreate: true
-          message: |
-            Suggested version: `${{ env.VERSION }}`
 
-            This is the first release of this module.
+          versions="$(gh api --paginate '/repos/${{ github.repository }}/tags' --jq 'map(.name)' | jq -nr '[inputs] | add | join(",")')"
+          status=$? && ([[ $status == 0 ]] || exit $status)
+
+          prev_version="$(semver-highest -target '${{ needs.prepare.outputs.version }}' -versions "$versions")"
+
+          if [[ -z "$prev_version" ]]; then
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          This is the first release of this module.
+          EOF" >> $GITHUB_ENV
+
+          else
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          Comparing to: [\`$prev_version\`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/$prev_version) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/$prev_version..${{ github.event.pull_request.head.label }}))
+          EOF" >> $GITHUB_ENV
+
+          fi
+
+          echo "::set-output name=this::$prev_version"
+      - uses: actions/checkout@v2
+        if: steps.prev_version.outputs.this != ''
+      - if: steps.prev_version.outputs.this != ''
+        run: git fetch origin --tags
       - name: run git diff on go.mod file(s)
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+        if: steps.prev_version.outputs.this != ''
         run: |
           # First get the diff for the go.mod file in the root directory...
-          output=$(git diff ${{ env.COMPARETO }}..HEAD -- './go.mod')
+          output="$(git diff ${{ steps.prev_version.outputs.this }}..HEAD -- './go.mod')"
+
           # ... then get the diff for all go.mod files in subdirectories.
           # Note that this command also finds go.mod files more than one level deep in the directory structure.
-          output+=$(git diff ${{ env.COMPARETO }}..HEAD -- '*/go.mod')
-          if [[ -z "$output" ]]; then
-            output="(empty)"
-          fi
-          printf "GOMODDIFF<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
+          output+="$(git diff ${{ steps.prev_version.outputs.this }}..HEAD -- '*/go.mod')"
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          Changes in \`go.mod\` file(s):
+          \`\`\`diff
+          $output
+          \`\`\`
+          EOF" >> $GITHUB_ENV
       - name: Run gorelease
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+        if: steps.prev_version.outputs.this != ''
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
           go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
-          output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
-          printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
+
+          output="$((gorelease -base ${{ steps.prev_version.outputs.this }}) 2>&1 || true)"
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          \`gorelease\` says:
+          \`\`\`diff
+          $output
+          \`\`\`
+          EOF" >> $GITHUB_ENV
       - name: Check Compatibility
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+        if: steps.prev_version.outputs.this != ''
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
-          output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..HEAD" ./... || true)
-          if [[ -z "$output" ]]; then
-            output="(empty)"
-          fi
-          printf "GOCOMPAT<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - run: |
-          echo "RELEASE_BRANCH_NOTE<<EOF
-          ---
+
+          output="$(gocompat compare --go1compat --git-refs='${{ steps.prev_version.outputs.this }}..HEAD' ./... || true)"
+
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          \`gocompat\` says:
+          \`\`\`diff
+          $output
+          \`\`\`
+          EOF" >> $GITHUB_ENV
+      - if: github.base_ref != github.event.repository.default_branch
+        run: |
+          echo "COMMENT<<EOF
+          $COMMENT
+
           ## Cutting a Release (when not on \`${{ github.event.repository.default_branch }}\`)
 
           This PR is targeting \`${{ github.base_ref }}\`, which is not the default branch.
           If you wish to cut a release once this PR is merged, please add the \`release\` label to this PR.
+          \`\`\`
           EOF" >> $GITHUB_ENV
-        if: github.base_ref != github.event.repository.default_branch
       - name: Post message on PR
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
         with:
           header: release-check
           recreate: true
-          message: |
-            Suggested version: `${{ env.VERSION }}`
-            Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.label }}))
-
-            Changes in `go.mod` file(s):
-            ```diff
-            ${{ env.GOMODDIFF }}
-            ```
-
-            `gorelease` says:
-            ```
-            ${{ env.GORELEASE }}
-            ```
-
-            `gocompat` says:
-            ```
-            ${{ env.GOCOMPAT }}
-            ```
-            ${{ env.RELEASE_BRANCH_NOTE }}
+          message: ${{ env.COMMENT }}
