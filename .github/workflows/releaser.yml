@@ -8,28 +8,37 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - id: version
+        name: Retrieve new version from version.json
         run: |
+          # https://docs.github.com/en/rest/reference/repos#get-repository-content
           version="$(gh api -X GET '/repos/${{ github.repository }}/contents/version.json' -f ref='${{ github.ref }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
           status=$? && ([[ $status == 0 ]] || exit $status)
 
           echo "version=$version"
           echo "::set-output name=this::$version"
       - id: label_exists
+        name: Check if the related PR is merged and has release label
         if: github.ref_name != github.event.repository.default_branch
         run: |
-          label_exists="$(gh api -X GET '/search/issues' -f 'q=repository:${{ github.repository }} is:pr is:merged ${{ github.sha }}' -F 'per_page=1' --jq '.items[0].labels // [] | map(select(.name == "release")) | length')"
+          # https://docs.github.com/en/rest/reference/search#search-issues-and-pull-requests
+          label_exists="$(gh api -X GET '/search/issues' -f 'q=repository:${{ github.repository }} is:pr is:merged ${{ github.sha }}' -F 'per_page=1' --jq '.items[0].labels // [] | map(select(.name == "release")) | map("true") | .[0] // "false"')"
           status=$? && ([[ $status == 0 ]] || exit $status)
 
           echo "label_exists=$label_exists"
           echo "::set-output name=this::$label_exists"
-      - if: github.ref_name == github.event.repository.default_branch || steps.label_exists.outputs.this == '1'
+      - if: github.ref_name == github.event.repository.default_branch || steps.label_exists.outputs.this == 'true'
+        name: Publish GitHub Release and/or lightweight git tag
         run: |
+          # using GraphQL because https://docs.github.com/en/rest/reference/releases#list-releases does not return draft releases
+          # https://docs.github.com/en/graphql/reference/objects#release
           release="$(gh api graphql -f query='query { repository(owner: "${{ github.event.repository.owner.name }}", name: "${{ github.event.repository.name }}") { release(tagName: "${{ steps.version.outputs.this }}") { databaseId } } }' --jq '.data.repository.release.databaseId // ""')"
           status=$? && ([[ $status == 0 ]] || exit $status)
 
           echo "release=$release"
           if [[ -z "$release" ]]; then
+            # https://docs.github.com/en/rest/reference/git#create-a-reference
             gh api '/repos/${{ github.repository }}/git/refs' -f 'ref=refs/tags/${{ steps.version.outputs.this }}' -f 'sha=${{ github.sha }}'
           else
+            # https://docs.github.com/en/rest/reference/releases#update-a-release
             gh api -X PATCH "/repos/${{ github.repository }}/releases/$release" -f 'target_commitish=${{ github.sha }}' -F 'draft=false'
           fi

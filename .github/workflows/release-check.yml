@@ -11,7 +11,9 @@ jobs:
       tag_exists: ${{ steps.tag_exists.outputs.this }}
     steps:
       - id: version
+        name: Retrieve new version from version.json
         run: |
+          # https://docs.github.com/en/rest/reference/repos#get-repository-content
           version="$(gh api -X GET '/repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
           status=$? && ([[ $status == 0 ]] || exit $status)
 
@@ -23,7 +25,9 @@ jobs:
 
           semver '${{ steps.version.outputs.this }}' # fails if the version is not a valid semver version (e.g. v0.1 would fail)
       - id: tag_exists
+        name: Check if version tag already exists
         run: |
+          # https://docs.github.com/en/rest/reference/git#get-a-reference
           gh api '/repos/${{ github.repository }}/git/ref/tags/${{ steps.version.outputs.this }}' && tag_exists='true' || tag_exists='false'
 
           echo "tag_exists=$tag_exists"
@@ -37,11 +41,16 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - id: release
+        name: Create draft GitHub Release (if it doesn't exist yet)
         run: |
+          # using GraphQL because https://docs.github.com/en/rest/reference/releases#list-releases does not return draft releases
+          # https://docs.github.com/en/graphql/reference/objects#release
           release="$(gh api graphql -f query='query { repository(owner: "${{ github.event.repository.owner.login }}", name: "${{ github.event.repository.name }}") { release(tagName: "${{ needs.prepare.outputs.version }}") { url } } }' --jq '.data.repository.release.url // ""')"
           status=$? && ([[ $status == 0 ]] || exit $status)
 
           if [[ -z "$release" ]]; then
+            # https://docs.github.com/en/rest/reference/releases#create-a-release
+            # creating a draft release does not create a tag, only publishing does
             release="$(gh api '/repos/${{ github.repository }}/releases' -F 'draft=true' -f 'tag_name=${{ needs.prepare.outputs.version }}' -F 'generate_release_notes=true' --jq '.html_url')"
             status=$? && ([[ $status == 0 ]] || exit $status)
           fi
@@ -71,30 +80,25 @@ jobs:
 
           prev_version="$(semver-highest -target '${{ needs.prepare.outputs.version }}' -versions "$versions")"
 
+          echo "prev_version=$prev_version"
+          echo "::set-output name=this::$prev_version"
+
           if [[ -z "$prev_version" ]]; then
-
-          echo "COMMENT<<EOF
-          $COMMENT
-
-          This is the first release of this module.
-          EOF" >> $GITHUB_ENV
-
+            output="This is the first release of this module."
           else
-
-          echo "COMMENT<<EOF
-          $COMMENT
-
-          Comparing to: [\`$prev_version\`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/$prev_version) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/$prev_version..${{ github.event.pull_request.head.label }}))
-          EOF" >> $GITHUB_ENV
-
+            output="Comparing to: [\`$prev_version\`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/$prev_version) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/$prev_version..${{ github.event.pull_request.head.label }}))"
           fi
 
-          echo "::set-output name=this::$prev_version"
+          echo "COMMENT<<EOF
+          $COMMENT
+
+          $output
+          EOF" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         if: steps.prev_version.outputs.this != ''
       - if: steps.prev_version.outputs.this != ''
         run: git fetch origin --tags
-      - name: run git diff on go.mod file(s)
+      - name: Run git diff on go.mod file(s)
         if: steps.prev_version.outputs.this != ''
         run: |
           # First get the diff for the go.mod file in the root directory...
@@ -128,7 +132,7 @@ jobs:
           $output
           \`\`\`
           EOF" >> $GITHUB_ENV
-      - name: Check Compatibility
+      - name: Check compatibility
         if: steps.prev_version.outputs.this != ''
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
@@ -143,7 +147,8 @@ jobs:
           $output
           \`\`\`
           EOF" >> $GITHUB_ENV
-      - if: github.base_ref != github.event.repository.default_branch
+      - name: Add a note for PRs targeting release branches
+        if: github.base_ref != github.event.repository.default_branch
         run: |
           echo "COMMENT<<EOF
           $COMMENT
