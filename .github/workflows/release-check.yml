@@ -19,13 +19,9 @@ jobs:
 
           echo "version=$version"
           echo "::set-output name=this::$version"
-      - name: Check version
-        run: |
-          npm install -g 'https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569' # v7.3.5
-
-          semver '${{ steps.version.outputs.this }}' # fails if the version is not a valid semver version (e.g. v0.1 would fail)
       - id: tag_exists
         name: Check if version tag already exists
+        if: steps.version.outputs.this != ''
         run: |
           # https://docs.github.com/en/rest/reference/git#get-a-reference
           gh api '/repos/${{ github.repository }}/git/ref/tags/${{ steps.version.outputs.this }}' && tag_exists='true' || tag_exists='false'
@@ -40,6 +36,11 @@ jobs:
       COMMENT: "Suggested version: `${{ needs.prepare.outputs.version }}`"
       GITHUB_TOKEN: ${{ github.token }}
     steps:
+      - name: Check version
+        run: |
+          npm install -g 'https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569' # v7.3.5
+
+          semver '${{ needs.prepare.outputs.version }}' # fails if the version is not a valid semver version (e.g. v0.1 would fail)
       - id: release
         name: Create draft GitHub Release (if it doesn't exist yet)
         run: |
