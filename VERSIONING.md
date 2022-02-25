@@ -30,9 +30,15 @@ Every Go repository contains a `version.json` file in the root directory:
 This version file defines the currently released version.
 
 When cutting a new release, open a Pull Request that bumps the version number and have it review by your team mates.
-The [release check workflow](.github/workflows/release-check.yml) will comment on the PR and post useful information (the output of `gorelease`, `gocompat` and a diff of the `go.mod` files(s)).
+The [release check workflow](.github/workflows/release-check.yml) will comment on the PR and post useful information (the output of `gorelease`, `gocompat` and a diff of the `go.mod` files(s)). It will also post a link to a draft GitHub Release.
 
-As soon as the PR is merged into the default branch, the [releaser workflow](.github/workflows/releaser.yml) is run. This workflow cuts a new release on CI and pushes the tag.
+As soon as the PR is merged into the default branch, the [releaser workflow](.github/workflows/releaser.yml) is run. This workflow cuts a new release on CI, publishes the GitHub Release and the tag.
+
+### Modifying GitHub Release
+
+All modification you make to the draft GitHub Release created by the release check workflow will be preserved. You can change its' name and body to describe the release in more detail.
+
+If you do not wish for a GitHub Release to be published after a merge, you can delete the draft. If you do so, only a tag will be published after a merge.
 
 ### Using a Release Branch
 
