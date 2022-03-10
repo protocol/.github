@@ -58,7 +58,6 @@
     { "target": "ipfs/go-ipfs-blocksutil" },
     { "target": "ipfs/go-ipfs-chunker" },
     { "target": "ipfs/go-ipfs-cmds" },
-    { "target": "ipfs/go-ipfs-config" },
     { "target": "ipfs/go-ipfs-delay" },
     { "target": "ipfs/go-ipfs-ds-help" },
     { "target": "ipfs/go-ipfs-example-plugin" },
