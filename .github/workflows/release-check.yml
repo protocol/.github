@@ -21,6 +21,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          # If `version.json` file doesn't exists, `version` is `""` and `404` is printed on stderr.
+          # The step won't be marked as a failure though because the error happens in a subshell.
           version="$(gh api -X GET 'repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version')"
           echo "version=$version"
           echo "VERSION=$version" >> $GITHUB_ENV
