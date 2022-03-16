@@ -23,7 +23,7 @@ jobs:
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             # resets the checkout to PR target commit
             git fetch origin ${{ github.event.pull_request.base.sha }}
-            git reset --hard ${{ github.event.pull_request.base.sha }}
+            git checkout ${{ github.event.pull_request.base.sha }}
 
             # returns a JSON array of repository objects as they exist on pull request target
             base="$(jq -nc '[inputs | .repositories[] | {"config":input_filename,"repo":.target}]' configs/*.json)"
