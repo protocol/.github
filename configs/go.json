@@ -85,6 +85,7 @@
     { "target": "ipfs/go-namesys" },
     { "target": "ipfs/go-path" },
     { "target": "ipfs/go-peertaskqueue" },
+    { "target": "ipfs/go-pinning-service-http-client" },
     { "target": "ipfs/go-qringbuf" },
     { "target": "ipfs/go-todocounter" },
     { "target": "ipfs/go-unixfs" },
