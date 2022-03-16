@@ -16,23 +16,21 @@ jobs:
       - id: repos
         name: find repositories to check
         run: |
-          # retrieves names of target repositories per JSON config file
-          # returns a JSON object with the following schema:
-          #  { "$JSON_CONFIG_FILE_PATH": ["$GITHUB_REPOSITORY_FULL_NAME"] }
-          repos="$(jq -nc '[inputs | {"\(input_filename)":(.repositories | map(.target))}] | add' configs/*.json)"
+          # returns a JSON array of repository objects with the following schema:
+          #  [ {"config": "$JSON_CONFIG_FILE_PATH", "repo": "$GITHUB_REPOSITORY_FULL_NAME"} ]
+          repos="$(jq -nc '[inputs | .repositories[] | {"config":input_filename,"repo":.target}]' configs/*.json)"
 
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             # resets the checkout to PR target commit
             git fetch origin ${{ github.event.pull_request.base.sha }}
             git reset --hard ${{ github.event.pull_request.base.sha }}
 
-            # retrieves names of target repositories per JSON config file
-            #  on PR target commit
-            base="$(jq -nc '[inputs | {"\(input_filename)":(.repositories | map(.target))}] | add' configs/*.json)"
+            # returns a JSON array of repository objects as they exist on pull request target
+            base="$(jq -nc '[inputs | .repositories[] | {"config":input_filename,"repo":.target}]' configs/*.json)"
 
-            # removes names of target repositories that were present in JSON config files
-            #  on PR target commit from the JSON object created on PR head commit
-            repos="$(jq -nc '$head | to_entries | map({"key":"\(.key)","value":(.value - ($base["\(.key)"] // []))}) | from_entries' --argjson head "$repos" --argjson base "$base")"
+            # returns a JSON array of repository objects as they exists on pull request head
+            #  without the objects that also exist on pull request target
+            repos="$(jq -nc '$head - $base' --argjson head "$repos" --argjson base "$base")"
           fi
 
           echo "::set-output name=this::$repos"
@@ -53,7 +51,7 @@ jobs:
                 echo "Repository $repo is archived."
                 status=1
               fi
-            done <<< "$(jq -r '.["\($key)"][]' --arg key "$config" <<< '${{ steps.repos.outputs.this }}')"
+            done <<< "$(jq -r '.[] | select(.config == $key) | .repo' --arg key "$config" <<< '${{ steps.repos.outputs.this }}')"
             echo "::endgroup::"
-          done <<< "$(jq -r 'keys[]' <<< '${{ steps.repos.outputs.this }}')"
+          done <<< "$(jq -r 'map(.config) | unique | .[]' <<< '${{ steps.repos.outputs.this }}')"
           exit $status
