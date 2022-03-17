@@ -56,7 +56,7 @@ In order to help with the distribution of these workflows, this repository defin
 
 Workflows are distributed to all repositories listed in [configs/go.json](configs/go.json).
 
-If you want your project to participle, please send a PR!
+If you want your project to participle, please send a PR which adds your repository to the config! Remember to ensure [@web3-bot](https://github.com/web3-bot) has write access to your repository.
 
 ## Development
 
