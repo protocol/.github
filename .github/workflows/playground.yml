@@ -1,0 +1,12 @@
+name: Playground
+on: [push]
+
+jobs:
+  playground:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - run: |
+          gh pr merge 38 --repo ipfs-shipyard/git-remote-ipld --squash
+        shell: bash
