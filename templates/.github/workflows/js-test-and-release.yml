@@ -5,7 +5,7 @@ on:
       - $default-branch # with #262 - ${{{ github.default_branch }}}
   pull_request:
     branches:
-      - $default-branch # with #262 - ${{{ github.default_branch }}}
+      - **
 
 jobs:
 
