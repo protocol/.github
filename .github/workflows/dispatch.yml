@@ -136,7 +136,8 @@ jobs:
               echo "Failed to create a PR for '$target'"
               failed+=("$target(create)")
             fi
-            sleep 3
+            # 3 seconds seemed not to be enough, trying 10
+            sleep 10
           done
           if ((${#failed[@]})); then
             echo "::error ::Failed to sync PRs in: ${failed[@]}"
