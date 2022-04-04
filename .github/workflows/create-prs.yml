@@ -11,6 +11,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: 'master'
       - name: Sync PRs in targets that need it
         env:
           PR_TITLE: 'sync: update CI config files'
@@ -18,43 +20,47 @@ jobs:
         run: |
           targets=()
           for config in configs/*.json; do
-            echo "::group::$config"
             if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
               continue
             fi
             if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
               continue
             fi
+            echo "::group::$config"
             targets+=($(jq -rc ".repositories[] | .target" $config))
             echo "::endgroup::"
           done
           failed=()
-          for target in $targets; do
+          for target in ${targets[@]}; do
             echo "Processing ${target}"
             base="$(gh api "/repos/${target}" --jq '.default_branch')"
             # checks if a PR needs to be created
-            if gh api -X GET "/repos/${target}/branches/${{ env.PR_BRANCH }}"; then
-              if gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):${{ env.PR_BRANCH }}" -f base="$base"; then
+            if [[ "$(gh api -X GET "/repos/${target}/compare/${base}...${{ env.PR_BRANCH }}" --jq '.status')" == 'ahead' ]]; then
+              if [[ "$(gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):${{ env.PR_BRANCH }}" -f base="$base" --jq 'length')" != '0' ]] ; then
                 echo "The PR already exists. Skipping."
                 continue
               fi
             else
-              echo "The branch does not exist. Skipping."
+              echo "The branch does not exist or has diverged from ${base}. Skipping."
               continue
             fi
             # tries to create a PR in target
-            pr_create_attempt_interval_in_seconds=3
             pr_create_attempt=1
-            pr_create_max_attempts=6
+            pr_create_max_attempts=12
+            pr_create_attempt_interval_in_seconds=1
+            pr_create_cooldown_in_seconds=1
+            # max cumulative sleep time - 68.25 minutes
             while true; do
               if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
                 echo "Successfully created a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
+                echo "Sleeping for $pr_create_cooldown_in_seconds seconds before creating a next one"
+                sleep $pr_create_cooldown_in_seconds
                 break
               fi
-              if [[ "$(jq -r '.errors[0].message' <<< "$result")" == 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.' ]]; then
+              if [[ "$(jq -r '.message' <<< "$result")" == 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.' ]]; then
                 if (( pr_create_attempt < pr_create_max_attempts )); then
                   echo "Failed to create a PR for '$target' due to secondary rate limit ($pr_create_attempt/$pr_create_max_attempts)"
-                  echo "Sleeping for $pr_create_attempt_interval_in_seconds before trying again"
+                  echo "Sleeping for $pr_create_attempt_interval_in_seconds seconds before trying again"
                   sleep $pr_create_attempt_interval_in_seconds
                   pr_create_attempt_interval_in_seconds=$((pr_create_attempt_interval_in_seconds * 2))
                   pr_create_attempt=$((pr_create_attempt + 1))
