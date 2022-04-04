@@ -16,7 +16,7 @@ Some repositories may require some pre-setup steps to be run before tests (or co
 runs:
   using: "composite"
   steps:
-    - name: Step 1 
+    - name: Step 1
       shell: bash
       run: echo "do some initial setup"
     - name: Step 2
@@ -60,5 +60,11 @@ If you want your project to participle, please send a PR which adds your reposit
 
 ## Development
 
+### Branches
+
 The `master` branch contains currently deployed workflows.
 When we make minor changes to these workflows, we don't always want these changes to get deployed to all hundreds of repositories, as this creates a lot of unnecessary noise. Minor changes to the workflows are therefore merged into the [`next`](https://github.com/protocol/.github/tree/next) branch. When the time has come, we create a PR from the `next` branch to `master` to trigger a deployment to all repositores.
+
+### IDE
+
+If you're using [Visual Studio Code](https://code.visualstudio.com/) for development, you might want to install the [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension. It is configured to perform GitHub workflow/action linting out-of-the-box. If you're using a different IDE, you can check if a [client](https://github.com/redhat-developer/yaml-language-server#clients) for it exists.
