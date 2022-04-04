@@ -25,8 +25,6 @@ jobs:
       INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
-      GITHUB_USER: "web3-bot"
-      GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -44,8 +42,8 @@ jobs:
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
-        git config user.name ${{ env.GITHUB_USER }}
-        git config user.email ${{ env.GITHUB_EMAIL }}
+        git config user.name web3-bot
+        git config user.email web3-bot@users.noreply.github.com
     - name: determine files to add
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
@@ -127,9 +125,9 @@ jobs:
     - name: Check if we need to update the branch
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
-    - name: Force push ${{ env.GITHUB_USER }}/sync branch
+    - name: Force push web3-bot/sync branch
       if: ${{ env.NEEDS_UPDATE != 0 }}
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
-        git checkout -B ${{ env.GITHUB_USER }}/sync
-        git push origin ${{ env.GITHUB_USER }}/sync -f
+        git checkout -B web3-bot/sync
+        git push origin web3-bot/sync -f
