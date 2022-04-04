@@ -5,9 +5,6 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      head_commit_url:
-        description: "github.event.head_commit.url of the dispatcher"
-        required: true
       targets:
         description: "List of repositories to deploy to"
         required: true
@@ -19,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         cfg: ${{ fromJson(github.event.inputs.targets) }}
-      max-parallel: 1
+      max-parallel: 10
     env:
       TARGET_REPO_DIR: "target-repo"
       TEMPLATE_REPO_DIR: "template-repo"
@@ -28,9 +25,6 @@ jobs:
       INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
-      GITHUB_USER: "web3-bot"
-      GITHUB_EMAIL: "web3-bot@users.noreply.github.com"
-      DEFAULTBRANCH: ""
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
@@ -45,16 +39,11 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
-    - name: determine GitHub default branch
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
-        defaultbranch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-        echo "DEFAULTBRANCH=$defaultbranch" >> $GITHUB_ENV
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
-        git config user.name ${{ env.GITHUB_USER }}
-        git config user.email ${{ env.GITHUB_EMAIL }}
+        git config user.name web3-bot
+        git config user.email web3-bot@users.noreply.github.com
     - name: determine files to add
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
@@ -111,16 +100,13 @@ jobs:
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace $default-branch with this repo's GitHub default branch
-          sed -i "s:\$default-branch:${{ env.DEFAULTBRANCH }}:g" $tmp
-          mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
             echo "First deployment.\n"
             commit_msg="add $f"
           else
-            status=$(cmp --silent $TARGET_REPO_DIR/$f $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f; echo $?)
+            status=$(cmp --silent $TARGET_REPO_DIR/$f $tmp; echo $?)
             if [[ $status -ne 0 ]]; then
               echo "Update needed."
               commit_msg="update $f"
@@ -129,26 +115,19 @@ jobs:
               continue
             fi
           fi
-          dir="$TARGET_REPO_DIR/"$(dirname $f)
-          mkdir -p $dir
-          cp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f $dir
+          mkdir -p "$TARGET_REPO_DIR/$(dirname $f)"
+          mv $tmp $TARGET_REPO_DIR/$f
           pushd $TARGET_REPO_DIR > /dev/null
           git add $f
           git commit -m "$commit_msg"
           popd > /dev/null
         done
-    - name: Check if we need to create a PR
+    - name: Check if we need to update the branch
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
-    - name: Create Pull Request
+    - name: Force push web3-bot/sync branch
       if: ${{ env.NEEDS_UPDATE != 0 }}
-      uses: peter-evans/create-pull-request@83dbed188f76ab04433c639ec214df65e26bc15c # https://github.com/peter-evans/create-pull-request/pull/856
-      with:
-        path: ${{ env.TARGET_REPO_DIR }}
-        title: "sync: update CI config files"
-        body: Syncing to commit ${{ github.event.inputs.head_commit_url }}.
-        token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
-        committer: ${{ env.GITHUB_USER }} <${{ env.GITHUB_EMAIL }}>
-        author: ${{ env.GITHUB_USER }} <${{ env.GITHUB_EMAIL }}>
-        branch: ${{ env.GITHUB_USER }}/sync
-        delete-branch: true
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        git checkout -B web3-bot/sync
+        git push origin web3-bot/sync -f
