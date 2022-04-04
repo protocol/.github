@@ -2,6 +2,8 @@
 # This workflow is needed since GitHub Actions limits the matrix size to 256 jobs.
 # We use one job per repository per batch.
 
+name: Dispatch
+
 on:
   push:
     branches: [ master, testing ]
@@ -136,8 +138,7 @@ jobs:
               echo "Failed to create a PR for '$target'"
               failed+=("$target(create)")
             fi
-            # 3 seconds seemed not to be enough, trying 10
-            sleep 10
+            sleep 3
           done
           if ((${#failed[@]})); then
             echo "::error ::Failed to sync PRs in: ${failed[@]}"
