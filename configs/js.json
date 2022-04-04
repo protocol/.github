@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "files": [
+      ".github/workflows/automerge.yml",
+      ".github/workflows/js-test-and-release.yml"
+    ]
+  },
+  "repositories": [
+    { "target": "alanshaw/abortable-iterator" },
+    { "target": "alanshaw/get-iterator" },
+    { "target": "alanshaw/it-block" },
+    { "target": "alanshaw/it-concat" },
+    { "target": "alanshaw/it-goodbye" },
+    { "target": "alanshaw/it-length-prefixed" },
+    { "target": "alanshaw/it-pair" },
+    { "target": "alanshaw/it-pipe" },
+    { "target": "alanshaw/it-pushable" },
+    { "target": "alanshaw/it-reader" },
+    { "target": "alanshaw/it-tar" },
+    { "target": "alanshaw/it-to-stream" },
+    { "target": "alanshaw/it-ws" },
+    { "target": "ipfs-shipyard/check-aegir-project" },
+    { "target": "ipfs/js-blockstore-core" },
+    { "target": "ipfs/js-datastore-core" },
+    { "target": "ipfs/js-datastore-fs" },
+    { "target": "ipfs/js-datastore-level" },
+    { "target": "ipfs/js-datastore-pubsub" },
+    { "target": "ipfs/js-datastore-s3" },
+    { "target": "ipfs/js-ipfs-utils" },
+    { "target": "jacobheun/it-handshake" },
+    { "target": "libp2p/js-libp2p-bootstrap" },
+    { "target": "libp2p/js-libp2p-crypto" },
+    { "target": "libp2p/js-libp2p-floodsub" },
+    { "target": "libp2p/js-libp2p-interfaces" },
+    { "target": "libp2p/js-libp2p-kad-dht" },
+    { "target": "libp2p/js-libp2p-mdns" },
+    { "target": "libp2p/js-libp2p-mplex" },
+    { "target": "libp2p/js-libp2p-record" },
+    { "target": "libp2p/js-libp2p-tcp" },
+    { "target": "libp2p/js-libp2p-utils" },
+    { "target": "libp2p/js-libp2p-webrtc-star" },
+    { "target": "libp2p/js-libp2p-websockets" },
+    { "target": "vasco-santos/is-loopback-addr" }
+  ]
+}
