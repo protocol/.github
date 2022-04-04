@@ -39,6 +39,11 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
+    - name: determine GitHub default branch
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      run: |
+        default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+        echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -100,6 +105,8 @@ jobs:
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
+          # replace $default-branch with this repo's GitHub default branch
+          sed -i "s:\$default-branch:${{ env.DEFAULT_BRANCH }}:g" $tmp
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
