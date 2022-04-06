@@ -14,7 +14,6 @@
   "repositories": [
     { "target": "filecoin-project/go-amt-ipld" },
     { "target": "filecoin-project/go-bitfield" },
-    { "target": "filecoin-project/go-commp-utils" },
     { "target": "filecoin-project/go-fil-commp-hashhash" },
     { "target": "filecoin-project/go-hamt-ipld" },
     { "target": "filecoin-project/go-indexer-core" },
