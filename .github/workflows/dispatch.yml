@@ -33,13 +33,13 @@ jobs:
         run: |
           targets=()
           for config in configs/*.json; do
-            echo "::group::$config"
             if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
               continue
             fi
             if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
               continue
             fi
+            echo "::group::$config"
             defaults=$(jq -c '.defaults' $config)
             # values defined in the repository object will override the default values
             # e.g. { "files": ["a", "b"] } + { "files": ["c"] } = { "files": ["c"] }
@@ -104,43 +104,3 @@ jobs:
           # checks every 3 seconds until the copy workflow run's status is completed
           # redirects the stdout to /dev/null because it is very chatty
           gh run watch "${{ steps.run.outputs.id }}" --repo "${{ env.WORKFLOW_REPO }}" > /dev/null
-      - id: jobs
-        name: Find copy workflow jobs that pushed changes
-        env:
-          STEP_NAME: 'Force push web3-bot/sync branch'
-        run: |
-          targets="$(gh api --paginate '/repos/${{ env.WORKFLOW_REPO }}/actions/runs/${{ steps.run.outputs.id }}/jobs' | jq '.jobs | map(select(.steps[] | select(.name == "${{ env.STEP_NAME }}") and select(.conclusion == "success"))) | map(.name)' | jq -sc 'add')"
-          echo "::set-output name=targets::$targets"
-      - name: Sync PRs in targets that need it
-        env:
-          PR_TITLE: 'sync: update CI config files'
-          PR_BODY: 'Syncing to commit ${{ github.event.head_commit.url }}.'
-          PR_BRANCH: 'web3-bot/sync'
-        run: |
-          failed=()
-          for target in $(jq -r '.[]' <<< ${{ toJson(steps.jobs.outputs.targets) }}); do
-            base="$(gh api "/repos/${target}" --jq '.default_branch')"
-            # tries to create a PR in target
-            if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f body="${{ env.PR_BODY }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
-              echo "Successfully created a PR for '$target'"
-            elif [[ "$(jq -r '.errors[0].message' <<< "$result")" == 'A pull request already exists'* ]]; then
-              number="$(gh api "/repos/$target/pulls?head=${{ env.PR_BRANCH }}&per_page=1&state=open" --jq '.[0].number')"
-              # tries to update the PR in target
-              if result="$(gh api -X PATCH "/repos/$target/pulls/$number" -f body="${{ env.PR_BODY }}" -f base="$base")"; then
-                echo "Successfully updated the PR for '$target'"
-              else
-                echo "$result"
-                echo "Failed to update the PR for '$target'"
-                failed+=("$target(update)")
-              fi
-            else
-              echo "$result"
-              echo "Failed to create a PR for '$target'"
-              failed+=("$target(create)")
-            fi
-            sleep 3
-          done
-          if ((${#failed[@]})); then
-            echo "::error ::Failed to sync PRs in: ${failed[@]}"
-            exit 1
-          fi
