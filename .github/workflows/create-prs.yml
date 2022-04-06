@@ -24,15 +24,7 @@ jobs:
         run: |
           targets=()
           for config in configs/*.json; do
-            if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
-              continue
-            fi
-            if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
-              continue
-            fi
-            echo "::group::$config"
             targets+=($(jq -rc ".repositories[] | .target" $config))
-            echo "::endgroup::"
           done
           failed=()
           for target in ${targets[@]}; do
