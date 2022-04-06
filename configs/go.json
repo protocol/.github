@@ -18,7 +18,7 @@
     { "target": "filecoin-project/go-hamt-ipld" },
     { "target": "filecoin-project/go-indexer-core" },
     { "target": "filecoin-project/go-legs" },
-    { "target": "filecoin-project/indexer-reference-provider" },
+    { "target": "filecoin-project/index-provider" },
     { "target": "filecoin-project/storetheindex" },
     { "target": "filecoin-shipyard/js-lotus-client-schema" },
     { "target": "ipfs-shipyard/dnslink-dnsimple" },
