@@ -12,6 +12,7 @@
     "deploy_go": true
   },
   "repositories": [
+    { "target": "filecoin-project/eudico" },
     { "target": "filecoin-project/go-amt-ipld" },
     { "target": "filecoin-project/go-bitfield" },
     { "target": "filecoin-project/go-commp-utils" },
