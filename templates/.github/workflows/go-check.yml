@@ -29,7 +29,7 @@ jobs:
         uses: protocol/multiple-go-modules@v1.2
         with:
           run: |
-            go mod tidy
+            go mod tidy -compat=1.17
             if [[ -n $(git ls-files --other --exclude-standard --directory -- go.sum) ]]; then
               echo "go.sum was added by go mod tidy"
               exit 1
