@@ -35,6 +35,7 @@
     { "target": "ipfs/go-cidutil" },
     { "target": "ipfs/go-dagwriter" },
     { "target": "ipfs/go-datastore" },
+    { "target": "ipfs/go-delegated-routing" },
     { "target": "ipfs/go-detect-race" },
     { "target": "ipfs/go-dnslink" },
     { "target": "ipfs/go-ds-badger" },
