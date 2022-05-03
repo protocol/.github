@@ -36,7 +36,7 @@ jobs:
             fi
             git diff --exit-code -- go.sum go.mod
       - name: gofmt
-        if: ${{ success() || failure() }} # run this step even if the previous one failed
+        if: always() # run this step even if the previous one failed
         run: |
           out=$(gofmt -s -l .)
           if [[ -n "$out" ]]; then
@@ -44,12 +44,12 @@ jobs:
             exit 1
           fi
       - name: go vet
-        if: ${{ success() || failure() }} # run this step even if the previous one failed
+        if: always() # run this step even if the previous one failed
         uses: protocol/multiple-go-modules@v1.2
         with:
           run: go vet ./...
       - name: staticcheck
-        if: ${{ success() || failure() }} # run this step even if the previous one failed
+        if: always() # run this step even if the previous one failed
         uses: protocol/multiple-go-modules@v1.2
         with:
           run: |
@@ -57,7 +57,7 @@ jobs:
             staticcheck ./... | sed -e 's@\(.*\)\.go@./\1.go@g'
       - name: go generate
         uses: protocol/multiple-go-modules@v1.2
-        if: (success() || failure()) && env.RUNGOGENERATE == 'true'
+        if: always() && env.RUNGOGENERATE == 'true'
         with:
           run: |
             git clean -fd # make sure there aren't untracked files / directories
