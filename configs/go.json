@@ -108,6 +108,7 @@
     { "target": "ipld/go-ipld-adl-hamt" },
     { "target": "ipld/go-ipld-btc" },
     { "target": "ipld/go-ipld-graphql" },
+    { "target": "ipld/go-ipld-prime" },
     { "target": "ipld/go-ipld-selector-text-lite" },
     { "target": "ipld/go-ipldtool" },
     { "target": "ipld/go-storethehash" },
