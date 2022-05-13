@@ -14,9 +14,8 @@ jobs:
         name: Retrieve new version from version.json
         run: |
           # https://docs.github.com/en/rest/reference/repos#get-repository-content
-          version="$(gh api -X GET '/repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
+          version="$(gh api -X GET 'repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version // ""')"
           status=$? && ([[ $status == 0 ]] || exit $status)
-
           echo "version=$version"
           echo "::set-output name=this::$version"
       - id: tag_exists
