@@ -184,6 +184,7 @@
     { "target": "multiformats/go-multihash" },
     { "target": "multiformats/go-multistream" },
     { "target": "multiformats/go-varint" },
-    { "target": "multiformats/ma-pipe" }
+    { "target": "multiformats/ma-pipe" },
+    { "target": "testground/testground" }
   ]
 }
