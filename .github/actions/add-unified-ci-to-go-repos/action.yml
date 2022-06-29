@@ -1,0 +1,15 @@
+name: 'Add Unified CI to Go repos'
+description: 'Add Unified CI to Go repositories'
+inputs:
+  GITHUB_TOKEN:
+    description: 'A GitHub token to use with GitHub API'
+    required: true
+  repos:
+    description: 'A list of Go repositories to add Unified CI to'
+    required: true
+outputs:
+  pr:
+    description: 'A link to the PR which adds Unified CI to Go repos'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

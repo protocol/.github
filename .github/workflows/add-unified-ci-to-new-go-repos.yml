@@ -1,10 +1,10 @@
-name: Find Go repos without Unified CI
+name: Add Unified CI to new Go repositories
 on:
   - push
   - workflow_dispatch
 
 jobs:
-  find:
+  find-and-add:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -17,3 +17,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
       - run: jq length <<< '${{ steps.repos.outputs.all }}'
       - run: jq length <<< '${{ steps.repos.outputs.new }}'
+      - uses: ./.github/actions/add-unified-ci-to-go-repos
+        with:
+          GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          repos: '["ipfs/start-ipfs-daemon-action","ipfs/download-ipfs-distribution-action"]'
