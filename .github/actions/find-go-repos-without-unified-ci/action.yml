@@ -1,0 +1,14 @@
+name: 'Find Go repos without Unified CI'
+description: 'Find Go repositories that web3-bot has access to that do not have a Unified CI'
+inputs:
+  GITHUB_TOKEN:
+    description: 'A GitHub token to use with GitHub API'
+    required: true
+outputs:
+  all:
+    description: 'A list of Go repositories without Unified CI'
+  new:
+    description: 'A list of new Go repositories without Unified CI'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

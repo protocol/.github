@@ -1,0 +1,19 @@
+name: Find Go repos without Unified CI
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+      - id: repos
+        uses: ./.github/actions/find-go-repos-without-unified-ci
+        with:
+          GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+      - run: jq length <<< '${{ steps.repos.outputs.all }}'
+      - run: jq length <<< '${{ steps.repos.outputs.new }}'
