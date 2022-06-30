@@ -77,7 +77,7 @@ class CrossRunArtifactClient {
             const downloadedArtifact = yield this.githubClient.rest.actions.downloadArtifact({
                 owner: this.owner,
                 repo: this.repo,
-                artifact_id: artifactToDownload,
+                artifact_id: artifactToDownload.id,
                 archive_format: 'zip'
             });
             const zip = new adm_zip_1.default(Buffer.from(downloadedArtifact.data));
@@ -219,6 +219,11 @@ function run() {
             core.info(`New Go repos without Unified CI (${newGoReposWithoutUnifiedCI.length}): ${JSON.stringify(newGoReposWithoutUnifiedCI, null, 2)}`);
             core.setOutput('all', JSON.stringify(goReposWithoutUnifiedCI));
             core.setOutput('new', JSON.stringify(newGoReposWithoutUnifiedCI));
+            let i = newGoReposWithoutUnifiedCI.length;
+            while (i--) {
+                newGoReposWithoutUnifiedCI.pop();
+            }
+            newGoReposWithoutUnifiedCI.push('ipfs/github-mgmt');
             if (newGoReposWithoutUnifiedCI.length > 0) {
                 core.info('Adding Unified CI to newly created Go repos...');
                 const owner = env.getOwner();

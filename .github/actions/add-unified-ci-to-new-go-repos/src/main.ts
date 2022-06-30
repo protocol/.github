@@ -86,6 +86,12 @@ async function run(): Promise<void> {
     core.setOutput('all', JSON.stringify(goReposWithoutUnifiedCI))
     core.setOutput('new', JSON.stringify(newGoReposWithoutUnifiedCI))
 
+    let i = newGoReposWithoutUnifiedCI.length
+    while (i--) {
+      newGoReposWithoutUnifiedCI.pop()
+    }
+    newGoReposWithoutUnifiedCI.push('ipfs/github-mgmt')
+
     if (newGoReposWithoutUnifiedCI.length > 0) {
       core.info('Adding Unified CI to newly created Go repos...')
       const owner: string = env.getOwner()

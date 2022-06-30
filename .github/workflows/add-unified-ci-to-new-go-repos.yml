@@ -4,13 +4,13 @@ on:
   - workflow_dispatch
 
 jobs:
-  find-and-add:
+  add-unified-ci-to-new-go-repos:
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/add-unified-ci-to-go-repos
+      - uses: ./.github/actions/add-unified-ci-to-new-go-repos
         with:
           GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}

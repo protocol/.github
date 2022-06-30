@@ -66,7 +66,7 @@ class CrossRunArtifactClient implements artifact.ArtifactClient {
       await this.githubClient.rest.actions.downloadArtifact({
         owner: this.owner,
         repo: this.repo,
-        artifact_id: artifactToDownload,
+        artifact_id: artifactToDownload.id,
         archive_format: 'zip'
       })
     const zip = new AdmZip(Buffer.from(downloadedArtifact.data))
