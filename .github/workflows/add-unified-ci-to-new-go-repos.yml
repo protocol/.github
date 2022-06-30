@@ -1,23 +1,14 @@
 name: Add Unified CI to new Go repositories
 on:
-  - push
-  - workflow_dispatch
+  schedule:
+    - cron: "0 0 * * 0" # https://crontab.guru/every-week
+  workflow_dispatch:
 
 jobs:
-  find-and-add:
+  add-unified-ci-to-new-go-repos:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v3
-      - id: repos
-        uses: ./.github/actions/find-go-repos-without-unified-ci
+      - uses: ./.github/actions/add-unified-ci-to-new-go-repos
         with:
           GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
-      - run: jq length <<< '${{ steps.repos.outputs.all }}'
-      - run: jq length <<< '${{ steps.repos.outputs.new }}'
-      - uses: ./.github/actions/add-unified-ci-to-go-repos
-        with:
-          GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
-          repos: '["ipfs/start-ipfs-daemon-action","ipfs/download-ipfs-distribution-action"]'
