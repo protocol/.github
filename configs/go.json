@@ -12,164 +12,485 @@
     "deploy_go": true
   },
   "repositories": [
-    { "target": "filecoin-project/go-address" },
-    { "target": "filecoin-project/go-amt-ipld" },
-    { "target": "filecoin-project/go-bitfield" },
-    { "target": "filecoin-project/go-fil-commp-hashhash" },
-    { "target": "filecoin-project/go-hamt-ipld" },
-    { "target": "filecoin-project/go-indexer-core" },
-    { "target": "filecoin-project/go-legs" },
-    { "target": "filecoin-project/index-provider" },
-    { "target": "filecoin-project/storetheindex" },
-    { "target": "filecoin-shipyard/js-lotus-client-schema" },
-    { "target": "ipfs-shipyard/dnslink-dnsimple" },
-    { "target": "ipfs-shipyard/git-remote-ipld" },
-    { "target": "ipfs-shipyard/ipfs-counter" },
-    { "target": "ipfs-shipyard/w3rc" },
-    { "target": "ipfs/bbloom" },
-    { "target": "ipfs/go-bitfield" },
-    { "target": "ipfs/go-bitswap" },
-    { "target": "ipfs/go-block-format" },
-    { "target": "ipfs/go-blockservice" },
-    { "target": "ipfs/go-bs-sqlite3" },
-    { "target": "ipfs/go-cid" },
-    { "target": "ipfs/go-cidutil" },
-    { "target": "ipfs/go-dagwriter" },
-    { "target": "ipfs/go-datastore" },
-    { "target": "ipfs/go-delegated-routing" },
-    { "target": "ipfs/go-detect-race" },
-    { "target": "ipfs/go-dnslink" },
-    { "target": "ipfs/go-ds-badger" },
-    { "target": "ipfs/go-ds-badger2" },
-    { "target": "ipfs/go-ds-bitcask" },
-    { "target": "ipfs/go-ds-dynamodb" },
-    { "target": "ipfs/go-ds-flatfs" },
-    { "target": "ipfs/go-ds-leveldb" },
-    { "target": "ipfs/go-ds-measure" },
-    { "target": "ipfs/go-ds-pebble" },
-    { "target": "ipfs/go-ds-redis" },
-    { "target": "ipfs/go-ds-s3" },
-    { "target": "ipfs/go-ds-sql" },
-    { "target": "ipfs/go-fetcher" },
-    { "target": "ipfs/go-filestore" },
-    { "target": "ipfs/go-fs-lock" },
-    { "target": "ipfs/go-graphsync" },
-    { "target": "ipfs/go-ipfs-api" },
-    { "target": "ipfs/go-ipfs-blockstore" },
-    { "target": "ipfs/go-ipfs-blocksutil" },
-    { "target": "ipfs/go-ipfs-chunker" },
-    { "target": "ipfs/go-ipfs-cmds" },
-    { "target": "ipfs/go-ipfs-delay" },
-    { "target": "ipfs/go-ipfs-ds-help" },
-    { "target": "ipfs/go-ipfs-example-plugin" },
-    { "target": "ipfs/go-ipfs-exchange-interface" },
-    { "target": "ipfs/go-ipfs-exchange-offline" },
-    { "target": "ipfs/go-ipfs-files" },
-    { "target": "ipfs/go-ipfs-http-client" },
-    { "target": "ipfs/go-ipfs-keystore" },
-    { "target": "ipfs/go-ipfs-pinner" },
-    { "target": "ipfs/go-ipfs-posinfo" },
-    { "target": "ipfs/go-ipfs-pq" },
-    { "target": "ipfs/go-ipfs-provider" },
-    { "target": "ipfs/go-ipfs-routing" },
-    { "target": "ipfs/go-ipfs-util" },
-    { "target": "ipfs/go-ipld-cbor" },
-    { "target": "ipfs/go-ipld-format" },
-    { "target": "ipfs/go-ipld-git" },
-    { "target": "ipfs/go-ipld-legacy" },
-    { "target": "ipfs/go-ipns" },
-    { "target": "ipfs/go-log" },
-    { "target": "ipfs/go-merkledag" },
-    { "target": "ipfs/go-metrics-interface" },
-    { "target": "ipfs/go-metrics-prometheus" },
-    { "target": "ipfs/go-mfs" },
-    { "target": "ipfs/go-namesys" },
-    { "target": "ipfs/go-path" },
-    { "target": "ipfs/go-peertaskqueue" },
-    { "target": "ipfs/go-pinning-service-http-client" },
-    { "target": "ipfs/go-qringbuf" },
-    { "target": "ipfs/go-todocounter" },
-    { "target": "ipfs/go-unixfs" },
-    { "target": "ipfs/go-unixfsnode" },
-    { "target": "ipfs/go-verifcid" },
-    { "target": "ipfs/hang-fds" },
-    { "target": "ipfs/interface-go-ipfs-core" },
-    { "target": "ipfs/ipfs-ds-convert" },
-    { "target": "ipfs/ipfs-ds-postgres" },
-    { "target": "ipfs/ipfs-update" },
-    { "target": "ipfs/ipget" },
-    { "target": "ipfs/iptb" },
-    { "target": "ipfs/iptb-plugins" },
-    { "target": "ipfs/pinbot-irc" },
-    { "target": "ipfs/tar-utils" },
-    { "target": "ipld/codec-fixtures" },
-    { "target": "ipld/edelweiss" },
-    { "target": "ipld/go-car" },
-    { "target": "ipld/go-codec-dagpb" },
-    { "target": "ipld/go-ipld-adl-hamt" },
-    { "target": "ipld/go-ipld-btc" },
-    { "target": "ipld/go-ipld-graphql" },
-    { "target": "ipld/go-ipld-prime" },
-    { "target": "ipld/go-ipld-selector-text-lite" },
-    { "target": "ipld/go-ipldtool" },
-    { "target": "ipld/go-storethehash" },
-    { "target": "libp2p/dht-tracer1" },
-    { "target": "libp2p/dht-utils" },
-    { "target": "libp2p/go-buffer-pool" },
-    { "target": "libp2p/go-cidranger" },
-    { "target": "libp2p/go-composable-routing" },
-    { "target": "libp2p/go-doh-resolver" },
-    { "target": "libp2p/go-eventbus" },
-    { "target": "libp2p/go-flow-metrics" },
-    { "target": "libp2p/go-libp2p" },
-    { "target": "libp2p/go-libp2p-asn-util" },
-    { "target": "libp2p/go-libp2p-backoff" },
-    { "target": "libp2p/go-libp2p-certbot" },
-    { "target": "libp2p/go-libp2p-circuit" },
-    { "target": "libp2p/go-libp2p-consensus" },
-    { "target": "libp2p/go-libp2p-core" },
-    { "target": "libp2p/go-libp2p-daemon" },
-    { "target": "libp2p/go-libp2p-gorpc" },
-    { "target": "libp2p/go-libp2p-gostream" },
-    { "target": "libp2p/go-libp2p-http" },
-    { "target": "libp2p/go-libp2p-introspector" },
-    { "target": "libp2p/go-libp2p-kad-dht" },
-    { "target": "libp2p/go-libp2p-kbucket" },
-    { "target": "libp2p/go-libp2p-loggables" },
-    { "target": "libp2p/go-libp2p-peerstore" },
-    { "target": "libp2p/go-libp2p-pubsub-router" },
-    { "target": "libp2p/go-libp2p-pubsub-tracer" },
-    { "target": "libp2p/go-libp2p-raft" },
-    { "target": "libp2p/go-libp2p-record" },
-    { "target": "libp2p/go-libp2p-relay-daemon" },
-    { "target": "libp2p/go-libp2p-resource-manager" },
-    { "target": "libp2p/go-libp2p-routing-helpers" },
-    { "target": "libp2p/go-libp2p-testing" },
-    { "target": "libp2p/go-libp2p-webrtc-direct" },
-    { "target": "libp2p/go-libp2p-xor" },
-    { "target": "libp2p/go-mplex" },
-    { "target": "libp2p/go-msgio" },
-    { "target": "libp2p/go-nat" },
-    { "target": "libp2p/go-netroute" },
-    { "target": "libp2p/go-openssl" },
-    { "target": "libp2p/go-reuseport" },
-    { "target": "libp2p/go-routing-language" },
-    { "target": "libp2p/go-smart-record" },
-    { "target": "libp2p/go-socket-activation" },
-    { "target": "libp2p/go-yamux" },
-    { "target": "libp2p/hydra-booster" },
-    { "target": "libp2p/repl" },
-    { "target": "libp2p/zeroconf" },
-    { "target": "multiformats/go-base32" },
-    { "target": "multiformats/go-base36" },
-    { "target": "multiformats/go-multiaddr" },
-    { "target": "multiformats/go-multiaddr-dns" },
-    { "target": "multiformats/go-multiaddr-fmt" },
-    { "target": "multiformats/go-multibase" },
-    { "target": "multiformats/go-multicodec" },
-    { "target": "multiformats/go-multihash" },
-    { "target": "multiformats/go-multistream" },
-    { "target": "multiformats/go-varint" },
-    { "target": "multiformats/ma-pipe" }
+    {
+      "target": "filecoin-project/go-address"
+    },
+    {
+      "target": "filecoin-project/go-amt-ipld"
+    },
+    {
+      "target": "filecoin-project/go-bitfield"
+    },
+    {
+      "target": "filecoin-project/go-fil-commp-hashhash"
+    },
+    {
+      "target": "filecoin-project/go-hamt-ipld"
+    },
+    {
+      "target": "filecoin-project/go-indexer-core"
+    },
+    {
+      "target": "filecoin-project/go-legs"
+    },
+    {
+      "target": "filecoin-project/index-provider"
+    },
+    {
+      "target": "filecoin-project/storetheindex"
+    },
+    {
+      "target": "filecoin-shipyard/js-lotus-client-schema"
+    },
+    {
+      "target": "ipfs-shipyard/dnslink-dnsimple"
+    },
+    {
+      "target": "ipfs-shipyard/git-remote-ipld"
+    },
+    {
+      "target": "ipfs-shipyard/ipfs-counter"
+    },
+    {
+      "target": "ipfs-shipyard/w3rc"
+    },
+    {
+      "target": "ipfs/bbloom"
+    },
+    {
+      "target": "ipfs/github-mgmt"
+    },
+    {
+      "target": "ipfs/go-bitfield"
+    },
+    {
+      "target": "ipfs/go-bitswap"
+    },
+    {
+      "target": "ipfs/go-block-format"
+    },
+    {
+      "target": "ipfs/go-blockservice"
+    },
+    {
+      "target": "ipfs/go-bs-sqlite3"
+    },
+    {
+      "target": "ipfs/go-cid"
+    },
+    {
+      "target": "ipfs/go-cidutil"
+    },
+    {
+      "target": "ipfs/go-dagwriter"
+    },
+    {
+      "target": "ipfs/go-datastore"
+    },
+    {
+      "target": "ipfs/go-delegated-routing"
+    },
+    {
+      "target": "ipfs/go-detect-race"
+    },
+    {
+      "target": "ipfs/go-dnslink"
+    },
+    {
+      "target": "ipfs/go-ds-badger"
+    },
+    {
+      "target": "ipfs/go-ds-badger2"
+    },
+    {
+      "target": "ipfs/go-ds-bitcask"
+    },
+    {
+      "target": "ipfs/go-ds-dynamodb"
+    },
+    {
+      "target": "ipfs/go-ds-flatfs"
+    },
+    {
+      "target": "ipfs/go-ds-leveldb"
+    },
+    {
+      "target": "ipfs/go-ds-measure"
+    },
+    {
+      "target": "ipfs/go-ds-pebble"
+    },
+    {
+      "target": "ipfs/go-ds-redis"
+    },
+    {
+      "target": "ipfs/go-ds-s3"
+    },
+    {
+      "target": "ipfs/go-ds-sql"
+    },
+    {
+      "target": "ipfs/go-fetcher"
+    },
+    {
+      "target": "ipfs/go-filestore"
+    },
+    {
+      "target": "ipfs/go-fs-lock"
+    },
+    {
+      "target": "ipfs/go-graphsync"
+    },
+    {
+      "target": "ipfs/go-ipfs-api"
+    },
+    {
+      "target": "ipfs/go-ipfs-blockstore"
+    },
+    {
+      "target": "ipfs/go-ipfs-blocksutil"
+    },
+    {
+      "target": "ipfs/go-ipfs-chunker"
+    },
+    {
+      "target": "ipfs/go-ipfs-cmds"
+    },
+    {
+      "target": "ipfs/go-ipfs-delay"
+    },
+    {
+      "target": "ipfs/go-ipfs-ds-help"
+    },
+    {
+      "target": "ipfs/go-ipfs-example-plugin"
+    },
+    {
+      "target": "ipfs/go-ipfs-exchange-interface"
+    },
+    {
+      "target": "ipfs/go-ipfs-exchange-offline"
+    },
+    {
+      "target": "ipfs/go-ipfs-files"
+    },
+    {
+      "target": "ipfs/go-ipfs-http-client"
+    },
+    {
+      "target": "ipfs/go-ipfs-keystore"
+    },
+    {
+      "target": "ipfs/go-ipfs-pinner"
+    },
+    {
+      "target": "ipfs/go-ipfs-posinfo"
+    },
+    {
+      "target": "ipfs/go-ipfs-pq"
+    },
+    {
+      "target": "ipfs/go-ipfs-provider"
+    },
+    {
+      "target": "ipfs/go-ipfs-routing"
+    },
+    {
+      "target": "ipfs/go-ipfs-util"
+    },
+    {
+      "target": "ipfs/go-ipld-cbor"
+    },
+    {
+      "target": "ipfs/go-ipld-format"
+    },
+    {
+      "target": "ipfs/go-ipld-git"
+    },
+    {
+      "target": "ipfs/go-ipld-legacy"
+    },
+    {
+      "target": "ipfs/go-ipns"
+    },
+    {
+      "target": "ipfs/go-log"
+    },
+    {
+      "target": "ipfs/go-merkledag"
+    },
+    {
+      "target": "ipfs/go-metrics-interface"
+    },
+    {
+      "target": "ipfs/go-metrics-prometheus"
+    },
+    {
+      "target": "ipfs/go-mfs"
+    },
+    {
+      "target": "ipfs/go-namesys"
+    },
+    {
+      "target": "ipfs/go-path"
+    },
+    {
+      "target": "ipfs/go-peertaskqueue"
+    },
+    {
+      "target": "ipfs/go-pinning-service-http-client"
+    },
+    {
+      "target": "ipfs/go-qringbuf"
+    },
+    {
+      "target": "ipfs/go-todocounter"
+    },
+    {
+      "target": "ipfs/go-unixfs"
+    },
+    {
+      "target": "ipfs/go-unixfsnode"
+    },
+    {
+      "target": "ipfs/go-verifcid"
+    },
+    {
+      "target": "ipfs/hang-fds"
+    },
+    {
+      "target": "ipfs/interface-go-ipfs-core"
+    },
+    {
+      "target": "ipfs/ipfs-ds-convert"
+    },
+    {
+      "target": "ipfs/ipfs-ds-postgres"
+    },
+    {
+      "target": "ipfs/ipfs-update"
+    },
+    {
+      "target": "ipfs/ipget"
+    },
+    {
+      "target": "ipfs/iptb"
+    },
+    {
+      "target": "ipfs/iptb-plugins"
+    },
+    {
+      "target": "ipfs/pinbot-irc"
+    },
+    {
+      "target": "ipfs/tar-utils"
+    },
+    {
+      "target": "ipld/codec-fixtures"
+    },
+    {
+      "target": "ipld/edelweiss"
+    },
+    {
+      "target": "ipld/go-car"
+    },
+    {
+      "target": "ipld/go-codec-dagpb"
+    },
+    {
+      "target": "ipld/go-ipld-adl-hamt"
+    },
+    {
+      "target": "ipld/go-ipld-btc"
+    },
+    {
+      "target": "ipld/go-ipld-graphql"
+    },
+    {
+      "target": "ipld/go-ipld-prime"
+    },
+    {
+      "target": "ipld/go-ipld-selector-text-lite"
+    },
+    {
+      "target": "ipld/go-ipldtool"
+    },
+    {
+      "target": "ipld/go-storethehash"
+    },
+    {
+      "target": "libp2p/dht-tracer1"
+    },
+    {
+      "target": "libp2p/dht-utils"
+    },
+    {
+      "target": "libp2p/go-buffer-pool"
+    },
+    {
+      "target": "libp2p/go-cidranger"
+    },
+    {
+      "target": "libp2p/go-composable-routing"
+    },
+    {
+      "target": "libp2p/go-doh-resolver"
+    },
+    {
+      "target": "libp2p/go-eventbus"
+    },
+    {
+      "target": "libp2p/go-flow-metrics"
+    },
+    {
+      "target": "libp2p/go-libp2p"
+    },
+    {
+      "target": "libp2p/go-libp2p-asn-util"
+    },
+    {
+      "target": "libp2p/go-libp2p-backoff"
+    },
+    {
+      "target": "libp2p/go-libp2p-certbot"
+    },
+    {
+      "target": "libp2p/go-libp2p-circuit"
+    },
+    {
+      "target": "libp2p/go-libp2p-consensus"
+    },
+    {
+      "target": "libp2p/go-libp2p-core"
+    },
+    {
+      "target": "libp2p/go-libp2p-daemon"
+    },
+    {
+      "target": "libp2p/go-libp2p-gorpc"
+    },
+    {
+      "target": "libp2p/go-libp2p-gostream"
+    },
+    {
+      "target": "libp2p/go-libp2p-http"
+    },
+    {
+      "target": "libp2p/go-libp2p-introspector"
+    },
+    {
+      "target": "libp2p/go-libp2p-kad-dht"
+    },
+    {
+      "target": "libp2p/go-libp2p-kbucket"
+    },
+    {
+      "target": "libp2p/go-libp2p-loggables"
+    },
+    {
+      "target": "libp2p/go-libp2p-peerstore"
+    },
+    {
+      "target": "libp2p/go-libp2p-pubsub-router"
+    },
+    {
+      "target": "libp2p/go-libp2p-pubsub-tracer"
+    },
+    {
+      "target": "libp2p/go-libp2p-raft"
+    },
+    {
+      "target": "libp2p/go-libp2p-record"
+    },
+    {
+      "target": "libp2p/go-libp2p-relay-daemon"
+    },
+    {
+      "target": "libp2p/go-libp2p-resource-manager"
+    },
+    {
+      "target": "libp2p/go-libp2p-routing-helpers"
+    },
+    {
+      "target": "libp2p/go-libp2p-testing"
+    },
+    {
+      "target": "libp2p/go-libp2p-webrtc-direct"
+    },
+    {
+      "target": "libp2p/go-libp2p-xor"
+    },
+    {
+      "target": "libp2p/go-mplex"
+    },
+    {
+      "target": "libp2p/go-msgio"
+    },
+    {
+      "target": "libp2p/go-nat"
+    },
+    {
+      "target": "libp2p/go-netroute"
+    },
+    {
+      "target": "libp2p/go-openssl"
+    },
+    {
+      "target": "libp2p/go-reuseport"
+    },
+    {
+      "target": "libp2p/go-routing-language"
+    },
+    {
+      "target": "libp2p/go-smart-record"
+    },
+    {
+      "target": "libp2p/go-socket-activation"
+    },
+    {
+      "target": "libp2p/go-yamux"
+    },
+    {
+      "target": "libp2p/hydra-booster"
+    },
+    {
+      "target": "libp2p/repl"
+    },
+    {
+      "target": "libp2p/zeroconf"
+    },
+    {
+      "target": "multiformats/go-base32"
+    },
+    {
+      "target": "multiformats/go-base36"
+    },
+    {
+      "target": "multiformats/go-multiaddr"
+    },
+    {
+      "target": "multiformats/go-multiaddr-dns"
+    },
+    {
+      "target": "multiformats/go-multiaddr-fmt"
+    },
+    {
+      "target": "multiformats/go-multibase"
+    },
+    {
+      "target": "multiformats/go-multicodec"
+    },
+    {
+      "target": "multiformats/go-multihash"
+    },
+    {
+      "target": "multiformats/go-multistream"
+    },
+    {
+      "target": "multiformats/go-varint"
+    },
+    {
+      "target": "multiformats/ma-pipe"
+    }
   ]
 }
