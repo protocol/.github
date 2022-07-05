@@ -113,7 +113,7 @@ async function run(): Promise<void> {
         ...new Set(contributors.flat().map(contributor => contributor.login))
       ]
         .map(login => {
-          return `- [ ] @${login}`
+          return `- [ ] ${login} <!-- TODO: turn into a mention once we gain confidence in this logic -->`
         })
         .join('\n')
       const reposChecklist: string = newGoReposWithoutUnifiedCI
