@@ -280,9 +280,6 @@
       "target": "ipfs/iptb-plugins"
     },
     {
-      "target": "ipfs/kubo"
-    },
-    {
       "target": "ipfs/pinbot-irc"
     },
     {
