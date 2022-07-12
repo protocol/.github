@@ -28,10 +28,12 @@ runs:
           if [[ $CURRENT_VERSION < $TARGET_VERSION ]]; then
             echo "GO_VERSION_BUMP=1" >> $GITHUB_ENV
 
-            # Update the version in go.mod. This alone ensures there's a diff.
-            go mod edit -go $TARGET_VERSION
-
             # We tidy immediately because some updates require it
+            # We ensure dependencies are resolved to versions supported by CURRENT_VERSION of Go
+            # It also modifies Go version in the go.mod which ensures there's a diff
+            go mod tidy -go=$CURRENT_VERSION && go mod tidy -go=$TARGET_VERSION
+
+            $ Just in case, check again if everything's OK after the version upgrade
             go mod tidy
 
             # In the future, "go fix" may make changes to Go code,
