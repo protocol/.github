@@ -34,7 +34,7 @@ runs:
             # It also modifies Go version in the go.mod which ensures there's a diff
             go mod tidy -go=$PREVIOUS_TARGET_VERSION && go mod tidy -go=$TARGET_VERSION
 
-            $ Just in case, check again if everything's OK after the version upgrade
+            # Just in case, check again if everything's OK after the version upgrade
             go mod tidy
 
             # In the future, "go fix" may make changes to Go code,
