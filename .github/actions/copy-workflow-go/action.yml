@@ -20,6 +20,7 @@ runs:
           # As such, it has to be the minimum of all Go versions supported.
           # Bump this every six months, as new Go versions come out.
           TARGET_VERSION=1.17
+          PREVIOUS_TARGET_VERSION=1.16
 
           # Note that the "<" comparison doesn't understand semver,
           # but it should be good enough for the foreseeable future.
@@ -28,10 +29,12 @@ runs:
           if [[ $CURRENT_VERSION < $TARGET_VERSION ]]; then
             echo "GO_VERSION_BUMP=1" >> $GITHUB_ENV
 
-            # Update the version in go.mod. This alone ensures there's a diff.
-            go mod edit -go $TARGET_VERSION
-
             # We tidy immediately because some updates require it
+            # We ensure dependencies are resolved to versions supported by the PREVIOUS_TARGET_VERSION of Go
+            # It also modifies Go version in the go.mod which ensures there's a diff
+            go mod tidy -go=$PREVIOUS_TARGET_VERSION && go mod tidy -go=$TARGET_VERSION
+
+            $ Just in case, check again if everything's OK after the version upgrade
             go mod tidy
 
             # In the future, "go fix" may make changes to Go code,
