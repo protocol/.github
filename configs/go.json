@@ -214,6 +214,9 @@
       "target": "ipfs/go-ipns"
     },
     {
+      "target": "ipfs/go-libipfs"
+    },
+    {
       "target": "ipfs/go-log"
     },
     {
