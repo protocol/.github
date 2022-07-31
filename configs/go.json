@@ -55,6 +55,9 @@
       "target": "ipfs-shipyard/ipfs-counter"
     },
     {
+      "target": "ipfs-shipyard/thunderdome"
+    },
+    {
       "target": "ipfs-shipyard/w3rc"
     },
     {
