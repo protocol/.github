@@ -8,18 +8,18 @@ runs:
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        go-version: "1.18.x"
+        go-version: "1.19.x"
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
         run: |
           # We want our modules to support two Go versions at a time.
-          # As of March 2022, Go 1.18 is the latest stable.
+          # As of August 2022, Go 1.19 is the latest stable.
           # go.mod's Go version declares the language version being used.
           # As such, it has to be the minimum of all Go versions supported.
           # Bump this every six months, as new Go versions come out.
-          TARGET_VERSION=1.17
+          TARGET_VERSION=1.18
 
           # Note that the "<" comparison doesn't understand semver,
           # but it should be good enough for the foreseeable future.
