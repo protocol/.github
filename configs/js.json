@@ -19,7 +19,6 @@
     { "target": "alanshaw/it-tar" },
     { "target": "alanshaw/it-to-stream" },
     { "target": "alanshaw/it-ws" },
-    { "target": "ipfs-shipyard/check-aegir-project" },
     { "target": "ipfs/aegir" },
     { "target": "ipfs/js-blockstore-core" },
     { "target": "ipfs/js-datastore-core" },
