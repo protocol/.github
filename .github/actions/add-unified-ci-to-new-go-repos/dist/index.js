@@ -239,7 +239,7 @@ function run() {
                     ...new Set(contributors.flat().map(contributor => contributor.login))
                 ]
                     .map(login => {
-                    return `- [ ] @${login}`;
+                    return `- [ ] ${login} <!-- TODO: turn into a mention once we gain confidence in this logic -->`;
                 })
                     .join('\n');
                 const reposChecklist = newGoReposWithoutUnifiedCI
@@ -267,13 +267,13 @@ function run() {
                     base: 'master',
                     title: 'Add Unified CI to new Go repositories',
                     body: `
-  The bot has detected new Go repositories that do not have Unified CI set up yet.
+The bot has detected new Go repositories that do not have Unified CI set up yet.
 
-  Trying to add Unified CI to these repositories:
-  ${reposChecklist}
+Trying to add Unified CI to these repositories:
+${reposChecklist}
 
-  Tagging the most active contributors for the new repositories:
-  ${contributorsChecklist}
+Tagging the most active contributors for the new repositories:
+${contributorsChecklist}
         `,
                     draft: true
                 });
