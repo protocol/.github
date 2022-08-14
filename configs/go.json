@@ -40,6 +40,9 @@
       "target": "filecoin-project/storetheindex"
     },
     {
+      "target": "filecoin-shipyard/indexstar"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
