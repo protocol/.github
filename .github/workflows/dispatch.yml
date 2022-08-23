@@ -28,7 +28,7 @@ jobs:
     outputs:
       batches: ${{ steps.set-matrix.outputs.batches }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: set-matrix
         run: |
           targets=()

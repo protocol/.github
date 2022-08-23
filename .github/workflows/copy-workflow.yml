@@ -28,7 +28,7 @@ jobs:
     name: ${{ matrix.cfg.target }}
     steps:
     - name: Checkout ${{ matrix.cfg.target }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: ${{ env.TARGET_REPO_DIR }}
         repository: ${{ matrix.cfg.target }}
@@ -36,7 +36,7 @@ jobs:
         persist-credentials: true
         submodules: recursive
     - name: Checkout template repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
     - name: determine GitHub default branch
