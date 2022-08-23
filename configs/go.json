@@ -340,8 +340,7 @@
       "target": "libp2p/go-flow-metrics"
     },
     {
-      "target": "libp2p/go-libp2p",
-      "source_ref": "preview"
+      "target": "libp2p/go-libp2p"
     },
     {
       "target": "libp2p/go-libp2p-asn-util"
