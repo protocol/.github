@@ -42,6 +42,24 @@ This check will be run in repositories that set `gogenerate` to `true` in `.gith
 Note that depending on the code generators used, it might be necessary to [install those first](#additional-setup-steps).
 The generators must also be deterministic, to prevent CI from getting different results each time.
 
+## Technical Preview
+
+You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
+
+To do so you have to set `source_ref` property to `next` on your repository target object in the configuration file.
+```json
+{
+  "repositories": [
+    {
+      "target": "pl-strflt/example",
+      "source_ref": "next"
+    }
+  ]
+}
+```
+
+_Warning_: `next` branch updates are much more frequent than those from `master`.
+
 ## Technical Details
 
 This repository currently defines two workflows for Go repositories:

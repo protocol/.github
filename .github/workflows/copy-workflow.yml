@@ -39,6 +39,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
+        ref: ${{ matrix.cfg.source_ref || github.ref }}
     - name: determine GitHub default branch
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
