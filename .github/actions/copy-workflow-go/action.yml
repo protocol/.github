@@ -4,7 +4,7 @@ description: Copy workflow steps specific to go
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-go@v2
+    - uses: actions/setup-go@v3
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
