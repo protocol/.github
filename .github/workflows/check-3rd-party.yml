@@ -1,4 +1,4 @@
-on: 
+on:
   pull_request:
     paths-ignore:
       - 'configs/*.json'
@@ -11,7 +11,7 @@ jobs:
     outputs:
       targets: ${{ steps.set-matrix.outputs.targets }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: set-matrix
         run: |
           TARGETS=$(find . -type f -name "*.yml" | sed "s|^\./||" | grep -v workflow-templates/header.yml | jq -R -s -c 'split("\n")[:-1]')
@@ -25,6 +25,6 @@ jobs:
         file: ${{ fromJson(needs.matrix.outputs.targets) }}
     name: ${{ matrix.file }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run check
         run: .github/workflows/check-3rd-party.sh ${{ matrix.file }}
