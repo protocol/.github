@@ -337,9 +337,6 @@
       "target": "libp2p/go-doh-resolver"
     },
     {
-      "target": "libp2p/go-eventbus"
-    },
-    {
       "target": "libp2p/go-flow-metrics"
     },
     {
@@ -360,9 +357,6 @@
     },
     {
       "target": "libp2p/go-libp2p-consensus"
-    },
-    {
-      "target": "libp2p/go-libp2p-core"
     },
     {
       "target": "libp2p/go-libp2p-daemon"
@@ -389,9 +383,6 @@
       "target": "libp2p/go-libp2p-loggables"
     },
     {
-      "target": "libp2p/go-libp2p-peerstore"
-    },
-    {
       "target": "libp2p/go-libp2p-pubsub-router"
     },
     {
@@ -405,9 +396,6 @@
     },
     {
       "target": "libp2p/go-libp2p-relay-daemon"
-    },
-    {
-      "target": "libp2p/go-libp2p-resource-manager"
     },
     {
       "target": "libp2p/go-libp2p-routing-helpers"

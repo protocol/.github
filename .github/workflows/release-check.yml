@@ -17,10 +17,10 @@ jobs:
       GOMODDIFF: ""
       RELEASE_BRANCH_NOTE: ""
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: "1.18.x"
+          go-version: "1.19.x"
       - name: Determine version
         if: hashFiles('version.json')
         run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
