@@ -32,6 +32,7 @@
     { "target": "ipfs/js-ipfs-utils" },
     { "target": "ipfs/js-ipfsd-ctl" },
     { "target": "ipfs/js-ipns" },
+    { "target": "ipfs/js-kubo-rpc-client" },
     { "target": "ipfs/protons" },
     { "target": "jacobheun/it-handshake" },
     { "target": "libp2p/js-libp2p-bootstrap" },
