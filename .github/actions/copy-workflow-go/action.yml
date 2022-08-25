@@ -59,6 +59,7 @@ runs:
               sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
               sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
               sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
+              sed -i 's/ioutil.Discard/io.Discard/' "${file}";
             done <<< "$(find . -type f -name '*.go')"
 
             go install golang.org/x/tools/cmd/goimports@v0.1.12
