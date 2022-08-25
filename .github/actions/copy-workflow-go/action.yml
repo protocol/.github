@@ -49,24 +49,23 @@ runs:
 
             # As of Go 1.19 io/ioutil is deprecated
             # We automate its upgrade here because it is quite a widely used package
-            if [[ $TARGET_VERSION == "1.18" ]]; then
-              while read file; do
-                sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
-                sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
-                # Skipping ReadDir replacement because it's a bit more complicated
-                # See https://pkg.go.dev/io/ioutil#ReadDir
-                # sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
-                sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
-                sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
-                sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
-                sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
-              done <<< "$(find . -type f -name '*.go')"
+            while read file; do
+              sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
+              sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
+              # Skipping ReadDir replacement because it's a bit more complicated
+              # See https://pkg.go.dev/io/ioutil#ReadDir
+              # sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
+              sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
+              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
+              sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
+              sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
+            done <<< "$(find . -type f -name '*.go')"
 
-              goimports -w .
+            go install golang.org/x/tools/cmd/goimports@b3b5c13b291f9653da6f31b95db100a2e26bd186 # v0.1.12
+            goimports -w .
 
-              git add .
-              git commit -m "stop using the deprecated io/ioutil package"
-            fi
+            git add .
+            git commit -m "stop using the deprecated io/ioutil package"
           fi
     - name: go mod tidy (on initial workflow deployment)
       if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
