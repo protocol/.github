@@ -61,7 +61,7 @@ runs:
               sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
             done <<< "$(find . -type f -name '*.go')"
 
-            go install golang.org/x/tools/cmd/goimports@b3b5c13b291f9653da6f31b95db100a2e26bd186 # v0.1.12
+            go install golang.org/x/tools/cmd/goimports@v0.1.12
             goimports -w .
 
             git add .
