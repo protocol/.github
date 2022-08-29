@@ -33,7 +33,7 @@ jobs:
             repos="$(jq -nc '$head - $base' --argjson head "$repos" --argjson base "$base")"
           fi
 
-          echo "::set-output name=this::$repos"
+          echo "::set-output name=repos::$repos"
       - name: find deleted / archived repositories
         run: |
           status=0
@@ -51,7 +51,7 @@ jobs:
                 echo "Repository $repo is archived."
                 status=1
               fi
-            done <<< "$(jq -r '.[] | select(.config == $key) | .repo' --arg key "$config" <<< '${{ steps.repos.outputs.this }}')"
+            done <<< "$(jq -r '.[] | select(.config == $key) | .repo' --arg key "$config" <<< '${{ steps.repos.outputs.repos }}')"
             echo "::endgroup::"
-          done <<< "$(jq -r 'map(.config) | unique | .[]' <<< '${{ steps.repos.outputs.this }}')"
+          done <<< "$(jq -r 'map(.config) | unique | .[]' <<< '${{ steps.repos.outputs.repos }}')"
           exit $status
