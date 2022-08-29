@@ -4,22 +4,23 @@ description: Copy workflow steps specific to go
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-go@v2
+    - uses: actions/setup-go@v3
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        go-version: "1.17.x"
+        go-version: "1.19.x"
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
         run: |
           # We want our modules to support two Go versions at a time.
-          # As of August 2021, Go 1.17 is the latest stable.
+          # As of August 2022, Go 1.19 is the latest stable.
           # go.mod's Go version declares the language version being used.
           # As such, it has to be the minimum of all Go versions supported.
           # Bump this every six months, as new Go versions come out.
-          TARGET_VERSION=1.16
+          TARGET_VERSION=1.18
+          PREVIOUS_TARGET_VERSION=1.17
 
           # Note that the "<" comparison doesn't understand semver,
           # but it should be good enough for the foreseeable future.
@@ -28,8 +29,13 @@ runs:
           if [[ $CURRENT_VERSION < $TARGET_VERSION ]]; then
             echo "GO_VERSION_BUMP=1" >> $GITHUB_ENV
 
-            # Update the version in go.mod. This alone ensures there's a diff.
-            go mod edit -go $TARGET_VERSION
+            # We tidy immediately because some updates require it
+            # We ensure dependencies are resolved to versions supported by the PREVIOUS_TARGET_VERSION of Go
+            # It also modifies Go version in the go.mod which ensures there's a diff
+            go mod tidy -go=$PREVIOUS_TARGET_VERSION && go mod tidy -go=$TARGET_VERSION
+
+            # Just in case, check again if everything's OK after the version upgrade
+            go mod tidy
 
             # In the future, "go fix" may make changes to Go code,
             # such as to adapt to language changes or API deprecations.
@@ -40,9 +46,32 @@ runs:
             # We don't tidy, because the next step does that.
             # Separate commits also help with reviews.
             git commit -m "bump go.mod to Go $TARGET_VERSION and run go fix"
+
+            # As of Go 1.19 io/ioutil is deprecated
+            # We automate its upgrade here because it is quite a widely used package
+            while read file; do
+              sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
+              sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
+              # Skipping ReadDir replacement because it's a bit more complicated
+              # See https://pkg.go.dev/io/ioutil#ReadDir
+              # sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
+              sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
+              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
+              sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
+              sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
+              sed -i 's/ioutil.Discard/io.Discard/' "${file}";
+            done <<< "$(find . -type f -name '*.go')"
+
+            go install golang.org/x/tools/cmd/goimports@v0.1.12
+            goimports -w .
+
+            git add .
+            if ! git diff-index --quiet HEAD; then
+              git commit -m "stop using the deprecated io/ioutil package"
+            fi
           fi
-    - name: go mod tidy (on initial workflow deployment and on new Go version)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
+    - name: go mod tidy (on initial workflow deployment)
+      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
@@ -58,7 +87,7 @@ runs:
       shell: bash
       run: |
         gofmt -s -w .
-        if ! git diff --quiet; then
-          git add .
+        git add .
+        if ! git diff-index --quiet HEAD; then
           git commit -m "run gofmt -s"
         fi
