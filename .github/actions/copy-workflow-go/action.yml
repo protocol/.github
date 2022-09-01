@@ -52,9 +52,8 @@ runs:
             while read file; do
               sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
               sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
-              # Skipping ReadDir replacement because it's a bit more complicated
-              # See https://pkg.go.dev/io/ioutil#ReadDir
-              # sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
+              # ReadDir replacement might require manual intervention (https://pkg.go.dev/io/ioutil#ReadDir)
+              sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
               sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
               sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
               sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
