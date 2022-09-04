@@ -37,6 +37,9 @@
       "target": "filecoin-project/homebrew-exporter"
     },
     {
+      "target": "filecoin-project/homebrew-exporter"
+    },
+    {
       "target": "filecoin-project/index-provider"
     },
     {
