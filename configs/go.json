@@ -82,9 +82,6 @@
       "target": "ipfs/go-cidutil"
     },
     {
-      "target": "ipfs/go-dagwriter"
-    },
-    {
       "target": "ipfs/go-datastore"
     },
     {
@@ -378,9 +375,6 @@
     },
     {
       "target": "libp2p/go-libp2p-kbucket"
-    },
-    {
-      "target": "libp2p/go-libp2p-loggables"
     },
     {
       "target": "libp2p/go-libp2p-pubsub-router"
