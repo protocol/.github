@@ -37,6 +37,9 @@
       "target": "filecoin-project/index-provider"
     },
     {
+      "target": "filecoin-project/snapcraft-exporter"
+    },
+    {
       "target": "filecoin-project/storetheindex"
     },
     {
