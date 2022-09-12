@@ -350,9 +350,6 @@
       "target": "libp2p/go-libp2p-certbot"
     },
     {
-      "target": "libp2p/go-libp2p-circuit"
-    },
-    {
       "target": "libp2p/go-libp2p-consensus"
     },
     {
