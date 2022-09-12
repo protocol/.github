@@ -34,6 +34,9 @@
       "target": "filecoin-project/go-legs"
     },
     {
+      "target": "filecoin-project/homebrew-exporter"
+    },
+    {
       "target": "filecoin-project/index-provider"
     },
     {
