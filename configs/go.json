@@ -196,6 +196,9 @@
       "target": "ipfs/go-ipfs-provider"
     },
     {
+      "target": "ipfs/go-ipfs-redirects-file"
+    },
+    {
       "target": "ipfs/go-ipfs-routing"
     },
     {
