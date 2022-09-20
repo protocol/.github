@@ -64,6 +64,9 @@
       "target": "ipfs-shipyard/w3rc"
     },
     {
+      "target": "ipfs-shipyard/go-libp2p-kitsune"
+    },
+    {
       "target": "ipfs/bbloom"
     },
     {
