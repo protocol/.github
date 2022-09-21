@@ -58,6 +58,9 @@
       "target": "ipfs-shipyard/go-ipfs-redirects"
     },
     {
+      "target": "ipfs-shipyard/go-libp2p-kitsune"
+    },
+    {
       "target": "ipfs-shipyard/ipfs-counter"
     },
     {
