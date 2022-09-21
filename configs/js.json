@@ -66,6 +66,7 @@
     { "target": "libp2p/js-libp2p-websockets" },
     { "target": "multiformats/js-mafmt" },
     { "target": "multiformats/js-multiaddr" },
+    { "target": "multiformats/js-multiaddr-to-uri" },
     { "target": "vasco-santos/dns-over-http-resolver" },
     { "target": "vasco-santos/is-loopback-addr" }
   ]
