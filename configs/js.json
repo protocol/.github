@@ -67,6 +67,7 @@
     { "target": "multiformats/js-mafmt" },
     { "target": "multiformats/js-multiaddr" },
     { "target": "multiformats/js-multiaddr-to-uri" },
+    { "target": "multiformats/js-uri-to-multiaddr" },
     { "target": "vasco-santos/dns-over-http-resolver" },
     { "target": "vasco-santos/is-loopback-addr" }
   ]
