@@ -35,6 +35,7 @@ jobs:
 
           echo "::set-output name=repos::$repos"
       - name: find deleted / archived repositories
+        if: ${{ steps.repos.outputs.repos != '[]' }}
         run: |
           status=0
           while read config; do
