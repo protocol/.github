@@ -13,6 +13,12 @@
   },
   "repositories": [
     {
+      "target": "filecoin-project/docker-hub-exporter"
+    },
+    {
+      "target": "filecoin-project/github-exporter"
+    },
+    {
       "target": "filecoin-project/go-address"
     },
     {
