@@ -65,6 +65,7 @@
     { "target": "libp2p/js-libp2p-webrtc-peer" },
     { "target": "libp2p/js-libp2p-webrtc-star" },
     { "target": "libp2p/js-libp2p-websockets" },
+    { "target": "libp2p/js-libp2p-webtransport" },
     { "target": "multiformats/js-mafmt" },
     { "target": "multiformats/js-multiaddr" },
     { "target": "multiformats/js-multiaddr-to-uri" },
