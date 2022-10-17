@@ -55,9 +55,6 @@
       "target": "ipfs-shipyard/git-remote-ipld"
     },
     {
-      "target": "ipfs-shipyard/go-ipfs-redirects"
-    },
-    {
       "target": "ipfs-shipyard/go-libp2p-kitsune"
     },
     {
@@ -197,6 +194,9 @@
     },
     {
       "target": "ipfs/go-ipfs-provider"
+    },
+    {
+      "target": "ipfs/go-ipfs-redirects-file"
     },
     {
       "target": "ipfs/go-ipfs-routing"
