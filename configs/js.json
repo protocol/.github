@@ -22,6 +22,7 @@
     { "target": "ipfs-shipyard/is-ipfs" },
     { "target": "ipfs/aegir" },
     { "target": "ipfs/js-blockstore-core" },
+    { "target": "ipfs/js-blockstore-datastore-adapter" },
     { "target": "ipfs/js-datastore-core" },
     { "target": "ipfs/js-datastore-fs" },
     { "target": "ipfs/js-datastore-level" },
