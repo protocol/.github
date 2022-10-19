@@ -29,6 +29,7 @@
     { "target": "ipfs/js-datastore-s3" },
     { "target": "ipfs/js-hamt-sharding" },
     { "target": "ipfs/js-ipfs-bitswap" },
+    { "target": "ipfs/js-ipfs-interfaces" },
     { "target": "ipfs/js-ipfs-unixfs" },
     { "target": "ipfs/js-ipfs-utils" },
     { "target": "ipfs/js-ipfsd-ctl" },
