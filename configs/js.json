@@ -20,6 +20,7 @@
     { "target": "alanshaw/it-to-stream" },
     { "target": "alanshaw/it-ws" },
     { "target": "ipfs-shipyard/is-ipfs" },
+    { "target": "ipfs-shipyard/ipfs-geoip" },
     { "target": "ipfs/aegir" },
     { "target": "ipfs/js-blockstore-core" },
     { "target": "ipfs/js-blockstore-datastore-adapter" },
