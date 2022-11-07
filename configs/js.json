@@ -62,6 +62,7 @@
     { "target": "libp2p/js-libp2p-peer-id" },
     { "target": "libp2p/js-libp2p-peer-record" },
     { "target": "libp2p/js-libp2p-peer-store" },
+    { "target": "libp2p/js-libp2p-prometheus-metrics" },
     { "target": "libp2p/js-libp2p-pubsub" },
     { "target": "libp2p/js-libp2p-pubsub-peer-discovery" },
     { "target": "libp2p/js-libp2p-record" },
