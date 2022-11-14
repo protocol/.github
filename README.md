@@ -42,6 +42,19 @@ This check will be run in repositories that set `gogenerate` to `true` in `.gith
 Note that depending on the code generators used, it might be necessary to [install those first](#additional-setup-steps).
 The generators must also be deterministic, to prevent CI from getting different results each time.
 
+`go-test` offers an option to completely disable running 32-bit tests.
+This option is useful when a project or its upstream dependencies are not 32-bit compatible.
+Typically, such tests can be disabled using [build constraints](https://pkg.go.dev/cmd/go#hdr-Build_constraints).
+However, the constraints must be set per go file, which can be cumbersome for a project with many files.
+Using this option, 32-bit tests can be skipped entirely without having to specify build constraints per file.
+
+To completely disable running 32-bit tests set `skip32bit` to `true` in `.github/workflows/go-test-config.json`:
+```json
+{
+  "skip32bit": true
+}
+```
+
 ## Technical Preview
 
 You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
