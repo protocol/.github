@@ -13,10 +13,10 @@ jobs:
       GOMODDIFF: ""
       RELEASE_BRANCH_NOTE: ""
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: "1.17.x"
+          go-version: "1.19.x"
       - name: Determine version
         env:
           GITHUB_TOKEN: ${{ github.token }}
