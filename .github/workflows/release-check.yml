@@ -85,6 +85,7 @@ jobs:
         if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
+          go mod download
           go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
           output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
           printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
