@@ -1,0 +1,38 @@
+name: Add Label by Query
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: Query that finds issues or pull requests to which the label should be added
+        required: true
+      label:
+        description: Label that should be added to issues or pull requests matching the query (leave blank for dry run)
+        required: false
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - id: content
+        uses: protocol/github-api-action-library/find-content-by-query@v1
+        with:
+          query: ${{ github.event.inputs.query }}
+      - run: |
+          while read item; do
+            number="$(jq -r '.number' <<< "$item")"
+            nameWithOwner="$(jq -r '.repository.nameWithOwner' <<< "$item")"
+            if [ -z '${{ github.event.inputs.label }}' ]; then
+              echo "Would have added a label to $nameWithOwner#$number"
+            else
+              if gh issue edit "$number" --repo="$nameWithOwner" --add-label='${{ github.event.inputs.label }}'; then
+                echo "Successfully added label ${{ github.event.inputs.label }} to $nameWithOwner#$number"
+              else
+                echo "Failed to add label ${{ github.event.inputs.label }} to $nameWithOwner#$number"
+                echo "::warning ::$nameWithOwner#$number"
+              fi
+            fi
+          done <<< "$(jq -c '.[]' <<< '${{ steps.content.outputs.issues-or-pull-requests }}')"
+        shell: bash

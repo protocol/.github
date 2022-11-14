@@ -42,6 +42,37 @@ This check will be run in repositories that set `gogenerate` to `true` in `.gith
 Note that depending on the code generators used, it might be necessary to [install those first](#additional-setup-steps).
 The generators must also be deterministic, to prevent CI from getting different results each time.
 
+`go-test` offers an option to completely disable running 32-bit tests.
+This option is useful when a project or its upstream dependencies are not 32-bit compatible.
+Typically, such tests can be disabled using [build constraints](https://pkg.go.dev/cmd/go#hdr-Build_constraints).
+However, the constraints must be set per go file, which can be cumbersome for a project with many files.
+Using this option, 32-bit tests can be skipped entirely without having to specify build constraints per file.
+
+To completely disable running 32-bit tests set `skip32bit` to `true` in `.github/workflows/go-test-config.json`:
+```json
+{
+  "skip32bit": true
+}
+```
+
+## Technical Preview
+
+You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
+
+To do so you have to set `source_ref` property to `next` on your repository target object in the configuration file.
+```json
+{
+  "repositories": [
+    {
+      "target": "pl-strflt/example",
+      "source_ref": "next"
+    }
+  ]
+}
+```
+
+_Warning_: `next` branch updates are much more frequent than those from `master`.
+
 ## Technical Details
 
 This repository currently defines two workflows for Go repositories:
@@ -56,7 +87,7 @@ In order to help with the distribution of these workflows, this repository defin
 
 Workflows are distributed to all repositories listed in [configs/go.json](configs/go.json).
 
-If you want your project to participle, please send a PR!
+If you want your project to participle, please send a PR which adds your repository to the config! Remember to ensure [@web3-bot](https://github.com/web3-bot) has write access to your repository.
 
 ## Development
 

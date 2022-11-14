@@ -1,0 +1,75 @@
+name: Create PRs
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Dispatch]
+    types:
+      - completed
+
+jobs:
+  dispatch:
+    name: Create PRs in targets
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_commit.id || github.sha }}
+      - name: Sync PRs in targets that need it
+        env:
+          PR_TITLE: 'sync: update CI config files'
+          PR_BRANCH: 'web3-bot/sync'
+        run: |
+          targets=()
+          for config in configs/*.json; do
+            targets+=($(jq -rc ".repositories[] | .target" $config))
+          done
+          failed=()
+          for target in ${targets[@]}; do
+            echo "Processing ${target}"
+            base="$(gh api "/repos/${target}" --jq '.default_branch')"
+            # checks if a PR needs to be created
+            if [[ "$(gh api -X GET "/repos/${target}/compare/${base}...${{ env.PR_BRANCH }}" --jq '.status')" == 'ahead' ]]; then
+              if [[ "$(gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):${{ env.PR_BRANCH }}" -f base="$base" --jq 'length')" != '0' ]] ; then
+                echo "The PR already exists. Skipping."
+                continue
+              fi
+            else
+              echo "The branch does not exist or has diverged from ${base}. Skipping."
+              continue
+            fi
+            # tries to create a PR in target
+            pr_create_attempt=1
+            pr_create_max_attempts=12
+            pr_create_attempt_interval_in_seconds=1
+            pr_create_cooldown_in_seconds=1
+            # max cumulative sleep time - 68.25 minutes
+            while true; do
+              if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
+                echo "Successfully created a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
+                echo "Sleeping for $pr_create_cooldown_in_seconds seconds before creating a next one"
+                sleep $pr_create_cooldown_in_seconds
+                break
+              fi
+              if [[ "$(jq -r '.message' <<< "$result")" == 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.' ]]; then
+                if (( pr_create_attempt < pr_create_max_attempts )); then
+                  echo "Failed to create a PR for '$target' due to secondary rate limit ($pr_create_attempt/$pr_create_max_attempts)"
+                  echo "Sleeping for $pr_create_attempt_interval_in_seconds seconds before trying again"
+                  sleep $pr_create_attempt_interval_in_seconds
+                  pr_create_attempt_interval_in_seconds=$((pr_create_attempt_interval_in_seconds * 2))
+                  pr_create_attempt=$((pr_create_attempt + 1))
+                  continue
+                fi
+              fi
+              echo "$result"
+              echo "Failed to create a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
+              failed+=("$target")
+              break
+            done
+          done
+          if ((${#failed[@]})); then
+            echo "::error ::Failed to sync PRs in: ${failed[@]}"
+            exit 1
+          fi
