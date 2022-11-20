@@ -331,6 +331,9 @@
       "target": "ipld/go-storethehash"
     },
     {
+      "target": "ipni/heyfil"
+    },
+    {
       "target": "libp2p/dht-tracer1"
     },
     {
