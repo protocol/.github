@@ -412,9 +412,6 @@
       "target": "libp2p/go-libp2p-testing"
     },
     {
-      "target": "libp2p/go-libp2p-webrtc-direct"
-    },
-    {
       "target": "libp2p/go-libp2p-xor"
     },
     {
