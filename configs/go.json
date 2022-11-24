@@ -124,7 +124,8 @@
       "target": "ipfs/go-ds-measure"
     },
     {
-      "target": "ipfs/go-ds-pebble"
+      "target": "ipfs/go-ds-pebble",
+      "source_ref": "next"
     },
     {
       "target": "ipfs/go-ds-redis"
