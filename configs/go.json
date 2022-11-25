@@ -109,6 +109,9 @@
       "target": "ipfs/go-ds-badger2"
     },
     {
+      "target": "ipfs/go-ds-badger3"
+    },
+    {
       "target": "ipfs/go-ds-bitcask"
     },
     {
