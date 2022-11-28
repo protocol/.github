@@ -227,6 +227,9 @@
       "target": "ipfs/go-ipns"
     },
     {
+      "target": "ipfs/go-libipfs"
+    },
+    {
       "target": "ipfs/go-log"
     },
     {
@@ -291,9 +294,6 @@
     },
     {
       "target": "ipfs/iptb-plugins"
-    },
-    {
-      "target": "ipfs/libkubo"
     },
     {
       "target": "ipfs/pinbot-irc"
