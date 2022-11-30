@@ -338,6 +338,12 @@
       "target": "ipni/heyfil"
     },
     {
+      "target": "ipni/index-observer"
+    },
+    {
+      "target": "ipni/indexstar"
+    },
+    {
       "target": "libp2p/dht-tracer1"
     },
     {
