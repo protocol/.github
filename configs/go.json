@@ -64,6 +64,9 @@
       "target": "ipfs-shipyard/thunderdome"
     },
     {
+      "target": "ipfs-shipyard/vole"
+    },
+    {
       "target": "ipfs-shipyard/w3rc"
     },
     {
