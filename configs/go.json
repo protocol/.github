@@ -13,6 +13,9 @@
   },
   "repositories": [
     {
+      "target": "filecoin-project/circleci-exporter"
+    },
+    {
       "target": "filecoin-project/go-address"
     },
     {
@@ -299,6 +302,9 @@
       "target": "ipfs/iptb-plugins"
     },
     {
+      "target": "ipfs/libkubo"
+    },
+    {
       "target": "ipfs/pinbot-irc"
     },
     {
@@ -338,13 +344,22 @@
       "target": "ipld/go-storethehash"
     },
     {
+      "target": "ipni/go-indexer-core"
+    },
+    {
       "target": "ipni/heyfil"
     },
     {
       "target": "ipni/index-observer"
     },
     {
+      "target": "ipni/index-provider"
+    },
+    {
       "target": "ipni/indexstar"
+    },
+    {
+      "target": "ipni/storetheindex"
     },
     {
       "target": "libp2p/dht-tracer1"
