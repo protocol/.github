@@ -28,9 +28,6 @@
       "target": "filecoin-project/go-hamt-ipld"
     },
     {
-      "target": "filecoin-project/go-indexer-core"
-    },
-    {
       "target": "filecoin-project/go-legs"
     },
     {
@@ -333,6 +330,9 @@
     },
     {
       "target": "ipld/go-storethehash"
+    },
+    {
+      "target": "ipni/go-indexer-core"
     },
     {
       "target": "ipni/heyfil"
