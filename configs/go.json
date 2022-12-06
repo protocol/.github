@@ -40,9 +40,6 @@
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
-      "target": "filecoin-project/storetheindex"
-    },
-    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
@@ -342,6 +339,9 @@
     },
     {
       "target": "ipni/indexstar"
+    },
+    {
+      "target": "ipni/storetheindex"
     },
     {
       "target": "libp2p/dht-tracer1"
