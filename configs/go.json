@@ -302,9 +302,6 @@
       "target": "ipfs/pinbot-irc"
     },
     {
-      "target": "ipfs/tar-utils"
-    },
-    {
       "target": "ipld/codec-fixtures"
     },
     {
