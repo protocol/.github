@@ -13,6 +13,9 @@
   },
   "repositories": [
     {
+      "target": "filecoin-project/cidtravel"
+    },
+    {
       "target": "filecoin-project/go-address"
     },
     {
@@ -330,6 +333,9 @@
     },
     {
       "target": "ipni/go-indexer-core"
+    },
+    {
+      "target": "ipni/go-naam"
     },
     {
       "target": "ipni/heyfil"
