@@ -40,10 +40,10 @@
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
-      "target": "filecoin-shipyard/js-lotus-client-schema"
+      "target": "filecoin-project/go-data-segment"
     },
     {
-      "target": "filecoin-shipyard/go-data-segment"
+      "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
       "target": "ipfs-shipyard/dnslink-dnsimple"
