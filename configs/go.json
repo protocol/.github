@@ -43,6 +43,9 @@
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
+      "target": "filecoin-shipyard/go-data-segment"
+    },
+    {
       "target": "ipfs-shipyard/dnslink-dnsimple"
     },
     {
