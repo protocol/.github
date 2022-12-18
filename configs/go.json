@@ -40,6 +40,9 @@
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
+      "target": "filecoin-project/venus-sealer"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
