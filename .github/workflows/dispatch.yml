@@ -8,6 +8,10 @@ on:
   push:
     branches: [ master, testing ]
   workflow_dispatch:
+  
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   # Number of repositories in a batch.
