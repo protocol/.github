@@ -22,6 +22,9 @@
       "target": "filecoin-project/go-bitfield"
     },
     {
+      "target": "filecoin-project/go-data-segment"
+    },
+    {
       "target": "filecoin-project/go-fil-commp-hashhash"
     },
     {
