@@ -1,0 +1,60 @@
+name: Add Label by Query
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: Query that finds issues or pull requests to which the label should be added
+        required: true
+      label:
+        description: Label that should be added to issues or pull requests matching the query
+        required: true
+      dry-run:
+        description: If set to true, the workflow will only print expected actions
+        required: false
+        default: 'true'
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - name: Add label by query
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QUERY: ${{ github.event.inputs.query }}
+          LABEL: ${{ github.event.inputs.label }}
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
+              q: process.env.QUERY
+            })
+            for (const item of items) {
+              const labels = item.labels.map(l => l.name)
+              if (labels.includes(process.env.LABEL)) {
+                core.debug(`Skipping because ${item.url} already contains ${process.env.LABEL}`)
+                continue
+              }
+              if (process.env.DRY_RUN === 'true') {
+                core.info(`Would have added ${process.env.LABEL} label to ${item.url}`)
+                continue
+              }
+              const [_, owner, repo] = item.url.match(/repos\/(.+?)\/(.+?)\/issues/)
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: item.number,
+                  labels: [{
+                    name: process.env.LABEL
+                  }]
+                })
+                core.info(`Added ${process.env.LABEL} label to ${item.url}`)
+              } catch(error) {
+                core.error(`Couldn't add ${process.env.LABEL} label to ${item.url}, got: ${error}`)
+              }
+            }
