@@ -413,11 +413,7 @@
       "target": "libp2p/go-libp2p-record"
     },
     {
-      "target": "libp2p/go-libp2p-relay-daemon",
-      "extra_files": [
-        ".github/workflows/sync-release-assets.yml"
-      ],
-      "dist": "libp2p-relay-daemon"
+      "target": "libp2p/go-libp2p-relay-daemon"
     },
     {
       "target": "libp2p/go-libp2p-routing-helpers"
