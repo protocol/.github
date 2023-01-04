@@ -37,9 +37,6 @@
       "target": "filecoin-project/homebrew-exporter"
     },
     {
-      "target": "filecoin-project/index-provider"
-    },
-    {
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
@@ -335,10 +332,16 @@
       "target": "ipni/go-indexer-core"
     },
     {
+      "target": "ipni/go-naam"
+    },
+    {
       "target": "ipni/heyfil"
     },
     {
       "target": "ipni/index-observer"
+    },
+    {
+      "target": "ipni/index-provider"
     },
     {
       "target": "ipni/indexstar"
