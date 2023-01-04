@@ -25,13 +25,13 @@
       "target": "filecoin-project/go-bitfield"
     },
     {
+      "target": "filecoin-project/go-data-segment"
+    },
+    {
       "target": "filecoin-project/go-fil-commp-hashhash"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
-    },
-    {
-      "target": "filecoin-project/go-indexer-core"
     },
     {
       "target": "filecoin-project/go-legs"
@@ -44,9 +44,6 @@
     },
     {
       "target": "filecoin-project/snapcraft-exporter"
-    },
-    {
-      "target": "filecoin-project/storetheindex"
     },
     {
       "target": "filecoin-shipyard/js-lotus-client-schema"
@@ -308,9 +305,6 @@
       "target": "ipfs/pinbot-irc"
     },
     {
-      "target": "ipfs/tar-utils"
-    },
-    {
       "target": "ipld/codec-fixtures"
     },
     {
@@ -351,9 +345,6 @@
     },
     {
       "target": "ipni/index-observer"
-    },
-    {
-      "target": "ipni/index-provider"
     },
     {
       "target": "ipni/indexstar"
