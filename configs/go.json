@@ -25,6 +25,9 @@
       "target": "filecoin-project/go-bitfield"
     },
     {
+      "target": "filecoin-project/go-data-segment"
+    },
+    {
       "target": "filecoin-project/go-fil-commp-hashhash"
     },
     {
@@ -35,9 +38,6 @@
     },
     {
       "target": "filecoin-project/homebrew-exporter"
-    },
-    {
-      "target": "filecoin-project/index-provider"
     },
     {
       "target": "filecoin-project/snapcraft-exporter"
@@ -342,6 +342,9 @@
     },
     {
       "target": "ipni/index-observer"
+    },
+    {
+      "target": "ipni/index-provider"
     },
     {
       "target": "ipni/indexstar"
