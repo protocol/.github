@@ -74,7 +74,7 @@ jobs:
         name: run git diff on go.mod file(s)
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
         env:
-          PREV_VERSION: steps.prev.outputs.version
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
           # First get the diff for the go.mod file in the root directory...
           output=$(git diff "$PREV_VERSION..HEAD" -- './go.mod')
@@ -89,7 +89,7 @@ jobs:
         name: Run gorelease
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
         env:
-          PREV_VERSION: steps.prev.outputs.version
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
           go mod download
@@ -100,7 +100,7 @@ jobs:
         name: Check Compatibility
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
         env:
-          PREV_VERSION: steps.prev.outputs.version
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
           output=$(gocompat compare --go1compat --git-refs="$PREV_VERSION..HEAD" ./... || true)
