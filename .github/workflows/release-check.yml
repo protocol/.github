@@ -114,12 +114,12 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BASE_REF: ${{ github.base_ref }}
         run: |
-          echo "output<<EOF
+          echo 'output<<EOF
           ---
-          ## Cutting a Release (when not on \`$DEFAULT_BRANCH\`)
+          ## Cutting a Release (when not on `'"$DEFAULT_BRANCH"'`)
 
-          This PR is targeting \`$BASE_REF\`, which is not the default branch.
-          If you wish to cut a release once this PR is merged, please add the \`release\` label to this PR.
+          This PR is targeting `'"$BASE_REF"'`, which is not the default branch.
+          If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
           EOF" >> $GITHUB_ENV
       - id: message
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
@@ -134,24 +134,24 @@ jobs:
           FOOTNOTE: ${{ steps.footnote.outputs.output }}
         run: |
           echo 'output<<EOF
-          Suggested version: `$VERSION`
-          Comparing to: [`$PREV_VERSION`]($BASE_HTML_URL/releases/tag/$PREV_VERSION) ([diff]($HTML_URL/compare/$PREV_VERSION..$HEAD_LABEL))
+          Suggested version: `'"$VERSION"'`
+          Comparing to: [`'"$PREV_VERSION"'`]('"$BASE_HTML_URL"'/releases/tag/'"$PREV_VERSION"') ([diff]('"$HTML_URL"'/compare/'"$PREV_VERSION"'..'"$HEAD_LABEL"'))
 
           Changes in `go.mod` file(s):
           ```diff
-          $GIT_DIFF
+          '"$GIT_DIFF"'
           ```
 
           `gorelease` says:
           ```
-          $GORELEASE
+          '"$GORELEASE"'
           ```
 
           `gocompat` says:
           ```
-          $GOCOMPAT
+          '"$GOCOMPAT"'
           ```
-          $FOOTNOTE
+          '"$FOOTNOTE"'
           EOF' >> $GITHUB_OUTPUT
       - name: Post message on PR
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
