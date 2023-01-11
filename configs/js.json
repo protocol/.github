@@ -45,6 +45,7 @@
     { "target": "ipld/js-dag-pb" },
     { "target": "ipld/js-ipld-garbage" },
     { "target": "jacobheun/it-handshake" },
+    { "target": "libp2p/interop" },
     { "target": "libp2p/js-libp2p-bootstrap" },
     { "target": "libp2p/js-libp2p-crypto" },
     { "target": "libp2p/js-libp2p-daemon" },

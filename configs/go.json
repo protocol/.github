@@ -37,6 +37,9 @@
       "target": "filecoin-project/homebrew-exporter"
     },
     {
+      "target": "filecoin-project/lassie"
+    },
+    {
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
@@ -441,9 +444,6 @@
     },
     {
       "target": "libp2p/go-netroute"
-    },
-    {
-      "target": "libp2p/go-openssl"
     },
     {
       "target": "libp2p/go-reuseport"
