@@ -182,9 +182,6 @@
       "target": "ipfs/go-ipfs-exchange-offline"
     },
     {
-      "target": "ipfs/go-ipfs-files"
-    },
-    {
       "target": "ipfs/go-ipfs-http-client"
     },
     {
