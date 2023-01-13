@@ -26,6 +26,7 @@ runs:
 ```
 
 These setup steps are run after the repository has been checked out and after Go has been installed, but before any tests or checks are run.
+If you need to access the GitHub Token in a setup action, you can do so through `github.token` variable in the [`github` context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context). Unfortunately, the actions do not have access to the [`secrets` context](https://docs.github.com/en/actions/learn-github-actions/contexts#secrets-context).
 
 ### Configuration
 
