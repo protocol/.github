@@ -329,6 +329,9 @@
       "target": "ipld/go-storethehash"
     },
     {
+      "target": "ipni/dhstore"
+    },
+    {
       "target": "ipni/go-indexer-core"
     },
     {
