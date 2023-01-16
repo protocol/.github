@@ -4,47 +4,52 @@ on: [ workflow_call ]
 jobs:
   releaser:
     runs-on: ubuntu-latest
-    env:
-      TAG_EXISTS: "true"
-      VERSION: "" # the version number read from version.json
-      COMPARETO: "" # the version number to compare this version to
-      GORELEASE: ""
-      GOCOMPAT: ""
-      GOMODDIFF: ""
-      RELEASE_BRANCH_NOTE: ""
     steps:
+      - run: echo "EOF=EOF$RANDOM" >> $GITHUB_ENV
+        shell: bash
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
           go-version: "1.19.x"
-      - name: Determine version
+      - id: version
+        name: Determine version
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           # If `version.json` file doesn't exists, `version` is `""` and `404` is printed on stderr.
           # The step won't be marked as a failure though because the error happens in a subshell.
-          version="$(gh api -X GET 'repos/${{ github.event.pull_request.head.repo.full_name }}/contents/version.json' -f ref='${{ github.event.pull_request.head.sha }}' --jq '.content' | base64 -d | jq -r '.version')"
+          version="$(gh api -X GET "repos/$HEAD_FULL_NAME/contents/version.json" -f ref="$HEAD_SHA" --jq '.content' | base64 -d | jq -r '.version')"
           echo "version=$version"
-          echo "VERSION=$version" >> $GITHUB_ENV
-      - name: Check if the tag already exists
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - id: tag
+        name: Check if the tag already exists
         # Check if a git tag for the version (as read from version.json) exists
         # If that is the case, we don't need to run the rest of the workflow.
-        if: env.VERSION != ''
+        if: steps.version.outputs.version != ''
         run: |
           git fetch origin --tags
           status=0
-          git rev-list $VERSION &> /dev/null || status=$?
-          if [[ $status != 0 ]]; then
-            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          git rev-list "$VERSION" &> /dev/null || status=$?
+          if [[ $status == 0 ]]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
       - name: Install semver (node command line tool)
-        if: env.TAG_EXISTS == 'false'
+        if: steps.tag.outputs.exists == 'false'
         run: npm install -g "https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569" # v7.3.5
       - name: Check version
-        if: env.TAG_EXISTS == 'false'
-        run: semver ${{ env.VERSION }} # fails if the version is not a valid semver version (e.g. v0.1 would fail)
-      - name: Determine version number to compare to
-        if: env.TAG_EXISTS == 'false'
+        if: steps.tag.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: semver "$VERSION" # fails if the version is not a valid semver version (e.g. v0.1 would fail)
+      - id: prev
+        name: Determine version number to compare to
+        if: steps.tag.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         # We need to determine the version number we want to compare to,
         # taking into account that this might be a (patch) release on a release branch.
         # Example:
@@ -56,83 +61,97 @@ jobs:
           go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
           vs=$(git tag | paste -sd , -)
           if [[ ! -z "$vs" ]]; then
-            v=$(semver-highest -target ${{ env.VERSION }} -versions "$vs")
+            v=$(semver-highest -target "$VERSION" -versions "$vs")
             status=$?
             if [[ $status != 0 ]]; then
               echo $v
               exit $status
             fi
-            echo "COMPARETO=$v" >> $GITHUB_ENV
+            echo "version=$v" >> $GITHUB_ENV
           fi
       - name: Post output
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO == ''
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version == ''
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
         with:
           header: release-check
           recreate: true
           message: |
-            Suggested version: `${{ env.VERSION }}`
+            Suggested version: `${{ steps.version.outputs.version }}`
 
             This is the first release of this module.
-      - name: run git diff on go.mod file(s)
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+      - id: git-diff
+        name: run git diff on go.mod file(s)
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
+        env:
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
           # First get the diff for the go.mod file in the root directory...
-          output=$(git diff ${{ env.COMPARETO }}..HEAD -- './go.mod')
+          output=$(git diff "$PREV_VERSION..HEAD" -- './go.mod')
           # ... then get the diff for all go.mod files in subdirectories.
           # Note that this command also finds go.mod files more than one level deep in the directory structure.
-          output+=$(git diff ${{ env.COMPARETO }}..HEAD -- '*/go.mod')
+          output+=$(git diff "$PREV_VERSION..HEAD" -- '*/go.mod')
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
-          printf "GOMODDIFF<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - name: Run gorelease
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+          printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
+      - id: gorelease
+        name: Run gorelease
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
+        env:
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
+          go mod download
           go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
-          output=$((gorelease -base ${{ env.COMPARETO }}) 2>&1 || true)
-          printf "GORELEASE<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - name: Check Compatibility
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+          output=$((gorelease -base "$PREV_VERSION") 2>&1 || true)
+          printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
+      - id: gocompat
+        name: Check Compatibility
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
+        env:
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
           go install github.com/smola/gocompat/cmd/gocompat@8498b97a44792a3a6063c47014726baa63e2e669 # v0.3.0
-          output=$(gocompat compare --go1compat --git-refs="${{ env.COMPARETO }}..HEAD" ./... || true)
+          output=$(gocompat compare --go1compat --git-refs="$PREV_VERSION..HEAD" ./... || true)
           if [[ -z "$output" ]]; then
             output="(empty)"
           fi
-          printf "GOCOMPAT<<EOF\n%s\nEOF" "$output" >> $GITHUB_ENV
-      - run: |
-          echo "RELEASE_BRANCH_NOTE<<EOF
-          ---
-          ## Cutting a Release (when not on \`${{ github.event.repository.default_branch }}\`)
-
-          This PR is targeting \`${{ github.base_ref }}\`, which is not the default branch.
-          If you wish to cut a release once this PR is merged, please add the \`release\` label to this PR.
-          EOF" >> $GITHUB_ENV
+          printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
+      - id: footnote
         if: github.base_ref != github.event.repository.default_branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          echo 'output<<'"$EOF"'
+          ---
+          ## Cutting a Release (when not on `'"$DEFAULT_BRANCH"'`)
+
+          This PR is targeting `'"$BASE_REF"'`, which is not the default branch.
+          If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
+          '"$EOF" >> $GITHUB_ENV
       - name: Post message on PR
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: env.TAG_EXISTS == 'false' && env.COMPARETO != ''
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
         with:
           header: release-check
           recreate: true
           message: |
-            Suggested version: `${{ env.VERSION }}`
-            Comparing to: [`${{ env.COMPARETO }}`](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ env.COMPARETO }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ env.COMPARETO }}..${{ github.event.pull_request.head.label }}))
+            Suggested version: `${{ steps.version.outputs.version }}`
+            Comparing to: [${{ steps.prev.outputs.version }}](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ steps.prev.outputs.version }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ steps.prev.outputs.version }}..${{ github.event.pull_request.head.label }}))
 
             Changes in `go.mod` file(s):
             ```diff
-            ${{ env.GOMODDIFF }}
+            ${{ steps.git-diff.outputs.output }}
             ```
 
             `gorelease` says:
             ```
-            ${{ env.GORELEASE }}
+            ${{ steps.gorelease.outputs.output }}
             ```
 
             `gocompat` says:
             ```
-            ${{ env.GOCOMPAT }}
+            ${{ steps.gocompat.outputs.output }}
             ```
-            ${{ env.RELEASE_BRANCH_NOTE }}
+            ${{ steps.footnote.outputs.output }}
