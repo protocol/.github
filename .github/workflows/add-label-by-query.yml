@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Add label by query
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           QUERY: ${{ github.event.inputs.query }}
           LABEL: ${{ github.event.inputs.label }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}

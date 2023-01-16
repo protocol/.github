@@ -63,7 +63,7 @@ jobs:
               echo $v
               exit $status
             fi
-            echo "version=$v" >> $GITHUB_ENV
+            echo "version=$v" >> $GITHUB_OUTPUT
           fi
       - name: Post output
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version == ''

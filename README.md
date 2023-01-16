@@ -22,7 +22,7 @@ runs:
     - name: Step 2
       shell: bash
       run: echo "do some Linux-specific setup"
-      if: ${{ matrix.os == 'ubuntu' }}
+      if: matrix.os == 'ubuntu'
 ```
 
 These setup steps are run after the repository has been checked out and after Go has been installed, but before any tests or checks are run.

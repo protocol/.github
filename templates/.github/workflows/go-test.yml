@@ -10,7 +10,6 @@ jobs:
         go: [ "1.18.x", "1.19.x" ]
     env:
       COVERAGES: ""
-      SKIP32BIT: false
     runs-on: ${{ format('{0}-latest', matrix.os) }}
     name: ${{ matrix.os }} (go ${{ matrix.go }})
     steps:
@@ -25,7 +24,7 @@ jobs:
           go version
           go env
       - name: Use msys2 on windows
-        if: ${{ matrix.os == 'windows' }}
+        if: matrix.os == 'windows'
         shell: bash
         # The executable for msys2 is also called bash.cmd
         #   https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#shells
@@ -35,12 +34,13 @@ jobs:
       - name: Run repo-specific setup
         uses: ./.github/actions/go-test-setup
         if: hashFiles('./.github/actions/go-test-setup') != ''
-      - name: Read config
+      - id: config
+        name: Read config
         if: hashFiles('./.github/workflows/go-test-config.json') != ''
         shell: bash
         run: |
           if jq -re .skip32bit ./.github/workflows/go-test-config.json; then
-            echo "SKIP32BIT=true" >> $GITHUB_ENV
+            echo "skip32bit=true" >> $GITHUB_OUTPUT
           fi
       - name: Run tests
         uses: protocol/multiple-go-modules@v1.2
@@ -50,24 +50,25 @@ jobs:
           # this means ./B's coverage will be significantly higher than 0%.
           run: go test -v -shuffle=on -coverprofile=module-coverage.txt -coverpkg=./... ./...
       - name: Run tests (32 bit)
-        if: matrix.os != 'macos' && env.SKIP32BIT == 'false' # can't run 32 bit tests on OSX.
+        if: matrix.os != 'macos' && steps.config.outputs.skip32bit != 'true' # can't run 32 bit tests on OSX.
         uses: protocol/multiple-go-modules@v1.2
         env:
           GOARCH: 386
         with:
           run: |
-            export "PATH=${{ env.PATH_386 }}:$PATH"
+            export "PATH=$PATH_386:$PATH"
             go test -v -shuffle=on ./...
       - name: Run tests with race detector
-        if: ${{ matrix.os == 'ubuntu' }} # speed things up. Windows and OSX VMs are slow
+        if: matrix.os == 'ubuntu' # speed things up. Windows and OSX VMs are slow
         uses: protocol/multiple-go-modules@v1.2
         with:
           run: go test -v -race ./...
-      - name: Collect coverage files
+      - id: coverage
+        name: Collect coverage files
         shell: bash
-        run: echo "COVERAGES=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_ENV
+        run: echo "files=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3.1.0
         with:
-          files: '${{ env.COVERAGES }}'
+          files: ${{ steps.coverage.outputs.files }}
           env_vars: OS=${{ matrix.os }}, GO=${{ matrix.go }}

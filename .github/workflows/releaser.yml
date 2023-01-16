@@ -4,39 +4,41 @@ on: [ workflow_call ]
 jobs:
   releaser:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ""
-      CREATETAG: "false"
-      DEFAULT_BRANCH: ""
     steps:
       - uses: actions/checkout@v3
-      - name: Determine version
-        run: echo "VERSION=$(jq -r .version version.json)" >> $GITHUB_ENV
-      - name: Determine branch
-        run: echo "DEFAULT_BRANCH=refs/heads/${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
-      - name: Create a release, if we're on the default branch
-        run: echo "CREATETAG=true" >> $GITHUB_ENV
-        if: env.DEFAULT_BRANCH == github.ref
+      - id: version
+        name: Determine version
+        run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
+      - id: branch
+        name: Determine branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: echo "default=refs/heads/$DEFAULT_BRANCH" >> $GITHUB_OUTPUT
       - name: Determine if this commit is a merged PR (if we're not on a default branch)
-        if: env.DEFAULT_BRANCH != github.ref
+        if: steps.branch.outputs.default != github.ref
         id: getmergedpr
         uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check if the "release" label was set on the PR
-        if: steps.getmergedpr.outputs.number != '' && env.DEFAULT_BRANCH != github.ref
+          github_token: ${{ github.token }}
+      - id: label
+        name: Check if the "release" label was set on the PR
+        if: steps.getmergedpr.outputs.number != '' && steps.branch.outputs.default != github.ref
+        env:
+          LABELS: ${{ steps.getmergedpr.outputs.labels }}
         run: |
           while IFS= read -r label; do
             if [[ "$label" == "release" ]]; then
-              echo "CREATETAG=true" >> $GITHUB_ENV
+              echo "release=true" >> $GITHUB_OUTPUT
               break
             fi
-          done <<< "${{ steps.getmergedpr.outputs.labels }}"
+          done <<< "$LABELS"
       - name: Create release
-        if: env.CREATETAG == 'true'
+        if: steps.branch.outputs.default == github.ref || steps.label.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           git fetch origin --tags
-          if ! $(git rev-list ${{ env.VERSION}}.. &> /dev/null); then
-            git tag ${{ env.VERSION }}
+          if ! $(git rev-list "$VERSION.." &> /dev/null); then
+            git tag "$VERSION"
             git push --tags
           fi

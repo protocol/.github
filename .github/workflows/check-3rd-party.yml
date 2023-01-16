@@ -27,4 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run check
-        run: .github/workflows/check-3rd-party.sh ${{ matrix.file }}
+        env:
+          FILE: ${{ matrix.file }}
+        run: .github/workflows/check-3rd-party.sh "$FILE"
