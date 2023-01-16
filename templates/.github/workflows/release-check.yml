@@ -1,7 +1,7 @@
 name: Release Checker
 on:
   pull_request_target:
-    paths-ignore: [ '!version.json' ]
+    paths: [ 'version.json' ]
 
 jobs:
   release-check:
