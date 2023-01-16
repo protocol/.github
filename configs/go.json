@@ -22,22 +22,25 @@
       "target": "filecoin-project/go-bitfield"
     },
     {
+      "target": "filecoin-project/go-data-segment"
+    },
+    {
       "target": "filecoin-project/go-fil-commp-hashhash"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
     },
     {
-      "target": "filecoin-project/go-indexer-core"
-    },
-    {
       "target": "filecoin-project/go-legs"
     },
     {
-      "target": "filecoin-project/index-provider"
+      "target": "filecoin-project/homebrew-exporter"
     },
     {
-      "target": "filecoin-project/storetheindex"
+      "target": "filecoin-project/lassie"
+    },
+    {
+      "target": "filecoin-project/snapcraft-exporter"
     },
     {
       "target": "filecoin-shipyard/js-lotus-client-schema"
@@ -49,10 +52,16 @@
       "target": "ipfs-shipyard/git-remote-ipld"
     },
     {
-      "target": "ipfs-shipyard/go-ipfs-redirects"
+      "target": "ipfs-shipyard/go-libp2p-kitsune"
     },
     {
       "target": "ipfs-shipyard/ipfs-counter"
+    },
+    {
+      "target": "ipfs-shipyard/thunderdome"
+    },
+    {
+      "target": "ipfs-shipyard/vole"
     },
     {
       "target": "ipfs-shipyard/w3rc"
@@ -82,9 +91,6 @@
       "target": "ipfs/go-cidutil"
     },
     {
-      "target": "ipfs/go-dagwriter"
-    },
-    {
       "target": "ipfs/go-datastore"
     },
     {
@@ -103,6 +109,9 @@
       "target": "ipfs/go-ds-badger2"
     },
     {
+      "target": "ipfs/go-ds-badger3"
+    },
+    {
       "target": "ipfs/go-ds-bitcask"
     },
     {
@@ -118,7 +127,8 @@
       "target": "ipfs/go-ds-measure"
     },
     {
-      "target": "ipfs/go-ds-pebble"
+      "target": "ipfs/go-ds-pebble",
+      "source_ref": "next"
     },
     {
       "target": "ipfs/go-ds-redis"
@@ -172,9 +182,6 @@
       "target": "ipfs/go-ipfs-exchange-offline"
     },
     {
-      "target": "ipfs/go-ipfs-files"
-    },
-    {
       "target": "ipfs/go-ipfs-http-client"
     },
     {
@@ -191,6 +198,9 @@
     },
     {
       "target": "ipfs/go-ipfs-provider"
+    },
+    {
+      "target": "ipfs/go-ipfs-redirects-file"
     },
     {
       "target": "ipfs/go-ipfs-routing"
@@ -212,6 +222,9 @@
     },
     {
       "target": "ipfs/go-ipns"
+    },
+    {
+      "target": "ipfs/go-libipfs"
     },
     {
       "target": "ipfs/go-log"
@@ -283,9 +296,6 @@
       "target": "ipfs/pinbot-irc"
     },
     {
-      "target": "ipfs/tar-utils"
-    },
-    {
       "target": "ipld/codec-fixtures"
     },
     {
@@ -317,6 +327,30 @@
     },
     {
       "target": "ipld/go-storethehash"
+    },
+    {
+      "target": "ipni/dhstore"
+    },
+    {
+      "target": "ipni/go-indexer-core"
+    },
+    {
+      "target": "ipni/go-naam"
+    },
+    {
+      "target": "ipni/heyfil"
+    },
+    {
+      "target": "ipni/index-observer"
+    },
+    {
+      "target": "ipni/index-provider"
+    },
+    {
+      "target": "ipni/indexstar"
+    },
+    {
+      "target": "ipni/storetheindex"
     },
     {
       "target": "libp2p/dht-tracer1"
@@ -352,9 +386,6 @@
       "target": "libp2p/go-libp2p-certbot"
     },
     {
-      "target": "libp2p/go-libp2p-circuit"
-    },
-    {
       "target": "libp2p/go-libp2p-consensus"
     },
     {
@@ -379,9 +410,6 @@
       "target": "libp2p/go-libp2p-kbucket"
     },
     {
-      "target": "libp2p/go-libp2p-loggables"
-    },
-    {
       "target": "libp2p/go-libp2p-pubsub-router"
     },
     {
@@ -403,9 +431,6 @@
       "target": "libp2p/go-libp2p-testing"
     },
     {
-      "target": "libp2p/go-libp2p-webrtc-direct"
-    },
-    {
       "target": "libp2p/go-libp2p-xor"
     },
     {
@@ -419,9 +444,6 @@
     },
     {
       "target": "libp2p/go-netroute"
-    },
-    {
-      "target": "libp2p/go-openssl"
     },
     {
       "target": "libp2p/go-reuseport"
@@ -446,6 +468,9 @@
     },
     {
       "target": "libp2p/zeroconf"
+    },
+    {
+      "target": "marten-seemann/webtransport-go"
     },
     {
       "target": "multiformats/go-base32"
