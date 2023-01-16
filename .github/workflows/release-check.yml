@@ -140,7 +140,7 @@ jobs:
         run: |
           echo 'output<<'"$EOF"'
           Suggested version: `'"$VERSION"'`
-          Comparing to: [`'"$PREV_VERSION"'`]('"$BASE_HTML_URL"'/releases/tag/'"$PREV_VERSION"') ([diff]('"$HTML_URL"'/compare/'"$PREV_VERSION"'..'"$HEAD_LABEL"'))
+          Comparing to: [`'"$PREV_VERSION"'`]('"$BASE_HTML_URL"'/releases/tag/'"$PREV_VERSION"') ([diff]('"$BASE_HTML_URL"'/compare/'"$PREV_VERSION"'..'"$HEAD_LABEL"'))
 
           Changes in `go.mod` file(s):
           ```diff
