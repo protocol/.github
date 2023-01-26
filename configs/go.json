@@ -329,6 +329,9 @@
       "target": "ipld/go-storethehash"
     },
     {
+      "target": "ipni/caskadht"
+    },
+    {
       "target": "ipni/dhstore"
     },
     {
