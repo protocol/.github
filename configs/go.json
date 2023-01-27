@@ -40,6 +40,9 @@
       "target": "filecoin-project/lassie"
     },
     {
+      "target": "filecoin-project/lily-archiver"
+    },
+    {
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
@@ -293,7 +296,13 @@
       "target": "ipfs/iptb-plugins"
     },
     {
+      "target": "ipfs/kuboreleaser"
+    },
+    {
       "target": "ipfs/pinbot-irc"
+    },
+    {
+      "target": "ipfs/stargate"
     },
     {
       "target": "ipld/codec-fixtures"
