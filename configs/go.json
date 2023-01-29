@@ -52,6 +52,9 @@
       "target": "ipfs-shipyard/dnslink-dnsimple"
     },
     {
+      "target": "ipfs-shipyard/equinix-billing-tools"
+    },
+    {
       "target": "ipfs-shipyard/git-remote-ipld"
     },
     {
