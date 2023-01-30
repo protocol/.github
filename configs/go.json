@@ -332,9 +332,6 @@
       "target": "ipld/go-ipld-selector-text-lite"
     },
     {
-      "target": "ipld/go-ipldtool"
-    },
-    {
       "target": "ipld/go-storethehash"
     },
     {
