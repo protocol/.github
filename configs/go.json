@@ -341,10 +341,12 @@
       "target": "ipni/caskadht"
     },
     {
-      "target": "ipni/dhstore"
+      "target": "ipni/dhstore",
+      "source_ref": "next"
     },
     {
-      "target": "ipni/go-indexer-core"
+      "target": "ipni/go-indexer-core",
+      "source_ref": "next"
     },
     {
       "target": "ipni/go-naam"
@@ -362,7 +364,8 @@
       "target": "ipni/indexstar"
     },
     {
-      "target": "ipni/storetheindex"
+      "target": "ipni/storetheindex",
+      "source_ref": "next"
     },
     {
       "target": "libp2p/dht-tracer1"
