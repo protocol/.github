@@ -52,6 +52,9 @@
       "target": "ipfs-shipyard/dnslink-dnsimple"
     },
     {
+      "target": "ipfs-shipyard/equinix-billing-tools"
+    },
+    {
       "target": "ipfs-shipyard/git-remote-ipld"
     },
     {
@@ -332,19 +335,18 @@
       "target": "ipld/go-ipld-selector-text-lite"
     },
     {
-      "target": "ipld/go-ipldtool"
-    },
-    {
       "target": "ipld/go-storethehash"
     },
     {
       "target": "ipni/caskadht"
     },
     {
-      "target": "ipni/dhstore"
+      "target": "ipni/dhstore",
+      "source_ref": "next"
     },
     {
-      "target": "ipni/go-indexer-core"
+      "target": "ipni/go-indexer-core",
+      "source_ref": "next"
     },
     {
       "target": "ipni/go-naam"
@@ -362,7 +364,8 @@
       "target": "ipni/indexstar"
     },
     {
-      "target": "ipni/storetheindex"
+      "target": "ipni/storetheindex",
+      "source_ref": "next"
     },
     {
       "target": "libp2p/dht-tracer1"
