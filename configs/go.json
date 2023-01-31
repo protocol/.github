@@ -13,6 +13,9 @@
   },
   "repositories": [
     {
+      "target": "filecoin-project/ffi-stub"
+    },
+    {
       "target": "filecoin-project/go-address"
     },
     {
