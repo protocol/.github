@@ -101,28 +101,23 @@ jobs:
       if: matrix.cfg.deploy_versioning
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
+      env:
+        CONTEXT: |
+          {
+            "config": ${{ toJSON(matrix.cfg) }},
+            "github": {
+              "default_branch": "${{ env.DEFAULT_BRANCH }}"
+            }
+          }
+        TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
-        # if the templating feature ever needs to be developed further
-        # please do consider alternative approaches
-        config=${{ toJson(toJson(matrix.cfg)) }}
-        config=$(echo -e "$config" | jq -c '.')
-        github="{\"default_branch\":\"$DEFAULT_BRANCH\"}"
-        context="{\"config\":$config,\"github\":$github}"
-        # matches trimmed string between template context delimiters
-        regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
-        # replacement is a perl script that:
-        # 1. prepends . to the matched string to create a filter
-        # 2. escapes single quotes by replacing ' with '"'"' in filter
-        # 3. prints context escaped in the same manner
-        # 4. applies jq with filter to the stdout
-        replacement="\$filter = \".\$1\"; \$filter =~ s/'/'\"'\"'/g; \`echo '${context//\'/\'\"\'\"\'}' | jq -jc '\$filter'\`"
         for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace template contexts with values from the JSON context object
-          perl -pi -e "s#$regexp#$replacement#ge" $tmp
+          # expand the template with values from the JSON context object
+          perl -pi -e "$TEMPLATE_ENGINE" $tmp
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
