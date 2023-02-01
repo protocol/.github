@@ -56,6 +56,13 @@ To completely disable running 32-bit tests set `skip32bit` to `true` in `.github
 }
 ```
 
+If your project cannot be built on one of the supported operating systems, you can disable it by setting `skipOSes` to a list of operating systems in `.github/workflows/go-test-config.json`:
+```json
+{
+  "skipOSes": ["windows", "macos"]
+}
+```
+
 ## Technical Preview
 
 You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
