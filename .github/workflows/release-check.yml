@@ -163,7 +163,7 @@ jobs:
             ## Automatically created GitHub Release
 
             Pre-creating GitHub Releases on release PRs initiated from forks is not supported.
-            If you wish to prepare release notes yourself, you should create a draft GitHub Release for tag `${{}}` manually.
+            If you wish to prepare release notes yourself, you should create a draft GitHub Release for tag `${{ steps.version.outputs.version }}` manually.
             The draft GitHub Release is going to be published when this PR is merged.
             If you choose not to create a draft GitHub Release, a published GitHub Released is going to be created when this PR is merged.
 
