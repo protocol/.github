@@ -47,7 +47,7 @@ jobs:
       - name: Run tests (32 bit)
         # can't run 32 bit tests on OSX.
         if: matrix.os != 'macos' &&
-          fromJSON(steps.config.outputs.json).skip32bit != true
+          fromJSON(steps.config.outputs.json).skip32bit != true &&
           contains(fromJSON(steps.config.outputs.json).skipOSes, matrix.os) == false
         uses: protocol/multiple-go-modules@v1.2
         env:
