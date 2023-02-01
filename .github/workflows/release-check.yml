@@ -9,6 +9,7 @@ on:
       go-version:
         required: true
         type: string
+        default: 1.19.x # TODO: remove once release-check is upgraded in all the targets
 
 jobs:
   releaser:
