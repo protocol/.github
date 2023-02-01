@@ -108,7 +108,7 @@ jobs:
           fi
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
       - id: release
-        if: github.event.repository == github.repository
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
         with:
           draft: true
