@@ -172,6 +172,7 @@ jobs:
           HEAD_LABEL: ${{ github.event.pull_request.head.label }}
           HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
           GITHUB_TOKEN: ${{ github.token }}
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
           echo "output<<$EOF" >> $GITHUB_OUTPUT
 
