@@ -1,7 +1,3 @@
-# This workflow cannot post sticky comments on PRs from forked repositories.
-# Instead, it outputs the message it would have posted as a workflow notice.
-# See https://github.com/protocol/.github/issues/254 for details.
-
 name: Release Checker
 on: [ workflow_call ]
 
@@ -17,8 +13,16 @@ jobs:
           go-version: "1.19.x"
       - id: version
         name: Determine version
-        if: hashFiles('version.json')
-        run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # If `version.json` file doesn't exists, `version` is `""` and `404` is printed on stderr.
+          # The step won't be marked as a failure though because the error happens in a subshell.
+          version="$(gh api -X GET "repos/$HEAD_FULL_NAME/contents/version.json" -f ref="$HEAD_SHA" --jq '.content' | base64 -d | jq -r '.version')"
+          echo "version=$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
       - id: tag
         name: Check if the tag already exists
         # Check if a git tag for the version (as read from version.json) exists
@@ -63,7 +67,7 @@ jobs:
               echo $v
               exit $status
             fi
-            echo "version=$v" >> $GITHUB_ENV
+            echo "version=$v" >> $GITHUB_OUTPUT
           fi
       - name: Post output
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version == ''
@@ -114,63 +118,54 @@ jobs:
           fi
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
       - id: footnote
-        if: github.base_ref != github.event.repository.default_branch
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BASE_REF: ${{ github.base_ref }}
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_LABEL: ${{ github.event.pull_request.head.label }}
         run: |
-          echo 'output<<'"$EOF"'
-          ---
+          output=''
+          if [[ "$DEFAULT_BRANCH" != "$BASE_REF" ]]; then
+            output+='
           ## Cutting a Release (when not on `'"$DEFAULT_BRANCH"'`)
 
           This PR is targeting `'"$BASE_REF"'`, which is not the default branch.
           If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
-          '"$EOF" >> $GITHUB_ENV
-      - id: message
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          PREV_VERSION: ${{ steps.prev.outputs.version }}
-          BASE_HTML_URL: ${{ github.event.pull_request.base.repo.html_url }}
-          HEAD_LABEL: ${{ github.event.pull_request.head.label }}
-          GIT_DIFF: ${{ steps.git-diff.outputs.output }}
-          GORELEASE: ${{ steps.gorelease.outputs.output }}
-          GOCOMPAT: ${{ steps.gocompat.outputs.output }}
-          FOOTNOTE: ${{ steps.footnote.outputs.output }}
-        run: |
-          echo 'output<<'"$EOF"'
-          Suggested version: `'"$VERSION"'`
-          Comparing to: [`'"$PREV_VERSION"'`]('"$BASE_HTML_URL"'/releases/tag/'"$PREV_VERSION"') ([diff]('"$BASE_HTML_URL"'/compare/'"$PREV_VERSION"'..'"$HEAD_LABEL"'))
+          '
+          fi
+          diff="$(gh api -X GET "repos/$GITHUB_REPOSITORY/compare/$BASE_REF...$HEAD_LABEL" --jq '.files | map(.filename) | map(select(test("^(version\\.json|.*\\.md)$") | not)) | .[]')"
+          if [[ "$diff" != "" ]]; then
+            output+='
+          ## Cutting a Release (and modifying non-markdown files)
 
-          Changes in `go.mod` file(s):
-          ```diff
-          '"$GIT_DIFF"'
-          ```
-
-          `gorelease` says:
-          ```
-          '"$GORELEASE"'
-          ```
-
-          `gocompat` says:
-          ```
-          '"$GOCOMPAT"'
-          ```
-          '"$FOOTNOTE"'
-          '"$EOF" >> $GITHUB_OUTPUT
+          This PR is modifying both `version.json` and non-markdown files.
+          The Release Checker is not able to analyse files that are not checked in to `'"$BASE_REF"'`. This might cause the above analysis to be inaccurate.
+          Please consider performing all the code changes in a separate PR before cutting the release.
+          '
+          fi
+          printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
       - name: Post message on PR
         uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != '' && github.event.pull_request.head.repo.full_name == github.repository
+        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
         with:
           header: release-check
           recreate: true
-          message: ${{ steps.message.outputs.output }}
-      - name: Set a notice message on run
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != '' && github.event.pull_request.head.repo.full_name != github.repository
-        env:
-          MESSAGE: ${{ steps.message.outputs.output }}
-        run: |
-          message="${MESSAGE//'%'/'%25'}"
-          message="${message//$'\n'/'%0A'}"
-          message="${message//$'\r'/'%0D'}"
-          echo "::notice ::$message"
+          message: |
+            Suggested version: `${{ steps.version.outputs.version }}`
+            Comparing to: [${{ steps.prev.outputs.version }}](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ steps.prev.outputs.version }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ steps.prev.outputs.version }}..${{ github.event.pull_request.head.label }}))
+
+            Changes in `go.mod` file(s):
+            ```diff
+            ${{ steps.git-diff.outputs.output }}
+            ```
+
+            `gorelease` says:
+            ```
+            ${{ steps.gorelease.outputs.output }}
+            ```
+
+            `gocompat` says:
+            ```
+            ${{ steps.gocompat.outputs.output }}
+            ```
+            ${{ steps.footnote.outputs.output }}
