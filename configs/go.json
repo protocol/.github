@@ -82,9 +82,6 @@
       "target": "ipfs/go-bitfield"
     },
     {
-      "target": "ipfs/go-bitswap"
-    },
-    {
       "target": "ipfs/go-block-format"
     },
     {
