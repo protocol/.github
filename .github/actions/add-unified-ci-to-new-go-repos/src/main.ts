@@ -113,7 +113,7 @@ async function run(): Promise<void> {
         ...new Set(contributors.flat().map(contributor => contributor.login))
       ]
         .map(login => {
-          return `- [ ] ${login} <!-- TODO: turn into a mention once we gain confidence in this logic -->`
+          return `- [ ] @${login}`
         })
         .join('\n')
       const reposChecklist: string = newGoReposWithoutUnifiedCI
@@ -157,8 +157,10 @@ ${reposChecklist}
 
 Tagging the most active contributors for the new repositories:
 ${contributorsChecklist}
+
+Contributors, please let us know if you want Unified CI added to your repositories 🙇
         `,
-        draft: true
+        draft: false
       })
       core.info(`Created pull request: ${response.data.html_url}`)
       core.setOutput('pr', response.data.html_url)
