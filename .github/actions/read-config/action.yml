@@ -16,3 +16,7 @@ runs:
         path="./${path#*/*/}-config.json"
         printf "json<<$eof\n%s\n$eof" "$(cat "$path" || echo '{}')" >> $GITHUB_OUTPUT
       shell: bash
+    - env:
+        CONFIG: ${{ steps.config.outputs.json }}
+      run: echo "$CONFIG"
+      shell: bash
