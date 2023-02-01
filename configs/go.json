@@ -13,6 +13,9 @@
   },
   "repositories": [
     {
+      "target": "filecoin-project/ffi-stub"
+    },
+    {
       "target": "filecoin-project/go-address"
     },
     {
@@ -40,6 +43,9 @@
       "target": "filecoin-project/lassie"
     },
     {
+      "target": "filecoin-project/lily-archiver"
+    },
+    {
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
@@ -47,6 +53,9 @@
     },
     {
       "target": "ipfs-shipyard/dnslink-dnsimple"
+    },
+    {
+      "target": "ipfs-shipyard/equinix-billing-tools"
     },
     {
       "target": "ipfs-shipyard/git-remote-ipld"
@@ -71,9 +80,6 @@
     },
     {
       "target": "ipfs/go-bitfield"
-    },
-    {
-      "target": "ipfs/go-bitswap"
     },
     {
       "target": "ipfs/go-block-format"
@@ -293,7 +299,13 @@
       "target": "ipfs/iptb-plugins"
     },
     {
+      "target": "ipfs/kuboreleaser"
+    },
+    {
       "target": "ipfs/pinbot-irc"
+    },
+    {
+      "target": "ipfs/stargate"
     },
     {
       "target": "ipld/codec-fixtures"
@@ -323,16 +335,18 @@
       "target": "ipld/go-ipld-selector-text-lite"
     },
     {
-      "target": "ipld/go-ipldtool"
-    },
-    {
       "target": "ipld/go-storethehash"
     },
     {
-      "target": "ipni/dhstore"
+      "target": "ipni/caskadht"
     },
     {
-      "target": "ipni/go-indexer-core"
+      "target": "ipni/dhstore",
+      "source_ref": "next"
+    },
+    {
+      "target": "ipni/go-indexer-core",
+      "source_ref": "next"
     },
     {
       "target": "ipni/go-naam"
@@ -350,7 +364,8 @@
       "target": "ipni/indexstar"
     },
     {
-      "target": "ipni/storetheindex"
+      "target": "ipni/storetheindex",
+      "source_ref": "next"
     },
     {
       "target": "libp2p/dht-tracer1"
