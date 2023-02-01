@@ -155,7 +155,7 @@ jobs:
           RELEASE_NOTICE: |
             ## Automatically created GitHub Release
 
-            A [draft GitHub Release]() has been created.
+            A [draft GitHub Release](${{ steps.release.outputs.url }}) has been created.
             It is going to be published when this PR is merged.
             You can modify its' body to include any release notes you wish to include with the release.
 
