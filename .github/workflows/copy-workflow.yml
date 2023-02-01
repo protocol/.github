@@ -102,9 +102,11 @@ jobs:
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
       run: |
+        # if the templating feature ever needs to be developed further
+        # please do consider alternative approaches
         config=${{ toJson(toJson(matrix.cfg)) }}
         config=$(echo -e "$config" | jq -c '.')
-        github="{\"default_branch\":\"${{ env.DEFAULT_BRANCH }}\"}"
+        github="{\"default_branch\":\"$DEFAULT_BRANCH\"}"
         context="{\"config\":$config,\"github\":$github}"
         # matches trimmed string between template context delimiters
         regexp='\$\{\{\{\s*(.*?)\s*\}\}\}'
@@ -121,7 +123,6 @@ jobs:
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
           # replace template contexts with values from the JSON context object
           perl -pi -e "s#$regexp#$replacement#ge" $tmp
-          mv $tmp $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
