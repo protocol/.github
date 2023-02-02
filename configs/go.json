@@ -82,9 +82,6 @@
       "target": "ipfs/go-bitfield"
     },
     {
-      "target": "ipfs/go-block-format"
-    },
-    {
       "target": "ipfs/go-blockservice"
     },
     {
@@ -98,9 +95,6 @@
     },
     {
       "target": "ipfs/go-datastore"
-    },
-    {
-      "target": "ipfs/go-delegated-routing"
     },
     {
       "target": "ipfs/go-detect-race"
