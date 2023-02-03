@@ -13,9 +13,6 @@
   },
   "repositories": [
     {
-      "target": "ipfs/bifrost-gateway"
-    },
-    {
       "target": "filecoin-project/ffi-stub"
     },
     {
@@ -80,6 +77,9 @@
     },
     {
       "target": "ipfs/bbloom"
+    },
+    {
+      "target": "ipfs/bifrost-gateway"
     },
     {
       "target": "ipfs/go-bitfield"
