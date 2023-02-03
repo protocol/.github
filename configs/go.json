@@ -335,6 +335,9 @@
       "target": "ipni/caskadht"
     },
     {
+      "target": "ipni/depute"
+    },
+    {
       "target": "ipni/dhstore",
       "source_ref": "next"
     },
