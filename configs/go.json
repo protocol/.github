@@ -13,6 +13,9 @@
   },
   "repositories": [
     {
+      "target": "ipfs/bifrost-gateway"
+    },
+    {
       "target": "filecoin-project/ffi-stub"
     },
     {
