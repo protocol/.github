@@ -40,14 +40,14 @@ jobs:
     if: github.event.pull_request.user.login == 'web3-bot' && needs.automerge-check.outputs.status == 'true'
     steps:
     - name: Wait on tests
-      uses: lewagon/wait-on-check-action@752bfae19aef55dab12a00bc36d48acc46b77e9d # v1.1.1
+      uses: lewagon/wait-on-check-action@3a563271c3f8d1611ed7352809303617ee7e54ac # v1.2.0
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         wait-interval: 10
         running-workflow-name: '${{ inputs.job }} / ${{ github.job }}' # the name of the check for this job
     - name: Merge PR
-      uses: pascalgn/automerge-action@741c311a47881be9625932b0a0de1b0937aab1ae # v0.13.1
+      uses: pascalgn/automerge-action@eb68b061739cb9d81564f8e812d0b3c45f0fb09a # v0.15.5
       env:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         MERGE_LABELS: ""

@@ -20,7 +20,7 @@ jobs:
       - name: Determine if this commit is a merged PR (if we're not on a default branch)
         if: env.DEFAULT_BRANCH != github.ref
         id: getmergedpr
-        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9
+        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9 # v1.0.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if the "release" label was set on the PR
