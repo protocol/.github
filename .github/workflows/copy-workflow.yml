@@ -71,7 +71,7 @@ jobs:
         done
         echo "INITIAL_WORKFLOW_DEPLOYMENT=$initial_workflow_deployment" >> $GITHUB_ENV
     - name: remove Travis (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -f .travis.yml ]]; then
@@ -79,7 +79,7 @@ jobs:
           git commit -m "disable Travis"
         fi
     - name: remove CircleCI (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .circleci ]]; then
@@ -87,7 +87,7 @@ jobs:
           git commit -m "disable CircleCI"
         fi
     - name: remove gx (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .gx ]]; then
@@ -146,7 +146,7 @@ jobs:
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
     - name: Force push web3-bot/sync branch
-      if: ${{ env.NEEDS_UPDATE != 0 }}
+      if: env.NEEDS_UPDATE != 0
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         git checkout -B web3-bot/sync

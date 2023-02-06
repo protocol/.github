@@ -26,7 +26,7 @@ jobs:
           go version
           go env
       - name: Use msys2 on windows
-        if: ${{ matrix.os == 'windows' }}
+        if: matrix.os == 'windows'
         shell: bash
         # The executable for msys2 is also called bash.cmd
         #   https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#shells

@@ -37,7 +37,7 @@ jobs:
 
           echo "repos=$repos" >> $GITHUB_OUTPUT
       - name: find deleted / archived repositories
-        if: ${{ steps.repos.outputs.repos != '[]' }}
+        if: steps.repos.outputs.repos != '[]'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPOS: ${{ steps.repos.outputs.repos }}
