@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfg: ${{ fromJson(github.event.inputs.targets) }}
+        cfg: ${{ fromJSON(github.event.inputs.targets) }}
       max-parallel: 10
     env:
       TARGET_REPO_DIR: "target-repo"
@@ -54,13 +54,12 @@ jobs:
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
       env:
-        FILES: ${{ toJson(toJson(matrix.cfg.files)) }}
-        EXTRA_FILE: ${{ toJson(toJson(matrix.cfg.extra_files)) }}
-      run: echo "FILES=$(echo -e "$FILES" "$EXTRA_FILES" | jq -nc '[inputs] | add')" >> $GITHUB_ENV
+        FILES: |
+          ${{ toJSON(matrix.cfg.files) }}
+          ${{ toJSON(matrix.cfg.extra_files) }}
+      run: echo "FILES=$(jq -nc '[inputs] | add' <<< "$FILES")" >> $GITHUB_ENV
     - name: is initial workflow deployment
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
-      env:
-        FILES: ${{ toJson(env.FILES) }}
       run: |
         initial_workflow_deployment=1
         for f in $(jq -r '.[]' <<< "$FILES"); do
@@ -111,7 +110,6 @@ jobs:
             }
           }
         TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
-        FILES: ${{ toJSON(env.FILES) }}
       run: |
         for f in $(jq -r '.[]' <<< "$FILES"); do
           echo -e "\nProcessing $f."

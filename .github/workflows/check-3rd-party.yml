@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        file: ${{ fromJson(needs.matrix.outputs.targets) }}
+        file: ${{ fromJSON(needs.matrix.outputs.targets) }}
     name: ${{ matrix.file }}
     steps:
       - uses: actions/checkout@v3

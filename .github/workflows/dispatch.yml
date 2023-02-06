@@ -73,7 +73,7 @@ jobs:
         # The triggered copy workflow runs use that final array as their matrix.
         # Since max-parallel here is 1, we'll end up with at most max-parallel from copy workflow + 1 parallel jobs.
         # 20 is the upper limit on parallel jobs on a free plan.
-        cfg: ${{ fromJson(needs.matrix.outputs.batches) }}
+        cfg: ${{ fromJSON(needs.matrix.outputs.batches) }}
       max-parallel: 1
     env:
       GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
@@ -83,12 +83,10 @@ jobs:
       - id: dispatch
         name: Dispatch copy workflow
         env:
-          TARGETS: ${{ toJson(toJson(matrix.cfg.value)) }}
-
+          TARGETS: ${{ toJSON(matrix.cfg.value) }}
         run: |
           start_date="$(date +%s)"
-          # 2 toJson calls are needed to turn the array of targets into a string
-          echo "{\"targets\": $TARGETS}" | jq -c '.' | gh workflow run "$WORKFLOW_YML" --ref "$GITHUB_REF" --repo "$WORKFLOW_REPO" --json
+          gh workflow run "$WORKFLOW_YML" --ref "$GITHUB_REF" --repo "$WORKFLOW_REPO" --field "targets=$TARGETS"
           echo "start_date=$start_date" >> $GITHUB_OUTPUT
       - id: run
         name: Wait for copy workflow run to start
