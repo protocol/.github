@@ -8,8 +8,8 @@ on:
   push:
     branches: [ master, testing ]
   workflow_dispatch:
-  
-concurrency: 
+
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -53,7 +53,7 @@ jobs:
             echo "::endgroup::"
           done
           batches=$(jq -sc '[. | _nwise(${{ env.MAX_REPOS_PER_WORKFLOW }})] | to_entries' <<< "${targets[@]}")
-          echo "::set-output name=batches::$batches"
+          echo "batches=$batches" >> $GITHUB_OUTPUT
   dispatch:
     needs: [ matrix ]
     name: Dispatch copy workflow(batch ${{ matrix.cfg.key }})
@@ -86,7 +86,7 @@ jobs:
           start_date="$(date +%s)"
           # 2 toJson calls are needed to turn the array of targets into a string
           echo '{"targets":${{ toJson(toJson(matrix.cfg.value)) }}}' | jq -c '.' | gh workflow run "${{ env.WORKFLOW_YML }}" --ref "${{ github.ref }}" --repo "${{ env.WORKFLOW_REPO }}" --json
-          echo "::set-output name=start_date::$start_date"
+          echo "start_date=$start_date" >> $GITHUB_OUTPUT
       - id: run
         name: Wait for copy workflow run to start
         run: |
@@ -97,7 +97,7 @@ jobs:
             if [[ ! -z "$run" ]]; then
               run_start_date="$(date --date="$(jq -r '.created_at' <<< "$run")" +%s)"
               if [[ "$run_start_date" > "${{ steps.dispatch.outputs.start_date }}" ]]; then
-                echo "::set-output name=id::$(jq -r '.id' <<< "$run")"
+                echo "id=$(jq -r '.id' <<< "$run")" >> $GITHUB_OUTPUT
                 break
               fi
             fi

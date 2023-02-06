@@ -27,11 +27,11 @@ jobs:
           echo "Committer: $committer"
           if [[ "$committer" != "web3-bot@users.noreply.github.com" ]]; then
             echo "Commit $commit wasn't committed by web3-bot, but by $committer."
-            echo "::set-output name=status::false"
+            echo "status=false" >> $GITHUB_OUTPUT
             exit
           fi
         done
-        echo "::set-output name=status::true"
+        echo "status=true" >> $GITHUB_OUTPUT
   automerge:
     needs: automerge-check
     runs-on: ubuntu-latest

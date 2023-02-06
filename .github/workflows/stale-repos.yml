@@ -33,7 +33,7 @@ jobs:
             repos="$(jq -nc '$head - $base' --argjson head "$repos" --argjson base "$base")"
           fi
 
-          echo "::set-output name=repos::$repos"
+          echo "repos=$repos" >> $GITHUB_OUTPUT
       - name: find deleted / archived repositories
         if: ${{ steps.repos.outputs.repos != '[]' }}
         run: |
