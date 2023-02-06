@@ -52,7 +52,7 @@ jobs:
             targets+=($(jq -c ".repositories[] | $defaults + ." $config))
             echo "::endgroup::"
           done
-          batches=$(jq -sc '[. | _nwise($MAX_REPOS_PER_WORKFLOW)] | to_entries' <<< "${targets[@]}")
+          batches=$(jq -sc "[. | _nwise($MAX_REPOS_PER_WORKFLOW)] | to_entries" <<< "${targets[@]}")
           echo "batches=$batches" >> $GITHUB_OUTPUT
   dispatch:
     needs: [ matrix ]
