@@ -49,6 +49,9 @@
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
+      "target": "filecoin-saturn/caboose"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
