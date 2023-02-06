@@ -50,15 +50,15 @@ runs:
             # As of Go 1.19 io/ioutil is deprecated
             # We automate its upgrade here because it is quite a widely used package
             while read file; do
-              sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
-              sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
+              sed -i 's/ioutil.NopCloser/io.NopCloser/' "$file";
+              sed -i 's/ioutil.ReadAll/io.ReadAll/' "$file";
               # ReadDir replacement might require manual intervention (https://pkg.go.dev/io/ioutil#ReadDir)
-              sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
-              sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
-              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
-              sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
-              sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
-              sed -i 's/ioutil.Discard/io.Discard/' "${file}";
+              sed -i 's/ioutil.ReadDir/os.ReadDir/' "$file";
+              sed -i 's/ioutil.ReadFile/os.ReadFile/' "$file";
+              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "$file";
+              sed -i 's/ioutil.TempFile/os.CreateTemp/' "$file";
+              sed -i 's/ioutil.WriteFile/os.WriteFile/' "$file";
+              sed -i 's/ioutil.Discard/io.Discard/' "$file";
             done <<< "$(find . -type f -name '*.go')"
 
             go install golang.org/x/tools/cmd/goimports@v0.5.0

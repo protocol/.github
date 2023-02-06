@@ -28,16 +28,16 @@ jobs:
           done
           failed=()
           for target in ${targets[@]}; do
-            echo "Processing ${target}"
-            base="$(gh api "/repos/${target}" --jq '.default_branch')"
+            echo "Processing $target"
+            base="$(gh api "/repos/$target" --jq '.default_branch')"
             # checks if a PR needs to be created
-            if [[ "$(gh api -X GET "/repos/${target}/compare/${base}...$PR_BRANCH" --jq '.status')" == 'ahead' ]]; then
-              if [[ "$(gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):$PR_BRANCH" -f base="$base" --jq 'length')" != '0' ]] ; then
+            if [[ "$(gh api -X GET "/repos/$target/compare/$base...$PR_BRANCH" --jq '.status')" == 'ahead' ]]; then
+              if [[ "$(gh api -X GET "/repos/$target/pulls" -f head="$(echo "$target" | cut -d/ -f1):$PR_BRANCH" -f base="$base" --jq 'length')" != '0' ]] ; then
                 echo "The PR already exists. Skipping."
                 continue
               fi
             else
-              echo "The branch does not exist or has diverged from ${base}. Skipping."
+              echo "The branch does not exist or has diverged from $base. Skipping."
               continue
             fi
             # tries to create a PR in target
