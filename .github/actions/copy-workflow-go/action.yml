@@ -25,6 +25,10 @@ runs:
           TARGET_VERSION="${TARGET_VERSION%.x}"
           TARGET_MAJOR_VERSION="${TARGET_VERSION%.[0-9]*}"
           TARGET_MINOR_VERSION="${TARGET_VERSION#[0-9]*.}"
+          # Assumptions:
+          # - all versions are targetted incrementally
+          # - no versions are skipped
+          # - patch version is never pinned explicitly 
           PREVIOUS_TARGET_VERSION="$TARGET_MAJOR_VERSION.$(($TARGET_MINOR_VERSION-1))"
 
           # Note that the "<" comparison doesn't understand semver,
