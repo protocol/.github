@@ -54,7 +54,7 @@ jobs:
           GOARCH: 386
         with:
           run: |
-            export "PATH=${{ env.PATH_386 }}:$PATH"
+            export "PATH=$PATH_386:$PATH"
             go test -v -shuffle=on ./...
       - name: Run tests with race detector
         # speed things up. Windows and OSX VMs are slow

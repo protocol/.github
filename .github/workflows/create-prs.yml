@@ -31,8 +31,8 @@ jobs:
             echo "Processing ${target}"
             base="$(gh api "/repos/${target}" --jq '.default_branch')"
             # checks if a PR needs to be created
-            if [[ "$(gh api -X GET "/repos/${target}/compare/${base}...${{ env.PR_BRANCH }}" --jq '.status')" == 'ahead' ]]; then
-              if [[ "$(gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):${{ env.PR_BRANCH }}" -f base="$base" --jq 'length')" != '0' ]] ; then
+            if [[ "$(gh api -X GET "/repos/${target}/compare/${base}...$PR_BRANCH" --jq '.status')" == 'ahead' ]]; then
+              if [[ "$(gh api -X GET "/repos/${target}/pulls" -f head="$(echo "${target}" | cut -d/ -f1):$PR_BRANCH" -f base="$base" --jq 'length')" != '0' ]] ; then
                 echo "The PR already exists. Skipping."
                 continue
               fi
@@ -47,7 +47,7 @@ jobs:
             pr_create_cooldown_in_seconds=1
             # max cumulative sleep time - 68.25 minutes
             while true; do
-              if result="$(gh api "/repos/$target/pulls" -f title="${{ env.PR_TITLE }}" -f head="${{ env.PR_BRANCH }}" -f base="$base")"; then
+              if result="$(gh api "/repos/$target/pulls" -f title="$PR_TITLE" -f head="$PR_BRANCH" -f base="$base")"; then
                 echo "Successfully created a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
                 echo "Sleeping for $pr_create_cooldown_in_seconds seconds before creating a next one"
                 sleep $pr_create_cooldown_in_seconds

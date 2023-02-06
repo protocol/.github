@@ -139,5 +139,5 @@ jobs:
           docker-username: ${{ secrets.DOCKER_USERNAME }}
       - run: npm run --if-present release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
