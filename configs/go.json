@@ -82,6 +82,9 @@
       "target": "ipfs/bbloom"
     },
     {
+      "target": "ipfs/bifrost-gateway"
+    },
+    {
       "target": "ipfs/go-bitfield"
     },
     {
