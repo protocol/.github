@@ -41,4 +41,9 @@ You can use [testing](https://github.com/protocol/.github/tree/testing) branch f
 
 ## Upgrading Go
 
-To upgrade Go, modify the `defaults.go.versions` array in the [Go config](go.json). Keep the array sorted in an increasing order.
+To upgrade Go, modify the `defaults.go.versions` array in the [Go config](go.json).
+
+Remember to:
+- Keep the array sorted in increasing order,
+- Upgrade versions incrementally. Do not skip a version,
+- never pin the patch version (`"1.19.x"` is correct, `"1.19.8"` is incorrect).
