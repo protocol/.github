@@ -28,7 +28,7 @@ runs:
           # Assumptions:
           # - all versions are targetted incrementally
           # - no versions are skipped
-          # - patch version is never pinned explicitly 
+          # - patch version is never pinned explicitly
           PREVIOUS_TARGET_VERSION="$TARGET_MAJOR_VERSION.$(($TARGET_MINOR_VERSION-1))"
 
           # Note that the "<" comparison doesn't understand semver,
@@ -59,15 +59,37 @@ runs:
             # As of Go 1.19 io/ioutil is deprecated
             # We automate its upgrade here because it is quite a widely used package
             while read file; do
-              sed -i 's/ioutil.NopCloser/io.NopCloser/' "$file";
-              sed -i 's/ioutil.ReadAll/io.ReadAll/' "$file";
+              sed -i 's/ioutil.NopCloser/io.NopCloser/g' "$file";
+              sed -i 's/ioutil.ReadAll/io.ReadAll/g' "$file";
               # ReadDir replacement might require manual intervention (https://pkg.go.dev/io/ioutil#ReadDir)
-              sed -i 's/ioutil.ReadDir/os.ReadDir/' "$file";
-              sed -i 's/ioutil.ReadFile/os.ReadFile/' "$file";
-              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "$file";
-              sed -i 's/ioutil.TempFile/os.CreateTemp/' "$file";
-              sed -i 's/ioutil.WriteFile/os.WriteFile/' "$file";
-              sed -i 's/ioutil.Discard/io.Discard/' "$file";
+              sed -i 's/ioutil.ReadDir/os.ReadDir/g' "$file";
+              sed -i 's/ioutil.ReadFile/os.ReadFile/g' "$file";
+              sed -i 's/ioutil.TempDir/os.MkdirTemp/g' "$file";
+              sed -i 's/ioutil.TempFile/os.CreateTemp/g' "$file";
+              sed -i 's/ioutil.WriteFile/os.WriteFile/g' "$file";
+              sed -i 's/ioutil.Discard/io.Discard/g' "$file";
+            done <<< "$(find . -type f -name '*.go')"
+
+            # As of Go 1.20 math/rand.Seed and math/rand.Read are deprecated
+            # We automate their upgrade here because they are quite widely used
+            # 1. rand.Seed(*) with rand := rand.New(rand.NewSource(*))
+            #     if math/rand is imported
+            # 2. replace math/rand import with crypto/rand import
+            #     if crypto/rand is not imported yet and only Read from rand is called
+            # 3. add crypto/rand import as crand and replace rand.Read with crand.Read
+            #     if crypto/rand is not imported yet and methods other than Read from rand are called too
+            while read file; do
+              if grep -q '"math/rand"' "$file"; then
+                sed -i 's/rand.Seed(\(.*\))/rand := rand.New(rand.NewSource(\1))/g' "$file";
+                if ! grep -q '"crypto/rand"' "$file" && grep -q 'rand\.Read' "$file"; then
+                  if [[ "$(grep -c 'rand\.' "$file")" == "$(grep -c 'rand\.Read' "$file")" ]]; then
+                    sed -i 's,"math/rand","crypto/rand",' "$file";
+                  else
+                    sed -i 's,"math/rand","math/rand"\n\tcrand "crypto/rand",' "$file";
+                    sed -i 's/rand.Read/crand.Read/g' "$file";
+                  fi
+                fi
+              fi
             done <<< "$(find . -type f -name '*.go')"
 
             go install golang.org/x/tools/cmd/goimports@v0.5.0
