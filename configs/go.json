@@ -136,8 +136,7 @@
       "target": "ipfs/go-ds-measure"
     },
     {
-      "target": "ipfs/go-ds-pebble",
-      "source_ref": "next"
+      "target": "ipfs/go-ds-pebble"
     },
     {
       "target": "ipfs/go-ds-redis"
@@ -344,12 +343,10 @@
       "target": "ipni/caskadht"
     },
     {
-      "target": "ipni/dhstore",
-      "source_ref": "next"
+      "target": "ipni/dhstore"
     },
     {
-      "target": "ipni/go-indexer-core",
-      "source_ref": "next"
+      "target": "ipni/go-indexer-core"
     },
     {
       "target": "ipni/go-naam"
@@ -367,8 +364,7 @@
       "target": "ipni/indexstar"
     },
     {
-      "target": "ipni/storetheindex",
-      "source_ref": "next"
+      "target": "ipni/storetheindex"
     },
     {
       "target": "libp2p/dht-tracer1"
