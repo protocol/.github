@@ -75,16 +75,6 @@ jobs:
             fi
             echo "version=$v" >> $GITHUB_OUTPUT
           fi
-      - name: Post output
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version == ''
-        uses: marocchino/sticky-pull-request-comment@fcf6fe9e4a0409cd9316a5011435be0f3327f1e1 # v2.3.1
-        with:
-          header: release-check
-          recreate: true
-          message: |
-            Suggested version: `${{ steps.version.outputs.version }}`
-
-            This is the first release of this module.
       - id: git-diff
         name: run git diff on go.mod file(s)
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
@@ -123,41 +113,18 @@ jobs:
             output="(empty)"
           fi
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
-      - id: footnote
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          BASE_REF: ${{ github.base_ref }}
-          GITHUB_TOKEN: ${{ github.token }}
-          HEAD_LABEL: ${{ github.event.pull_request.head.label }}
-        run: |
-          output=''
-          if [[ "$DEFAULT_BRANCH" != "$BASE_REF" ]]; then
-            output+='
-          ## Cutting a Release (when not on `'"$DEFAULT_BRANCH"'`)
-
-          This PR is targeting `'"$BASE_REF"'`, which is not the default branch.
-          If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
-          '
-          fi
-          diff="$(gh api -X GET "repos/$GITHUB_REPOSITORY/compare/$BASE_REF...$HEAD_LABEL" --jq '.files | map(.filename) | map(select(test("^(version\\.json|.*\\.md)$") | not)) | .[]')"
-          if [[ "$diff" != "" ]]; then
-            output+='
-          ## Cutting a Release (and modifying non-markdown files)
-
-          This PR is modifying both `version.json` and non-markdown files.
-          The Release Checker is not able to analyse files that are not checked in to `'"$BASE_REF"'`. This might cause the above analysis to be inaccurate.
-          Please consider performing all the code changes in a separate PR before cutting the release.
-          '
-          fi
-          printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
-      - name: Post message on PR
-        uses: marocchino/sticky-pull-request-comment@fcf6fe9e4a0409cd9316a5011435be0f3327f1e1 # v2.3.1
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
+      - id: release
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
         with:
-          header: release-check
-          recreate: true
-          message: |
+          draft: true
+          tag_name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+      - id: message
+        env:
+          HEADER: |
             Suggested version: `${{ steps.version.outputs.version }}`
+          BODY: |
             Comparing to: [${{ steps.prev.outputs.version }}](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ steps.prev.outputs.version }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ steps.prev.outputs.version }}..${{ github.event.pull_request.head.label }}))
 
             Changes in `go.mod` file(s):
@@ -174,4 +141,75 @@ jobs:
             ```
             ${{ steps.gocompat.outputs.output }}
             ```
-            ${{ steps.footnote.outputs.output }}
+
+          BODY_ALT: |
+            This is the first release of this module.
+
+          RELEASE_BRANCH_NOTICE: |
+            ## Cutting a Release (when not on `${{ github.event.repository.default_branch }}`)
+
+            This PR is targeting `${{ github.base_ref }}`, which is not the default branch.
+            If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
+
+          DIFF_NOTICE: |
+            ## Cutting a Release (and modifying non-markdown files)
+
+            This PR is modifying both `version.json` and non-markdown files.
+            The Release Checker is not able to analyse files that are not checked in to `${{ github.base_ref }}`. This might cause the above analysis to be inaccurate.
+            Please consider performing all the code changes in a separate PR before cutting the release.
+
+          RELEASE_NOTICE: |
+            ## Automatically created GitHub Release
+
+            A [draft GitHub Release](${{ steps.release.outputs.url }}) has been created.
+            It is going to be published when this PR is merged.
+            You can modify its' body to include any release notes you wish to include with the release.
+
+          RELEASE_NOTICE_ALT: |
+            ## Automatically created GitHub Release
+
+            Pre-creating GitHub Releases on release PRs initiated from forks is not supported.
+            If you wish to prepare release notes yourself, you should create a draft GitHub Release for tag `${{ steps.version.outputs.version }}` manually.
+            The draft GitHub Release is going to be published when this PR is merged.
+            If you choose not to create a draft GitHub Release, a published GitHub Released is going to be created when this PR is merged.
+
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_LABEL: ${{ github.event.pull_request.head.label }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
+        run: |
+          echo "output<<$EOF" >> $GITHUB_OUTPUT
+
+          echo "$HEADER" >> $GITHUB_OUTPUT
+
+          if [[ "$PREV_VERSION" != "" ]]; then
+            echo "$BODY" >> $GITHUB_OUTPUT
+          else
+            echo "$BODY_ALT" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "$DEFAULT_BRANCH" != "$BASE_REF" ]]; then
+            echo "$RELEASE_BRANCH_NOTICE" >> $GITHUB_OUTPUT
+          fi
+
+          diff="$(gh api -X GET "repos/$GITHUB_REPOSITORY/compare/$BASE_REF...$HEAD_LABEL" --jq '.files | map(.filename) | map(select(test("^(version\\.json|.*\\.md)$") | not)) | .[]')"
+          if [[ "$diff" != "" ]]; then
+            echo "$DIFF_NOTICE" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "$GITHUB_REPOSITORY" == "$HEAD_FULL_NAME" ]]; then
+            echo "$RELEASE_NOTICE" >> $GITHUB_OUTPUT
+          else
+            echo "$RELEASE_NOTICE_ALT" >> $GITHUB_OUTPUT
+          fi
+
+          echo "$EOF" >> $GITHUB_OUTPUT
+      - name: Post message on PR
+        uses: marocchino/sticky-pull-request-comment@fcf6fe9e4a0409cd9316a5011435be0f3327f1e1 # v2.3.1
+        if: steps.tag.outputs.exists == 'false'
+        with:
+          header: release-check
+          recreate: true
+          message: ${{ steps.message.outputs.output }}
