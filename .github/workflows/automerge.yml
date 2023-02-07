@@ -21,17 +21,20 @@ jobs:
         fetch-depth: 0
     - name: Check if we should automerge
       id: should-automerge
+      env:
+        BASE_REF: ${{ github.event.pull_request.base.ref }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
-        for commit in $(git rev-list --first-parent origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}); do
+        for commit in $(git rev-list --first-parent origin/$BASE_REF..$HEAD_SHA); do
           committer=$(git show --format=$'%ce' -s $commit)
           echo "Committer: $committer"
           if [[ "$committer" != "web3-bot@users.noreply.github.com" ]]; then
             echo "Commit $commit wasn't committed by web3-bot, but by $committer."
-            echo "::set-output name=status::false"
+            echo "status=false" >> $GITHUB_OUTPUT
             exit
           fi
         done
-        echo "::set-output name=status::true"
+        echo "status=true" >> $GITHUB_OUTPUT
   automerge:
     needs: automerge-check
     runs-on: ubuntu-latest
@@ -43,13 +46,13 @@ jobs:
       uses: lewagon/wait-on-check-action@3a563271c3f8d1611ed7352809303617ee7e54ac # v1.2.0
       with:
         ref: ${{ github.event.pull_request.head.sha }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ github.token }}
         wait-interval: 10
         running-workflow-name: '${{ inputs.job }} / ${{ github.job }}' # the name of the check for this job
     - name: Merge PR
       uses: pascalgn/automerge-action@eb68b061739cb9d81564f8e812d0b3c45f0fb09a # v0.15.5
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: "${{ github.token }}"
         MERGE_LABELS: ""
         MERGE_METHOD: "squash"
         MERGE_DELETE_BRANCH: true
