@@ -4,23 +4,32 @@ description: Copy workflow steps specific to go
 runs:
   using: "composite"
   steps:
+    # GitHub Actions Expressions do not support last item access/array length retrieval
+    - id: go
+      run: echo "::set-output name=version::$(jq -r '.[-1]' <<< '${{ toJSON(matrix.cfg.go.versions) }}')"
+      shell: bash
     - uses: actions/setup-go@v3
       with:
         # This should be the same Go version we use in the go-check workflow.
         # go mod tidy, go vet, staticcheck and gofmt might behave differently depending on the version.
-        go-version: "1.19.x"
+        go-version: ${{ steps.go.outputs.version }}
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
         run: |
           # We want our modules to support two Go versions at a time.
-          # As of August 2022, Go 1.19 is the latest stable.
           # go.mod's Go version declares the language version being used.
           # As such, it has to be the minimum of all Go versions supported.
-          # Bump this every six months, as new Go versions come out.
-          TARGET_VERSION=1.18
-          PREVIOUS_TARGET_VERSION=1.17
+          TARGET_VERSION='${{ matrix.cfg.go.versions[0] }}'
+          TARGET_VERSION="${TARGET_VERSION%.x}"
+          TARGET_MAJOR_VERSION="${TARGET_VERSION%.[0-9]*}"
+          TARGET_MINOR_VERSION="${TARGET_VERSION#[0-9]*.}"
+          # Assumptions:
+          # - all versions are targetted incrementally
+          # - no versions are skipped
+          # - patch version is never pinned explicitly 
+          PREVIOUS_TARGET_VERSION="$TARGET_MAJOR_VERSION.$(($TARGET_MINOR_VERSION-1))"
 
           # Note that the "<" comparison doesn't understand semver,
           # but it should be good enough for the foreseeable future.
@@ -50,15 +59,15 @@ runs:
             # As of Go 1.19 io/ioutil is deprecated
             # We automate its upgrade here because it is quite a widely used package
             while read file; do
-              sed -i 's/ioutil.NopCloser/io.NopCloser/' "${file}";
-              sed -i 's/ioutil.ReadAll/io.ReadAll/' "${file}";
+              sed -i 's/ioutil.NopCloser/io.NopCloser/' "$file";
+              sed -i 's/ioutil.ReadAll/io.ReadAll/' "$file";
               # ReadDir replacement might require manual intervention (https://pkg.go.dev/io/ioutil#ReadDir)
-              sed -i 's/ioutil.ReadDir/os.ReadDir/' "${file}";
-              sed -i 's/ioutil.ReadFile/os.ReadFile/' "${file}";
-              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "${file}";
-              sed -i 's/ioutil.TempFile/os.CreateTemp/' "${file}";
-              sed -i 's/ioutil.WriteFile/os.WriteFile/' "${file}";
-              sed -i 's/ioutil.Discard/io.Discard/' "${file}";
+              sed -i 's/ioutil.ReadDir/os.ReadDir/' "$file";
+              sed -i 's/ioutil.ReadFile/os.ReadFile/' "$file";
+              sed -i 's/ioutil.TempDir/os.MkdirTemp/' "$file";
+              sed -i 's/ioutil.TempFile/os.CreateTemp/' "$file";
+              sed -i 's/ioutil.WriteFile/os.WriteFile/' "$file";
+              sed -i 's/ioutil.Discard/io.Discard/' "$file";
             done <<< "$(find . -type f -name '*.go')"
 
             go install golang.org/x/tools/cmd/goimports@v0.5.0
@@ -70,7 +79,7 @@ runs:
             fi
           fi
     - name: go mod tidy (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
@@ -81,7 +90,7 @@ runs:
             git commit -m "run go mod tidy"
           fi
     - name: gofmt -s (on initial workflow deployment and on new Go version)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1}}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       shell: bash
       run: |
