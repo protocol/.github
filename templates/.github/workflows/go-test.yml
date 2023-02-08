@@ -17,7 +17,7 @@ jobs:
         with:
           submodules: recursive
       - id: config
-        uses: protocol/.github/.github/actions/read-config@next
+        uses: protocol/.github/.github/actions/read-config@master
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
