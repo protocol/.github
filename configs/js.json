@@ -39,6 +39,7 @@
     { "target": "ipfs/js-ipns" },
     { "target": "ipfs/js-kubo-rpc-client" },
     { "target": "ipfs/protons" },
+    { "target": "ipfs/public-gateway-checker" },
     { "target": "ipld/js-car" },
     { "target": "ipld/js-dag-cbor" },
     { "target": "ipld/js-dag-json" },
