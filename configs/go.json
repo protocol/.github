@@ -11,7 +11,7 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.18.x", "1.19.x" ]
+      "versions": [ "1.19.x", "1.20.x" ]
     }
   },
   "repositories": [
@@ -52,6 +52,9 @@
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
+      "target": "filecoin-saturn/caboose"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
@@ -82,10 +85,10 @@
       "target": "ipfs/bbloom"
     },
     {
-      "target": "ipfs/go-bitfield"
+      "target": "ipfs/bifrost-gateway"
     },
     {
-      "target": "ipfs/go-block-format"
+      "target": "ipfs/go-bitfield"
     },
     {
       "target": "ipfs/go-blockservice"
@@ -101,9 +104,6 @@
     },
     {
       "target": "ipfs/go-datastore"
-    },
-    {
-      "target": "ipfs/go-delegated-routing"
     },
     {
       "target": "ipfs/go-detect-race"
@@ -341,6 +341,9 @@
     },
     {
       "target": "ipni/caskadht"
+    },
+    {
+      "target": "ipni/depute"
     },
     {
       "target": "ipni/dhstore"
