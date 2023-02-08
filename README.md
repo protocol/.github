@@ -10,6 +10,15 @@ By storing them in a central place (here), and distributing them in an automated
 ### Additional Setup Steps
 
 Most repositories won't need any customization, and the workflows defined here will just work fine.
+
+#### Configuration Variables
+
+Some aspects of Unified CI workflows are configurable through [configuration variables](https://docs.github.com/en/actions/learn-github-actions/variables#creating-configuration-variables-for-a-repository).
+
+You can customise the runner type for `go-test` through `UCI_GO_TEST_RUNNER_UBUNTU`, `UCI_GO_TEST_RUNNER_WINDOWS` and `UCI_GO_TEST_RUNNER_MACOS` configuration variables. This option will be useful for repositories wanting to use more powerful, [PL self-hosted GitHub Actions runners](https://github.com/pl-strflt/tf-aws-gh-runner).
+
+#### Setup Actions
+
 Some repositories may require some pre-setup steps to be run before tests (or code checks) can be run. Setup steps for `go-test` are defined in `.github/actions/go-test-setup/action.yml`, and setup steps for `go-check` are defined in `.github/actions/go-check-setup/action.yml`, in the following format:
 
 ```yml
@@ -42,6 +51,26 @@ This check will be run in repositories that set `gogenerate` to `true` in `.gith
 
 Note that depending on the code generators used, it might be necessary to [install those first](#additional-setup-steps).
 The generators must also be deterministic, to prevent CI from getting different results each time.
+
+`go-test` offers an option to completely disable running 32-bit tests.
+This option is useful when a project or its upstream dependencies are not 32-bit compatible.
+Typically, such tests can be disabled using [build constraints](https://pkg.go.dev/cmd/go#hdr-Build_constraints).
+However, the constraints must be set per go file, which can be cumbersome for a project with many files.
+Using this option, 32-bit tests can be skipped entirely without having to specify build constraints per file.
+
+To completely disable running 32-bit tests set `skip32bit` to `true` in `.github/workflows/go-test-config.json`:
+```json
+{
+  "skip32bit": true
+}
+```
+
+If your project cannot be built on one of the supported operating systems, you can disable it by setting `skipOSes` to a list of operating systems in `.github/workflows/go-test-config.json`:
+```json
+{
+  "skipOSes": ["windows", "macos"]
+}
+```
 
 ## Technical Preview
 

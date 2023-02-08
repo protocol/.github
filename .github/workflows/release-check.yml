@@ -1,9 +1,11 @@
-# This workflow cannot post sticky comments on PRs from forked repositories.
-# Instead, it outputs the message it would have posted as a workflow notice.
-# See https://github.com/protocol/.github/issues/254 for details.
-
 name: Release Checker
-on: [ workflow_call ]
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        required: true
+        type: string
+        default: 1.19.x # TODO: remove once release-check is upgraded in all the targets
 
 jobs:
   releaser:
@@ -14,11 +16,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.19.x"
+          go-version: ${{ inputs.go-version }}
       - id: version
         name: Determine version
-        if: hashFiles('version.json')
-        run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # If `version.json` file doesn't exists, `version` is `""` and `404` is printed on stderr.
+          # The step won't be marked as a failure though because the error happens in a subshell.
+          version="$(gh api -X GET "repos/$HEAD_FULL_NAME/contents/version.json" -f ref="$HEAD_SHA" --jq '.content' | base64 -d | jq -r '.version')"
+          echo "version=$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
       - id: tag
         name: Check if the tag already exists
         # Check if a git tag for the version (as read from version.json) exists
@@ -35,7 +45,7 @@ jobs:
           fi
       - name: Install semver (node command line tool)
         if: steps.tag.outputs.exists == 'false'
-        run: npm install -g "https://github.com/npm/node-semver#e79ac3a450e8bb504e78b8159e3efc7089569" # v7.3.5
+        run: npm install -g "https://github.com/npm/node-semver#dc0fe202faaf19a545ce5eeab3480be84180a082" # v7.3.8
       - name: Check version
         if: steps.tag.outputs.exists == 'false'
         env:
@@ -55,23 +65,16 @@ jobs:
         run: |
           git fetch origin --tags
           go install github.com/marten-seemann/semver-highest@fcdc98f8820ff0e6613c1bee071c096febd98dbf
-          v=$(semver-highest -target "$VERSION" -versions $(git tag | paste -sd , -))
-          status=$?
-          if [[ $status != 0 ]]; then
-            echo $v
-            exit $status
+          vs=$(git tag | paste -sd , -)
+          if [[ ! -z "$vs" ]]; then
+            v=$(semver-highest -target "$VERSION" -versions "$vs")
+            status=$?
+            if [[ $status != 0 ]]; then
+              echo $v
+              exit $status
+            fi
+            echo "version=$v" >> $GITHUB_OUTPUT
           fi
-          echo "version=$v" >> $GITHUB_OUTPUT
-      - name: Post output
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version == ''
-        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        with:
-          header: release-check
-          recreate: true
-          message: |
-            Suggested version: `${{ steps.version.outputs.version }}`
-
-            This is the first release of this module.
       - id: git-diff
         name: run git diff on go.mod file(s)
         if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
@@ -95,7 +98,7 @@ jobs:
         # see https://github.com/golang/exp/commits/master/cmd/gorelease
         run: |
           go mod download
-          go install golang.org/x/exp/cmd/gorelease@b4e88ed8e8aab63a9aa9a52276782ebbc547adef
+          go install golang.org/x/exp/cmd/gorelease@f062dba9d201f5ec084d25785efec05637818c00 # https://cs.opensource.google/go/x/exp/+/f062dba9d201f5ec084d25785efec05637818c00
           output=$((gorelease -base "$PREV_VERSION") 2>&1 || true)
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
       - id: gocompat
@@ -110,64 +113,103 @@ jobs:
             output="(empty)"
           fi
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
-      - id: footnote
-        if: github.base_ref != github.event.repository.default_branch
+      - id: release
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
+        with:
+          draft: true
+          tag_name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+      - id: message
         env:
+          HEADER: |
+            Suggested version: `${{ steps.version.outputs.version }}`
+          BODY: |
+            Comparing to: [${{ steps.prev.outputs.version }}](${{ github.event.pull_request.base.repo.html_url }}/releases/tag/${{ steps.prev.outputs.version }}) ([diff](${{ github.event.pull_request.base.repo.html_url }}/compare/${{ steps.prev.outputs.version }}..${{ github.event.pull_request.head.label }}))
+
+            Changes in `go.mod` file(s):
+            ```diff
+            ${{ steps.git-diff.outputs.output }}
+            ```
+
+            `gorelease` says:
+            ```
+            ${{ steps.gorelease.outputs.output }}
+            ```
+
+            `gocompat` says:
+            ```
+            ${{ steps.gocompat.outputs.output }}
+            ```
+
+          BODY_ALT: |
+            This is the first release of this module.
+
+          RELEASE_BRANCH_NOTICE: |
+            ## Cutting a Release (when not on `${{ github.event.repository.default_branch }}`)
+
+            This PR is targeting `${{ github.base_ref }}`, which is not the default branch.
+            If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
+
+          DIFF_NOTICE: |
+            ## Cutting a Release (and modifying non-markdown files)
+
+            This PR is modifying both `version.json` and non-markdown files.
+            The Release Checker is not able to analyse files that are not checked in to `${{ github.base_ref }}`. This might cause the above analysis to be inaccurate.
+            Please consider performing all the code changes in a separate PR before cutting the release.
+
+          RELEASE_NOTICE: |
+            ## Automatically created GitHub Release
+
+            A [draft GitHub Release](${{ steps.release.outputs.url }}) has been created.
+            It is going to be published when this PR is merged.
+            You can modify its' body to include any release notes you wish to include with the release.
+
+          RELEASE_NOTICE_ALT: |
+            ## Automatically created GitHub Release
+
+            Pre-creating GitHub Releases on release PRs initiated from forks is not supported.
+            If you wish to prepare release notes yourself, you should create a draft GitHub Release for tag `${{ steps.version.outputs.version }}` manually.
+            The draft GitHub Release is going to be published when this PR is merged.
+            If you choose not to create a draft GitHub Release, a published GitHub Released is going to be created when this PR is merged.
+
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BASE_REF: ${{ github.base_ref }}
-        run: |
-          echo 'output<<'"$EOF"'
-          ---
-          ## Cutting a Release (when not on `'"$DEFAULT_BRANCH"'`)
-
-          This PR is targeting `'"$BASE_REF"'`, which is not the default branch.
-          If you wish to cut a release once this PR is merged, please add the `release` label to this PR.
-          '"$EOF" >> $GITHUB_ENV
-      - id: message
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != ''
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          PREV_VERSION: ${{ steps.prev.outputs.version }}
-          BASE_HTML_URL: ${{ github.event.pull_request.base.repo.html_url }}
           HEAD_LABEL: ${{ github.event.pull_request.head.label }}
-          GIT_DIFF: ${{ steps.git-diff.outputs.output }}
-          GORELEASE: ${{ steps.gorelease.outputs.output }}
-          GOCOMPAT: ${{ steps.gocompat.outputs.output }}
-          FOOTNOTE: ${{ steps.footnote.outputs.output }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PREV_VERSION: ${{ steps.prev.outputs.version }}
         run: |
-          echo 'output<<'"$EOF"'
-          Suggested version: `'"$VERSION"'`
-          Comparing to: [`'"$PREV_VERSION"'`]('"$BASE_HTML_URL"'/releases/tag/'"$PREV_VERSION"') ([diff]('"$BASE_HTML_URL"'/compare/'"$PREV_VERSION"'..'"$HEAD_LABEL"'))
+          echo "output<<$EOF" >> $GITHUB_OUTPUT
 
-          Changes in `go.mod` file(s):
-          ```diff
-          '"$GIT_DIFF"'
-          ```
+          echo "$HEADER" >> $GITHUB_OUTPUT
 
-          `gorelease` says:
-          ```
-          '"$GORELEASE"'
-          ```
+          if [[ "$PREV_VERSION" != "" ]]; then
+            echo "$BODY" >> $GITHUB_OUTPUT
+          else
+            echo "$BODY_ALT" >> $GITHUB_OUTPUT
+          fi
 
-          `gocompat` says:
-          ```
-          '"$GOCOMPAT"'
-          ```
-          '"$FOOTNOTE"'
-          '"$EOF" >> $GITHUB_OUTPUT
+          if [[ "$DEFAULT_BRANCH" != "$BASE_REF" ]]; then
+            echo "$RELEASE_BRANCH_NOTICE" >> $GITHUB_OUTPUT
+          fi
+
+          diff="$(gh api -X GET "repos/$GITHUB_REPOSITORY/compare/$BASE_REF...$HEAD_LABEL" --jq '.files | map(.filename) | map(select(test("^(version\\.json|.*\\.md)$") | not)) | .[]')"
+          if [[ "$diff" != "" ]]; then
+            echo "$DIFF_NOTICE" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "$GITHUB_REPOSITORY" == "$HEAD_FULL_NAME" ]]; then
+            echo "$RELEASE_NOTICE" >> $GITHUB_OUTPUT
+          else
+            echo "$RELEASE_NOTICE_ALT" >> $GITHUB_OUTPUT
+          fi
+
+          echo "$EOF" >> $GITHUB_OUTPUT
       - name: Post message on PR
-        uses: marocchino/sticky-pull-request-comment@82e7a0d3c51217201b3fedc4ddde6632e969a477 # v2.1.1
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != '' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: marocchino/sticky-pull-request-comment@fcf6fe9e4a0409cd9316a5011435be0f3327f1e1 # v2.3.1
+        if: steps.tag.outputs.exists == 'false'
         with:
           header: release-check
           recreate: true
           message: ${{ steps.message.outputs.output }}
-      - name: Set a notice message on run
-        if: steps.tag.outputs.exists == 'false' && steps.prev.outputs.version != '' && github.event.pull_request.head.repo.full_name != github.repository
-        env:
-          MESSAGE: ${{ steps.message.outputs.output }}
-        run: |
-          message="${MESSAGE//'%'/'%25'}"
-          message="${message//$'\n'/'%0A'}"
-          message="${message//$'\r'/'%0D'}"
-          echo "::notice ::$message"

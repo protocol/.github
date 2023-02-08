@@ -15,16 +15,18 @@ jobs:
       - id: set-matrix
         run: |
           TARGETS=$(find . -type f -name "*.yml" | sed "s|^\./||" | grep -v workflow-templates/header.yml | jq -R -s -c 'split("\n")[:-1]')
-          echo "::set-output name=targets::$TARGETS"
+          echo "targets=$TARGETS" >> $GITHUB_OUTPUT
   check:
     needs: [ matrix ]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        file: ${{ fromJson(needs.matrix.outputs.targets) }}
+        file: ${{ fromJSON(needs.matrix.outputs.targets) }}
     name: ${{ matrix.file }}
     steps:
       - uses: actions/checkout@v3
       - name: Run check
-        run: .github/workflows/check-3rd-party.sh ${{ matrix.file }}
+        env:
+          FILE: ${{ matrix.file }}
+        run: .github/workflows/check-3rd-party.sh $FILE
