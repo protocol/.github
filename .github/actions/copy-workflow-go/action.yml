@@ -6,7 +6,7 @@ runs:
   steps:
     # GitHub Actions Expressions do not support last item access/array length retrieval
     - id: go
-      run: echo "::set-output name=version::$(jq -r '.[-1]' <<< '${{ toJSON(matrix.cfg.go.versions) }}')"
+      run: echo "version=$(jq -r '.[-1]' <<< '${{ toJSON(matrix.cfg.go.versions) }}')" >> $GITHUB_OUTPUT
       shell: bash
     - uses: actions/setup-go@v3
       with:
@@ -15,20 +15,22 @@ runs:
         go-version: ${{ steps.go.outputs.version }}
     - name: bump go.mod go version if needed
       uses: protocol/multiple-go-modules@v1.2
+      env:
+        VERSION: ${{ matrix.cfg.go.versions[0] }}
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
         run: |
           # We want our modules to support two Go versions at a time.
           # go.mod's Go version declares the language version being used.
           # As such, it has to be the minimum of all Go versions supported.
-          TARGET_VERSION='${{ matrix.cfg.go.versions[0] }}'
+          TARGET_VERSION="$VERSION"
           TARGET_VERSION="${TARGET_VERSION%.x}"
           TARGET_MAJOR_VERSION="${TARGET_VERSION%.[0-9]*}"
           TARGET_MINOR_VERSION="${TARGET_VERSION#[0-9]*.}"
           # Assumptions:
           # - all versions are targetted incrementally
           # - no versions are skipped
-          # - patch version is never pinned explicitly 
+          # - patch version is never pinned explicitly
           PREVIOUS_TARGET_VERSION="$TARGET_MAJOR_VERSION.$(($TARGET_MINOR_VERSION-1))"
 
           # Note that the "<" comparison doesn't understand semver,
