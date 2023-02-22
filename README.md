@@ -72,14 +72,6 @@ If your project cannot be built on one of the supported operating systems, you c
 }
 ```
 
-You can also control whether the tests are shuffled and if coverage is collected by setting `noShuffle` and `noCoverage` to `true` in `.github/workflows/go-test-config.json`:
-```json
-{
-  "noShuffle": true,
-  "noCoverage": true
-}
-```
-
 ## Technical Preview
 
 You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
