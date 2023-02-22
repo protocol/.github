@@ -15,7 +15,7 @@ Most repositories won't need any customization, and the workflows defined here w
 
 Some aspects of Unified CI workflows are configurable through [configuration variables](https://docs.github.com/en/actions/learn-github-actions/variables#creating-configuration-variables-for-a-repository).
 
-You can customise the runner type for `go-test` through `UCI_GO_TEST_RUNNER_UBUNTU`, `UCI_GO_TEST_RUNNER_WINDOWS` and `UCI_GO_TEST_RUNNER_MACOS` configuration variables. This option will be useful for repositories wanting to use more powerful, [PL self-hosted GitHub Actions runners](https://github.com/pl-strflt/tf-aws-gh-runner).
+You can customise the runner type for `go-test` through `UCI_GO_TEST_RUNNER_UBUNTU`, `UCI_GO_TEST_RUNNER_WINDOWS` and `UCI_GO_TEST_RUNNER_MACOS` configuration variables. This option will be useful for repositories wanting to use more powerful, [PL self-hosted GitHub Actions runners](https://github.com/pl-strflt/tf-aws-gh-runner). Make sure the value of the variable is valid JSON.
 
 #### Setup Actions
 
@@ -69,6 +69,14 @@ If your project cannot be built on one of the supported operating systems, you c
 ```json
 {
   "skipOSes": ["windows", "macos"]
+}
+```
+
+You can also control whether the tests are shuffled and if coverage is collected by setting `noShuffle` and `noCoverage` to `true` in `.github/workflows/go-test-config.json`:
+```json
+{
+  "noShuffle": true,
+  "noCoverage": true
 }
 ```
 

@@ -36,14 +36,26 @@ jobs:
       - name: Run repo-specific setup
         uses: ./.github/actions/go-test-setup
         if: hashFiles('./.github/actions/go-test-setup') != ''
+      - id: args
+        env:
+          NO_SHUFFLE: ${{ fromJSON(steps.config.outputs.json).noShuffle }}
+          NO_COVER: ${{ fromJSON(steps.config.outputs.json).noCover }}
+        shell: bash
+        run: |
+          if [[ "$NO_SHUFFLE" != 'true' ]]; then
+            echo "shuffle=-shuffle=on" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$NO_COVER" != 'true' ]]; then
+            # Use -coverpkg=./..., so that we include cross-package coverage.
+            # If package ./A imports ./B, and ./A's tests also cover ./B,
+            # this means ./B's coverage will be significantly higher than 0%.
+            echo "cover=-cover -coverprofile=module-coverage.txt -coverpkg=./..." >> $GITHUB_OUTPUT
+          fi
       - name: Run tests
         if: contains(fromJSON(steps.config.outputs.json).skipOSes, matrix.os) == false
         uses: protocol/multiple-go-modules@v1.2
         with:
-          # Use -coverpkg=./..., so that we include cross-package coverage.
-          # If package ./A imports ./B, and ./A's tests also cover ./B,
-          # this means ./B's coverage will be significantly higher than 0%.
-          run: go test -v -shuffle=on -coverprofile=module-coverage.txt -coverpkg=./... ./...
+          run: go test -v ${{ steps.args.outputs.shuffle }} ${{ steps.args.outputs.cover }} ./...
       - name: Run tests (32 bit)
         # can't run 32 bit tests on OSX.
         if: matrix.os != 'macos' &&
@@ -55,7 +67,7 @@ jobs:
         with:
           run: |
             export "PATH=$PATH_386:$PATH"
-            go test -v -shuffle=on ./...
+            go test -v ${{ steps.args.outputs.shuffle }} ./...
       - name: Run tests with race detector
         # speed things up. Windows and OSX VMs are slow
         if: matrix.os == 'ubuntu' &&
@@ -64,10 +76,13 @@ jobs:
         with:
           run: go test -v -race ./...
       - name: Collect coverage files
+        id: coverages
+        if: fromJSON(step.config.outputs.json).noCover != true
         shell: bash
-        run: echo "COVERAGES=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_ENV
+        run: echo "files=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
       - name: Upload coverage to Codecov
+        if: fromJSON(step.config.outputs.json).noCover != true
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         with:
-          files: '${{ env.COVERAGES }}'
+          files: ${{ steps.coverages.outputs.files }}
           env_vars: OS=${{ matrix.os }}, GO=${{ matrix.go }}
