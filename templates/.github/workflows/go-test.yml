@@ -77,11 +77,11 @@ jobs:
           run: go test -v -race ./...
       - name: Collect coverage files
         id: coverages
-        if: fromJSON(step.config.outputs.json).noCover != true
+        if: fromJSON(steps.config.outputs.json).noCover != true
         shell: bash
         run: echo "files=$(find . -type f -name 'module-coverage.txt' | tr -s '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
       - name: Upload coverage to Codecov
-        if: fromJSON(step.config.outputs.json).noCover != true
+        if: fromJSON(steps.config.outputs.json).noCover != true
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         with:
           files: ${{ steps.coverages.outputs.files }}
