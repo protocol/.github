@@ -494,9 +494,6 @@
       "target": "libp2p/zeroconf"
     },
     {
-      "target": "marten-seemann/webtransport-go"
-    },
-    {
       "target": "multiformats/go-base32"
     },
     {
@@ -528,6 +525,9 @@
     },
     {
       "target": "multiformats/ma-pipe"
+    },
+    {
+      "target": "quic-go/webtransport-go"
     }
   ]
 }
