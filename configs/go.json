@@ -32,7 +32,7 @@
     },
     {
       "target": "filecoin-project/go-fil-commp-hashhash",
-      "ref": "next"
+      "source_ref": "next"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
