@@ -1,0 +1,62 @@
+name: Merge PRs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # https://crontab.guru/every-day
+
+jobs:
+  dispatch:
+    name: Merge PRs in targets
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_commit.id || github.sha }}
+      - name: Merge PRs in targets that need it
+        env:
+          PR_BRANCH: 'web3-bot/sync'
+        run: |
+          targets=()
+          for config in configs/*.json; do
+            targets+=($(jq -rc ".repositories[] | .target" $config))
+          done
+          failed=()
+          for target in ${targets[@]}; do
+            echo "Processing $target"
+            base="$(gh api "/repos/$target" --jq '.default_branch')"
+            pr="$(gh api -X GET "/repos/$target/pulls" -f head="$(echo "$target" | cut -d/ -f1):$PR_BRANCH" -f base="$base" -f state=open --jq '.[0]')"
+            number="$(jq -j '.number' <<< "$pr")"
+            head_sha="$(jq -j '.head.sha' <<< "$pr")"
+            user_login="$(jq -j '.user.login' <<< "$pr")"
+            # checks if a PR exists
+            if [[ "$pr" == '0' ]] ; then
+              echo "The PR does not exist. Skipping."
+              continue
+            fi
+            # checks if the PR was created by web3-bot
+            if [[ "$user_login" != 'web3-bot' ]]; then
+              echo "The PR wasn't created by web3-bot. Skipping."
+              continue
+            fi
+            mergeable_state="$(gh api -X GET "/repos/$target/pulls/$number" --jq '.mergeable_state')"
+            # checks if the PR can be merged
+            if [[ "$mergeable_state" != "clean" ]]; then
+              echo "The PR cannot be merged because it's in '$mergeable_state'. Skipping."
+              continue
+            fi
+            # tries to merge the PR in target
+            if result="$(gh api -X PUT "/repos/$target/pulls/$number/merge" -f merge_method=squash)"; then
+              echo "Successfully merged the PR for '$target'"
+            else
+              echo "$result"
+              echo "Failed to merge the PR for '$target'"
+              failed+=("$target")
+            fi
+          done
+          if ((${#failed[@]})); then
+            echo "::error ::Failed to merge PRs in: ${failed[@]}"
+            exit 1
+          fi
