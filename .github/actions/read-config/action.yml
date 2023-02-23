@@ -1,0 +1,22 @@
+name: read config
+description: Reads workflow config
+
+outputs:
+  json:
+    description: JSON config
+    value: ${{ steps.config.outputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: config
+      run: |
+        eof="EOF$RANDOM"
+        path="${GITHUB_WORKFLOW_REF%.yml@*}"
+        path="./${path#*/*/}-config.json"
+        printf "json<<$eof\n%s\n$eof" "$(cat "$path" || echo '{}')" >> $GITHUB_OUTPUT
+      shell: bash
+    - env:
+        CONFIG: ${{ steps.config.outputs.json }}
+      run: echo "$CONFIG"
+      shell: bash

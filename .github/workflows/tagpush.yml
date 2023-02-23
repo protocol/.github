@@ -20,28 +20,30 @@ jobs:
       - run: cat "$GITHUB_EVENT_PATH" | jq -M .
       - name: extract tag name
         run: |
-          tagname=$(echo "${{ github.ref }}" | sed "s/refs\/tags\///")
-          echo $tagnmae
+          tagname=$(echo "$GITHUB_REF" | sed "s/refs\/tags\///")
+          echo $tagname
           echo "TAGNAME=$tagname" >> $GITHUB_ENV
       - name: create issue template file
-        if: ${{ github.event.pusher.name != 'web3-bot' }}
+        if: github.event.pusher.name != 'web3-bot'
+        env:
+          PUSHER: ${{ github.event.pusher.name }}
         run: |
           echo "---" >> .github/workflows/tagpush.md
-          echo "title: ${{ env.ISSUE_TITLE }}" | sed "s/%tagname%/${{ env.TAGNAME }}/" >> .github/workflows/tagpush.md
-          echo "assignees: ${{ env.ISSUE_ASSIGNEE }}" | sed "s/%pusher%/${{ github.event.pusher.name }}/" >> .github/workflows/tagpush.md
+          echo "title: $ISSUE_TITLE" | sed "s/%tagname%/$TAGNAME/" >> .github/workflows/tagpush.md
+          echo "assignees: $ISSUE_ASSIGNEE" | sed "s/%pusher%/$PUSHER/" >> .github/workflows/tagpush.md
           echo "---" >> .github/workflows/tagpush.md
           cat <<EOF >> .github/workflows/tagpush.md
-          ${{ env.ISSUE_BODY }}
+          $ISSUE_BODY
           EOF
       - run: cat .github/workflows/tagpush.md
       - name: create an issue
-        if: ${{ github.event.pusher.name != 'web3-bot' }}
-        uses: JasonEtco/create-an-issue@9e6213aec58987fa7d2f4deb8b256b99e63107a2 # v2.6.0
+        if: github.event.pusher.name != 'web3-bot'
+        uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd # v2.9.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PUSHER: ${{ github.event.pusher.name }}
         with:
           filename: .github/workflows/tagpush.md
       - name: fail build if push wasn't done by web3-bot
-        if: ${{ github.event.pusher.name != 'web3-bot' }}
+        if: github.event.pusher.name != 'web3-bot'
         run: exit 1

@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfg: ${{ fromJson(github.event.inputs.targets) }}
+        cfg: ${{ fromJSON(github.event.inputs.targets) }}
       max-parallel: 10
     env:
       TARGET_REPO_DIR: "target-repo"
@@ -53,15 +53,16 @@ jobs:
     - name: determine files to add
       # By setting the environment variable, it's possible to programmatically add / modify this list.
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
-      run: |
-        files=${{ toJson(toJson(matrix.cfg.files)) }}
-        files=$(echo -e "$files" | jq -c '.')
-        echo "FILES=$files" >> $GITHUB_ENV
+      env:
+        FILES: |
+          ${{ toJSON(matrix.cfg.files) }}
+          ${{ toJSON(matrix.cfg.extra_files) }}
+      run: echo "FILES=$(jq -nc '[inputs] | add' <<< "$FILES")" >> $GITHUB_ENV
     - name: is initial workflow deployment
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
       run: |
         initial_workflow_deployment=1
-        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
+        for f in $(jq -r '.[]' <<< "$FILES"); do
           if [[ -f $TARGET_REPO_DIR/$f ]]; then
             initial_workflow_deployment=0
             break
@@ -69,7 +70,7 @@ jobs:
         done
         echo "INITIAL_WORKFLOW_DEPLOYMENT=$initial_workflow_deployment" >> $GITHUB_ENV
     - name: remove Travis (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -f .travis.yml ]]; then
@@ -77,7 +78,7 @@ jobs:
           git commit -m "disable Travis"
         fi
     - name: remove CircleCI (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .circleci ]]; then
@@ -85,7 +86,7 @@ jobs:
           git commit -m "disable CircleCI"
         fi
     - name: remove gx (on initial workflow deployment)
-      if: ${{ env.INITIAL_WORKFLOW_DEPLOYMENT == 1 }}
+      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         if [[ -d .gx ]]; then
@@ -100,14 +101,23 @@ jobs:
       if: matrix.cfg.deploy_versioning
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - name: Add files
+      env:
+        CONTEXT: |
+          {
+            "config": ${{ toJSON(matrix.cfg) }},
+            "github": {
+              "default_branch": "${{ env.DEFAULT_BRANCH }}"
+            }
+          }
+        TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
-        for f in $(jq -r '.[]' <<< ${{ toJson(env.FILES) }}); do
+        for f in $(jq -r '.[]' <<< "$FILES"); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # replace $default-branch with this repo's GitHub default branch
-          sed -i "s:\$default-branch:${{ env.DEFAULT_BRANCH }}:g" $tmp
+          # expand the template with values from the JSON context object
+          perl -pi -e "$TEMPLATE_ENGINE" $tmp
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
@@ -134,7 +144,7 @@ jobs:
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
     - name: Force push web3-bot/sync branch
-      if: ${{ env.NEEDS_UPDATE != 0 }}
+      if: env.NEEDS_UPDATE != 0
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
         git checkout -B web3-bot/sync
