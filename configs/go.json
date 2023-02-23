@@ -31,7 +31,8 @@
       "target": "filecoin-project/go-data-segment"
     },
     {
-      "target": "filecoin-project/go-fil-commp-hashhash"
+      "target": "filecoin-project/go-fil-commp-hashhash",
+      "ref": "next"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
