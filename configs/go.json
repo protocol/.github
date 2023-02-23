@@ -9,7 +9,10 @@
       ".github/workflows/tagpush.yml"
     ],
     "deploy_versioning": true,
-    "deploy_go": true
+    "deploy_go": true,
+    "go": {
+      "versions": [ "1.19.x", "1.20.x" ]
+    }
   },
   "repositories": [
     {
@@ -28,7 +31,8 @@
       "target": "filecoin-project/go-data-segment"
     },
     {
-      "target": "filecoin-project/go-fil-commp-hashhash"
+      "target": "filecoin-project/go-fil-commp-hashhash",
+      "source_ref": "next"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
@@ -47,6 +51,9 @@
     },
     {
       "target": "filecoin-project/snapcraft-exporter"
+    },
+    {
+      "target": "filecoin-saturn/caboose"
     },
     {
       "target": "filecoin-shipyard/js-lotus-client-schema"
@@ -79,10 +86,10 @@
       "target": "ipfs/bbloom"
     },
     {
-      "target": "ipfs/go-bitfield"
+      "target": "ipfs/bifrost-gateway"
     },
     {
-      "target": "ipfs/go-block-format"
+      "target": "ipfs/go-bitfield"
     },
     {
       "target": "ipfs/go-blockservice"
@@ -98,9 +105,6 @@
     },
     {
       "target": "ipfs/go-datastore"
-    },
-    {
-      "target": "ipfs/go-delegated-routing"
     },
     {
       "target": "ipfs/go-detect-race"
@@ -133,8 +137,7 @@
       "target": "ipfs/go-ds-measure"
     },
     {
-      "target": "ipfs/go-ds-pebble",
-      "source_ref": "next"
+      "target": "ipfs/go-ds-pebble"
     },
     {
       "target": "ipfs/go-ds-redis"
@@ -341,12 +344,13 @@
       "target": "ipni/caskadht"
     },
     {
-      "target": "ipni/dhstore",
-      "source_ref": "next"
+      "target": "ipni/depute"
     },
     {
-      "target": "ipni/go-indexer-core",
-      "source_ref": "next"
+      "target": "ipni/dhstore"
+    },
+    {
+      "target": "ipni/go-indexer-core"
     },
     {
       "target": "ipni/go-naam"
@@ -364,8 +368,7 @@
       "target": "ipni/indexstar"
     },
     {
-      "target": "ipni/storetheindex",
-      "source_ref": "next"
+      "target": "ipni/storetheindex"
     },
     {
       "target": "libp2p/dht-tracer1"
