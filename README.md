@@ -97,8 +97,6 @@ This repository currently defines two workflows for Go repositories:
 * [go-test](templates/.github/workflows/go-test.yml): Runs all tests, using different compiler versions and operating systems.
 
 Whenever one of these workflows is changed, this repository runs the [copy workflow](.github/workflows/copy-workflow.yml). This workflow creates a pull request in every participating repository to update *go-check* and *go-test*.
-In order to help with the distribution of these workflows, this repository defines two additional workflows that are distributed across participating repositories:
-* [automerge](templates/.github/workflows/automerge.yml): In most cases, an update to the workflows will not cause CI to fail in most participating repositories. To make our life easier, *automerge* automatically merges the pull request if all checks succeed.
 
 ## Usage
 
