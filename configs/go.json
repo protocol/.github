@@ -9,9 +9,21 @@
       ".github/workflows/tagpush.yml"
     ],
     "deploy_versioning": true,
-    "deploy_go": true
+    "deploy_go": true,
+    "go": {
+      "versions": [ "1.19.x", "1.20.x" ]
+    }
   },
   "repositories": [
+    {
+      "target": "filecoin-project/docker-hub-exporter"
+    },
+    {
+      "target": "filecoin-project/ffi-stub"
+    },
+    {
+      "target": "filecoin-project/github-exporter"
+    },
     {
       "target": "filecoin-project/go-address"
     },
@@ -22,7 +34,11 @@
       "target": "filecoin-project/go-bitfield"
     },
     {
-      "target": "filecoin-project/go-fil-commp-hashhash"
+      "target": "filecoin-project/go-data-segment"
+    },
+    {
+      "target": "filecoin-project/go-fil-commp-hashhash",
+      "source_ref": "next"
     },
     {
       "target": "filecoin-project/go-hamt-ipld"
@@ -34,16 +50,25 @@
       "target": "filecoin-project/homebrew-exporter"
     },
     {
-      "target": "filecoin-project/index-provider"
+      "target": "filecoin-project/lassie"
+    },
+    {
+      "target": "filecoin-project/lily-archiver"
     },
     {
       "target": "filecoin-project/snapcraft-exporter"
+    },
+    {
+      "target": "filecoin-saturn/caboose"
     },
     {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
       "target": "ipfs-shipyard/dnslink-dnsimple"
+    },
+    {
+      "target": "ipfs-shipyard/equinix-billing-tools"
     },
     {
       "target": "ipfs-shipyard/git-remote-ipld"
@@ -67,13 +92,10 @@
       "target": "ipfs/bbloom"
     },
     {
+      "target": "ipfs/bifrost-gateway"
+    },
+    {
       "target": "ipfs/go-bitfield"
-    },
-    {
-      "target": "ipfs/go-bitswap"
-    },
-    {
-      "target": "ipfs/go-block-format"
     },
     {
       "target": "ipfs/go-blockservice"
@@ -89,9 +111,6 @@
     },
     {
       "target": "ipfs/go-datastore"
-    },
-    {
-      "target": "ipfs/go-delegated-routing"
     },
     {
       "target": "ipfs/go-detect-race"
@@ -124,8 +143,7 @@
       "target": "ipfs/go-ds-measure"
     },
     {
-      "target": "ipfs/go-ds-pebble",
-      "source_ref": "next"
+      "target": "ipfs/go-ds-pebble"
     },
     {
       "target": "ipfs/go-ds-redis"
@@ -177,9 +195,6 @@
     },
     {
       "target": "ipfs/go-ipfs-exchange-offline"
-    },
-    {
-      "target": "ipfs/go-ipfs-files"
     },
     {
       "target": "ipfs/go-ipfs-http-client"
@@ -293,7 +308,13 @@
       "target": "ipfs/iptb-plugins"
     },
     {
+      "target": "ipfs/kuboreleaser"
+    },
+    {
       "target": "ipfs/pinbot-irc"
+    },
+    {
+      "target": "ipfs/stargate"
     },
     {
       "target": "ipld/codec-fixtures"
@@ -323,19 +344,31 @@
       "target": "ipld/go-ipld-selector-text-lite"
     },
     {
-      "target": "ipld/go-ipldtool"
-    },
-    {
       "target": "ipld/go-storethehash"
     },
     {
+      "target": "ipni/caskadht"
+    },
+    {
+      "target": "ipni/depute"
+    },
+    {
+      "target": "ipni/dhstore"
+    },
+    {
       "target": "ipni/go-indexer-core"
+    },
+    {
+      "target": "ipni/go-naam"
     },
     {
       "target": "ipni/heyfil"
     },
     {
       "target": "ipni/index-observer"
+    },
+    {
+      "target": "ipni/index-provider"
     },
     {
       "target": "ipni/indexstar"
@@ -439,9 +472,6 @@
     },
     {
       "target": "libp2p/go-netroute"
-    },
-    {
-      "target": "libp2p/go-openssl"
     },
     {
       "target": "libp2p/go-reuseport"

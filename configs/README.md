@@ -39,3 +39,12 @@ To customise the copy workflow further, you can add more fields to the `defaults
 ## Testing
 
 You can use [testing](https://github.com/protocol/.github/tree/testing) branch for worklow/configuration testing. Once you push your changes to the branch, a [dispatch](../.github/workflows/dispatch.yml) workflow will be triggered. The workflow will use [testing.json](testing.json) configuration file only. You can manipalate that configuration file as needed(you can copy all the `defaults` from [go.json](go.json) for [example](https://github.com/protocol/.github/commit/43476995428996a90ca95bf838f084ba1a710c68)).
+
+## Upgrading Go
+
+To upgrade Go, modify the `defaults.go.versions` array in the [Go config](go.json).
+
+Remember to:
+- Keep the array sorted in increasing order,
+- Upgrade versions incrementally. Do not skip a version,
+- never pin the patch version (`"1.19.x"` is correct, `"1.19.8"` is incorrect).
