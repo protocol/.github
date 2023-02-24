@@ -1,0 +1,77 @@
+name: Delete workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: The path of the workflow to delete
+        required: true
+      dry-run:
+        description: Whether to run the workflow in dry-run mode
+        required: false
+        default: 'true'
+
+jobs:
+  dispatch:
+    name: Create PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PRs
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+          PATH: ${{ github.event.inputs.path }}
+          GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.info(`Looking for repositories the user has direct access to`)
+            const items = await github.paginate(octokit.rest.repos.listForAuthenticatedUser, {
+              affiliation: 'collaborator'
+            })
+            core.info(`Filtering out the repositories without the file`)
+            const files = []
+            for (const item of items) {
+              core.info(`Checking if the repo at ${item.html_url} contains the file`)
+              try {
+                const file = await github.rest.repos.getContent({
+                  owner: item.owner.login,
+                  repo: item.name,
+                  path: process.env.PATH
+                })
+                core.debug(`The file exists in ${item.html_url}`)
+                files.push({
+                  ...file,
+                  repo: item
+                })
+              } catch (err) {
+                if (err.status != 404) {
+                  throw err
+                }
+                core.debug(`The file does not exist in ${item.html_url}`)
+              }
+            }
+            core.info(`Attempting to delete the files`)
+            const failed = []
+            for (const file of files) {
+              if (process.env.DRY_RUN == 'true') {
+                core.info(`Would delete the file ${file.html_url}`)
+                continue
+              }
+              core.debug(`Deleting the file ${file.html_url}`)
+              try {
+                await github.rest.repos.deleteFile({
+                  owner: file.repo.owner.login,
+                  repo: file.repo.name,
+                  path: process.env.PATH,
+                  message: `ci: delete ${process.env.PATH}`,
+                  sha: file.sha
+                })
+                core.debug(`Deleted the file ${file.html_url}`)
+              } catch(error) {
+                core.error(`Couldn't delete the file ${file.html_url}, got: ${error}`)
+                failed.push(file)
+              }
+            }
+            if (failed.length != 0) {
+              throw new Error(`Failed to delete ${failed.length} files`)
+            }
