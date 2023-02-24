@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_commit.id || github.sha }}
       - name: Sync PRs in targets that need it
         env:
-          PR_TITLE: 'ci: update CI config files'
+          PR_TITLE: 'ci: update Unified CI configuration'
           PR_BRANCH: 'web3-bot/sync'
         run: |
           targets=()
