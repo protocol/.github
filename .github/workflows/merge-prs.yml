@@ -7,56 +7,56 @@ on:
 
 jobs:
   dispatch:
-    name: Merge PRs in targets
+    name: Merge PRs
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.workflow_run.head_commit.id || github.sha }}
-      - name: Merge PRs in targets that need it
+      - name: Merge PRs
         env:
-          PR_BRANCH: 'web3-bot/sync'
-        run: |
-          targets=()
-          for config in configs/*.json; do
-            targets+=($(jq -rc ".repositories[] | .target" $config))
-          done
-          failed=()
-          for target in ${targets[@]}; do
-            echo "Processing $target"
-            base="$(gh api "/repos/$target" --jq '.default_branch')"
-            pr="$(gh api -X GET "/repos/$target/pulls" -f head="$(echo "$target" | cut -d/ -f1):$PR_BRANCH" -f base="$base" -f state=open --jq '.[0]')"
-            number="$(jq -j '.number' <<< "$pr")"
-            head_sha="$(jq -j '.head.sha' <<< "$pr")"
-            user_login="$(jq -j '.user.login' <<< "$pr")"
-            # checks if a PR exists
-            if [[ "$pr" == '0' ]] ; then
-              echo "The PR does not exist. Skipping."
-              continue
-            fi
-            # checks if the PR was created by web3-bot
-            if [[ "$user_login" != 'web3-bot' ]]; then
-              echo "The PR wasn't created by web3-bot. Skipping."
-              continue
-            fi
-            mergeable_state="$(gh api -X GET "/repos/$target/pulls/$number" --jq '.mergeable_state')"
-            # checks if the PR can be merged
-            if [[ "$mergeable_state" != "clean" ]]; then
-              echo "The PR cannot be merged because it's in '$mergeable_state'. Skipping."
-              continue
-            fi
-            # tries to merge the PR in target
-            if result="$(gh api -X PUT "/repos/$target/pulls/$number/merge" -f merge_method=squash)"; then
-              echo "Successfully merged the PR for '$target'"
-            else
-              echo "$result"
-              echo "Failed to merge the PR for '$target'"
-              failed+=("$target")
-            fi
-          done
-          if ((${#failed[@]})); then
-            echo "::error ::Failed to merge PRs in: ${failed[@]}"
-            exit 1
-          fi
+          QUERY: is:pr author:web3-bot state:open status:success head:web3-bot/sync archived:false
+        uses: actions/github-script@v6
+        with:
+          retries: 12
+          script: |
+            core.info(`Looking for PRs matching the query: ${process.env.QUERY}`)
+            const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
+              q: process.env.QUERY
+            })
+            core.info(`Filtering out the PRs that cannot be merged`)
+            const prs = []
+            for (const item of items) {
+              core.info(`Retrieving ${item.html_url}`)
+              const [_, owner, repo] = item.url.match(/repos\/(.+?)\/(.+?)\/issues/)
+              const pr = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: item.number
+              })
+              if (pr.mergeable_state == 'clean') {
+                core.debug(`${pr.html_url} can be merged`)
+                prs.push(pr)
+              } else {
+                core.debug(`${pr.html_url} cannot be merged`)
+              }
+            }
+            core.info(`Attempting to merge the PRs`)
+            const failed = []
+            for (const pr of prs) {
+              core.info(`Merging ${pr.html_url}`)
+              try {
+                await octokit.rest.pulls.merge({
+                  owner: pr.base.repo.owner.login,
+                  repo: pr.base.repo.name,
+                  pull_number: pr.number,
+                  merge_method: 'squash'
+                })
+                core.debug(`Merged ${pr.html_url}`)
+              } catch(error) {
+                core.error(`Couldn't merge ${pr.html_url}, got: ${error}`)
+                failed.push(pr)
+              }
+            }
+            if (failed.length != 0) {
+              throw new Error(`Failed to merge ${failed.length} PRs`)
+            }
