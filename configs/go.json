@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -45,6 +48,9 @@
     },
     {
       "target": "filecoin-project/go-legs"
+    },
+    {
+      "target": "filecoin-project/go-retrieval-types"
     },
     {
       "target": "filecoin-project/homebrew-exporter"
@@ -486,6 +492,9 @@
     },
     {
       "target": "libp2p/hydra-booster"
+    },
+    {
+      "target": "libp2p/libp2p-go-webrtc-benchmarks"
     },
     {
       "target": "libp2p/repl"
