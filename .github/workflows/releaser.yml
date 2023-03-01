@@ -25,24 +25,13 @@ jobs:
         uses: mukunku/tag-exists-action@9298fbcc409758ba624a0ae16b83df86637cb8ce # v1.2.0
         with:
           tag: ${{ steps.version.outputs.version }}
-      - id: push
-        name: Create tag
+      - name: Create release
         if: steps.version.outputs.version != '' && steps.tag.outputs.exists == 'false' && (
             github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
-            contains(fromJSON(steps.labels.outputs.labels), 'release')
-          )
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          TAG: ${{ steps.version.outputs.version }}
-          SHA: ${{ github.sha }}
-        run: |
-          gh api -X POST "repos/$REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$SHA"
-          echo "conclusion=success" >> $GITHUB_OUTPUT
-      - name: Create release
-        if: steps.push.outputs.conclusion == 'success'
+            contains(fromJSON(steps.labels.outputs.labels), 'release'))
         uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
         with:
           draft: false
           tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
+          target_commitish: ${{ github.sha }}

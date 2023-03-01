@@ -120,6 +120,7 @@ jobs:
           draft: true
           tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
+          target_commitish: ${{ github.event.pull_request.base.ref }}
       - id: message
         env:
           HEADER: |
