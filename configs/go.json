@@ -53,6 +53,9 @@
       "target": "filecoin-project/lassie"
     },
     {
+      "target": "filecoin-project/lassie-event-recorder"
+    },
+    {
       "target": "filecoin-project/lily-archiver"
     },
     {
