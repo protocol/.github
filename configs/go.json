@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -243,6 +246,9 @@
     },
     {
       "target": "ipfs/go-libipfs"
+    },
+    {
+      "target": "ipfs/go-libipfs-rapide"
     },
     {
       "target": "ipfs/go-log"
