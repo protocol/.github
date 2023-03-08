@@ -13,13 +13,13 @@ on:
 
 jobs:
   dispatch:
-    name: Create PRs
+    name: Delete workflow
     runs-on: ubuntu-latest
     steps:
-      - name: Create PRs
+      - name: Delete workflow
         env:
           DRY_RUN: ${{ github.event.inputs.dry-run || 'true' }}
-          PATH: ${{ github.event.inputs.path }}
+          PATH: ${{ github.event.inputs.path || '.github/workflows/automerge.yml' }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
