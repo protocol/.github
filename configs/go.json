@@ -356,6 +356,9 @@
       "target": "ipni/depute"
     },
     {
+      "target": "ipni/dhfind"
+    },
+    {
       "target": "ipni/dhstore"
     },
     {
@@ -378,9 +381,6 @@
     },
     {
       "target": "ipni/storetheindex"
-    },
-    {
-      "target": "ipni/dhfind"
     },
     {
       "target": "libp2p/dht-tracer1"
