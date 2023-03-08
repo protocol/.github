@@ -15,13 +15,37 @@ jobs:
       - name: Create PRs
         env:
           BRANCH: web3-bot/sync
-          GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
         uses: actions/github-script@v6
         with:
-          retries: 12
+          github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          retries: 0
           script: |
+            const request = async function(req, opts) {
+              try {
+                return await req(opts)
+              } catch(err) {
+                opts.request.retries = (opts.request.retries || 0) + 1
+                if (err.status === 403) {
+                  if (err.response.headers['x-ratelimit-remaining'] === '0') {
+                    const retryAfter = err.response.headers['x-ratelimit-reset'] - Math.floor(Date.now() / 1000) || 1
+                    core.info(`Rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                  if (err.message.toLowerCase().includes('secondary rate limit')) {
+                    const retryAfter = Math.pow(2, opts.request.retries)
+                    core.info(`Secondary rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                }
+                throw err
+              }
+            }
+            github.hook.wrap('request', request)
+
             core.info(`Looking for repositories the user has direct access to`)
-            const items = await github.paginate(octokit.rest.repos.listForAuthenticatedUser, {
+            const items = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
               affiliation: 'collaborator'
             })
             core.info(`Filtering out the repositories without unmerged branches`)
@@ -30,16 +54,15 @@ jobs:
               core.info(`Checking if a PR can be created for ${item.html_url}`)
               let branch
               try {
-                branch = await github.rest.repos.getBranch({
+                branch = (await github.rest.repos.getBranch({
                   owner: item.owner.login,
                   repo: item.name,
                   branch: process.env.BRANCH
-                })
+                }))?.data
               } catch(error) {
                 if (error.status != 404) {
                   throw error
                 }
-                core.info(error)
               }
               if (branch != undefined) {
                 core.info(`The branch exists in ${item.html_url}`)
@@ -47,7 +70,7 @@ jobs:
                 core.info(`The branch does not exist in ${item.html_url}`)
                 continue
               }
-              const compare = await github.rest.repos.compareCommitsWithBasehead({
+              const {data: compare} = await github.rest.repos.compareCommitsWithBasehead({
                 owner: item.owner.login,
                 repo: item.name,
                 basehead: `${item.default_branch}...${branch.name}`
@@ -58,7 +81,7 @@ jobs:
                 core.info(`PR for ${item.html_url} cannot be created`)
                 continue
               }
-              const pulls = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              const {data: pulls} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
                 owner: item.owner.login,
                 repo: item.name,
                 commit_sha: branch.commit.sha
@@ -67,7 +90,7 @@ jobs:
                 core.info(`The PR does not exist yet in ${item.html_url}`)
                 repos.push(item)
               } else {
-                core.info('The PR already exists at ${pulls[0].html_url}')
+                core.info(`The PR already exists at ${pulls[0].html_url}`)
               }
             }
             core.info(`Attempting to create the PRs`)
@@ -81,7 +104,7 @@ jobs:
                   head: process.env.BRANCH,
                   base: repo.default_branch
                 })
-                core.info(`Created PR at ${pr.html_url}`)
+                core.info(`${pr.html_url} created successfully`)
               } catch(error) {
                 core.error(`Couldn't create a PR for ${repo.html_url}, got: ${error}`)
                 failed.push(repo)

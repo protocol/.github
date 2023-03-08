@@ -9,16 +9,39 @@ jobs:
   dispatch:
     name: Merge PRs
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
     steps:
       - name: Merge PRs
         env:
-          QUERY: is:pr author:web3-bot state:open status:success head:web3-bot/sync archived:false
+          QUERY: is:pr author:web3-bot state:open head:web3-bot/sync archived:false
         uses: actions/github-script@v6
         with:
-          retries: 12
+          github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          retries: 0
           script: |
+            const request = async function(req, opts) {
+              try {
+                return await req(opts)
+              } catch(err) {
+                opts.request.retries = (opts.request.retries || 0) + 1
+                if (err.status === 403) {
+                  if (err.response.headers['x-ratelimit-remaining'] === '0') {
+                    const retryAfter = err.response.headers['x-ratelimit-reset'] - Math.floor(Date.now() / 1000) || 1
+                    core.info(`Rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                  if (err.message.toLowerCase().includes('secondary rate limit')) {
+                    const retryAfter = Math.pow(2, opts.request.retries)
+                    core.info(`Secondary rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                }
+                throw err
+              }
+            }
+            github.hook.wrap('request', request)
+
             core.info(`Looking for PRs matching the query: ${process.env.QUERY}`)
             const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
               q: process.env.QUERY
@@ -28,7 +51,7 @@ jobs:
             for (const item of items) {
               core.info(`Retrieving ${item.html_url}`)
               const [_, owner, repo] = item.url.match(/repos\/(.+?)\/(.+?)\/issues/)
-              const pr = await github.rest.pulls.get({
+              const {data: pr} = await github.rest.pulls.get({
                 owner,
                 repo,
                 pull_number: item.number
@@ -51,7 +74,7 @@ jobs:
                   pull_number: pr.number,
                   merge_method: 'squash'
                 })
-                core.info(`Merged ${pr.html_url}`)
+                core.info(`${pr.html_url} merged successfully`)
               } catch(error) {
                 core.error(`Couldn't merge ${pr.html_url}, got: ${error}`)
                 failed.push(pr)
