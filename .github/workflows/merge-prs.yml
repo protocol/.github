@@ -34,10 +34,10 @@ jobs:
                 pull_number: item.number
               })
               if (pr.mergeable_state == 'clean') {
-                core.debug(`${pr.html_url} can be merged`)
+                core.info(`${pr.html_url} can be merged`)
                 prs.push(pr)
               } else {
-                core.debug(`${pr.html_url} cannot be merged`)
+                core.info(`${pr.html_url} cannot be merged`)
               }
             }
             core.info(`Attempting to merge the PRs`)
@@ -51,7 +51,7 @@ jobs:
                   pull_number: pr.number,
                   merge_method: 'squash'
                 })
-                core.debug(`Merged ${pr.html_url}`)
+                core.info(`Merged ${pr.html_url}`)
               } catch(error) {
                 core.error(`Couldn't merge ${pr.html_url}, got: ${error}`)
                 failed.push(pr)
