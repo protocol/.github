@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ "ubuntu", "windows", "macos" ]
-        go: ${{{ config.go.versions }}}
+        go: [ "this", "next" ]
     env:
       GOTESTFLAGS: -shuffle=on -cover -coverprofile=module-coverage.txt -coverpkg=./...
       GO386FLAGS: -shuffle=on
@@ -20,9 +20,25 @@ jobs:
           submodules: recursive
       - id: config
         uses: protocol/.github/.github/actions/read-config@master
+      - id: go-mod
+        uses: protocol/.github/.github/actions/read-go-mod@master
+      - id: go
+        env:
+          MATRIX_GO: ${{ matrix.go }}
+          GO_MOD_VERSION: ${{ toJSON(steps.go-mod.outputs.json).Go }}
+        run: |
+          if [[ "$MATRIX_GO" == "this" ]]; then
+            echo "version=$GO_MOD_VERSION.x" >> $GITHUB_OUTPUT
+          elif [[ "$MATRIX_GO" == "next" ]]; then
+            MAJOR="${GO_MOD_VERSION%.[0-9]*}"
+            MINOR="${GO_MOD_VERSION#[0-9]*.}"
+            echo "version=$MAJOR.$(($MINOR+1)).x" >> $GITHUB_OUTPUT
+          else
+            echo "version=$MATRIX_GO" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ steps.go.outputs.version }}
       - name: Go information
         run: |
           go version

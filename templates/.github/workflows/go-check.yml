@@ -11,9 +11,11 @@ jobs:
           submodules: recursive
       - id: config
         uses: protocol/.github/.github/actions/read-config@master
+      - id: go-mod
+        uses: protocol/.github/.github/actions/read-go-mod@master
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{{ config.go.versions[-1] }}}
+          go-version: ${{ toJSON(steps.go-mod.outputs.json).Go }}.x
       - name: Run repo-specific setup
         uses: ./.github/actions/go-check-setup
         if: hashFiles('./.github/actions/go-check-setup') != ''

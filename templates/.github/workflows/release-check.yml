@@ -6,5 +6,3 @@ on:
 jobs:
   release-check:
     uses: protocol/.github/.github/workflows/release-check.yml@master
-    with:
-      go-version: ${{{ config.go.versions[-1] }}}
