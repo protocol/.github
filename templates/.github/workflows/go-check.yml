@@ -1,4 +1,7 @@
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: ${{{ github.protected_branches + .github.default_branch | unique }}}
 name: Go Checks
 
 jobs:

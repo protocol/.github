@@ -40,11 +40,16 @@ jobs:
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
         ref: ${{ matrix.cfg.source_ref || github.ref }}
-    - name: determine GitHub default branch
+    - id: github
+      name: determine GitHub context
       working-directory: ${{ env.TARGET_REPO_DIR }}
+      env:
+        REPO: ${{ matrix.cfg.target}}
       run: |
-        default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-        echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+        default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+        protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
+        echo "default_branch=$default_branch" >> $GITHUB_OUTPUT
+        echo "protected_branches=$protected_branches" >> $GITHUB_OUTPUT
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -105,9 +110,7 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(matrix.cfg) }},
-            "github": {
-              "default_branch": "${{ env.DEFAULT_BRANCH }}"
-            }
+            "github": ${{ toJSON(steps.github.outputs) }}
           }
         TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
