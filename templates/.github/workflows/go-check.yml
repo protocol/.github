@@ -10,4 +10,4 @@ concurrency:
 
 jobs:
   go-check:
-    uses: protocol/.github/.github/workflows/go-check.yml@master
+    uses: protocol/.github/.github/workflows/go-check.yml@v1.0
