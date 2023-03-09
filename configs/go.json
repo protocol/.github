@@ -356,6 +356,9 @@
       "target": "ipni/depute"
     },
     {
+      "target": "ipni/dhfind"
+    },
+    {
       "target": "ipni/dhstore"
     },
     {
