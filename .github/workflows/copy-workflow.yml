@@ -45,6 +45,7 @@ jobs:
       working-directory: ${{ env.TARGET_REPO_DIR }}
       env:
         REPO: ${{ matrix.cfg.target}}
+        GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
       run: |
         default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
         protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
@@ -110,7 +111,10 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(matrix.cfg) }},
-            "github": ${{ toJSON(steps.github.outputs) }}
+            "github": {
+              "default_branch": "${{ steps.github.outputs.default_branch }}",
+              "protected_branches": ${{ steps.github.outputs.protected_branches }}
+            }
           }
         TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
