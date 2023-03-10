@@ -15,7 +15,7 @@ jobs:
         uses: protocol/.github/.github/actions/read-go-mod@master
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ toJSON(steps.go-mod.outputs.json).Go }}.x
+          go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x
       - name: Run repo-specific setup
         uses: ./.github/actions/go-check-setup
         if: hashFiles('./.github/actions/go-check-setup') != ''

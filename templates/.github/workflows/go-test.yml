@@ -25,7 +25,7 @@ jobs:
       - id: go
         env:
           MATRIX_GO: ${{ matrix.go }}
-          GO_MOD_VERSION: ${{ toJSON(steps.go-mod.outputs.json).Go }}
+          GO_MOD_VERSION: ${{ fromJSON(steps.go-mod.outputs.json).Go }}
         run: |
           if [[ "$MATRIX_GO" == "this" ]]; then
             echo "version=$GO_MOD_VERSION.x" >> $GITHUB_OUTPUT

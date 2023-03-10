@@ -18,7 +18,7 @@ jobs:
         uses: protocol/.github/.github/actions/read-go-mod@master
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ toJSON(steps.go-mod.outputs.json).Go }}.x
+          go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x
       - id: version
         name: Determine version
         env:
