@@ -1,7 +1,7 @@
 on:
   pull_request:
   push:
-    branches: ${{{ github.protected_branches + [fromjson.github.default_branch] | unique }}}
+    branches: ${{{ .github.protected_branches + [.github.default_branch] | unique }}}
 name: Go Test
 
 jobs:

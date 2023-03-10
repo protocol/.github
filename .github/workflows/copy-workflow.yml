@@ -47,10 +47,15 @@ jobs:
         REPO: ${{ matrix.cfg.target}}
         GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
       run: |
+        eof="EOF$RANDOM"
         default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
         protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
-        echo "default_branch=$default_branch" >> $GITHUB_OUTPUT
-        echo "protected_branches=$protected_branches" >> $GITHUB_OUTPUT
+        echo "json<<$eof" >> $GITHUB_OUTPUT
+        echo '{' >> $GITHUB_OUTPUT
+        echo '"default_branch":"'"$default_branch"'",' >> $GITHUB_OUTPUT
+        echo '"protected_branches":'"$protected_branches" >> $GITHUB_OUTPUT
+        echo '}' >> $GITHUB_OUTPUT
+        echo "$eof" >> $GITHUB_OUTPUT
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -111,12 +116,9 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(matrix.cfg) }},
-            "github": {
-              "default_branch": "${{ steps.github.outputs.default_branch }}",
-              "protected_branches": ${{ steps.github.outputs.protected_branches }}
-            }
+            "github": ${{ toJSON(steps.github.outputs.json) }}
           }
-        TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
+        TEMPLATE_ENGINE: s#\$\{\{\{\s*\.?(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson | .$1'`#ge
       run: |
         for f in $(jq -r '.[]' <<< "$FILES"); do
           echo -e "\nProcessing $f."
