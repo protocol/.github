@@ -2,10 +2,10 @@ name: Release
 on:
   push:
     paths: [CHANGELOG.md]
-    branches: [master]
+    branches: [master, release/*]
   pull_request:
     paths: [CHANGELOG.md]
-    branches: [master]
+    branches: [master, release/*]
 jobs:
   release:
     name: Realase
