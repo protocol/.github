@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -96,6 +99,9 @@
     },
     {
       "target": "ipfs/bifrost-gateway"
+    },
+    {
+      "target": "ipfs/gateway-conformance"
     },
     {
       "target": "ipfs/go-bitfield"
