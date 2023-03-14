@@ -2,7 +2,7 @@ on: [push, pull_request]
 name: Go Test
 
 jobs:
-  unit:
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -38,13 +38,15 @@ jobs:
       - name: Run repo-specific setup
         uses: ./.github/actions/go-test-setup
         if: hashFiles('./.github/actions/go-test-setup') != ''
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@875f29492fe9f4123b8489763be916f80ffff872 # v1.9.0
       - name: Run tests
         if: contains(fromJSON(steps.config.outputs.json).skipOSes, matrix.os) == false
         uses: protocol/multiple-go-modules@v1.2
         env:
           GOFLAGS: ${{ format('{0} {1}', env.GOTESTFLAGS, env.GOFLAGS) }}
         with:
-          run: go test -v ./...
+          run: gotestsum --jsonfile=gotest.All.json --packages=./... -- -v
       - name: Run tests (32 bit)
         # can't run 32 bit tests on OSX.
         if: matrix.os != 'macos' &&
@@ -57,7 +59,7 @@ jobs:
         with:
           run: |
             export "PATH=$PATH_386:$PATH"
-            go test -v ./...
+            gotestsum --jsonfile=gotest.32-bit.json --packages=./... -- -v
       - name: Run tests with race detector
         # speed things up. Windows and OSX VMs are slow
         if: matrix.os == 'ubuntu' &&
@@ -66,7 +68,7 @@ jobs:
         env:
           GOFLAGS: ${{ format('{0} {1}', env.GORACEFLAGS, env.GOFLAGS) }}
         with:
-          run: go test -v -race ./...
+          run: gotestsum --jsonfile=gotest.Race_Detection.json --packages=./... -- -v -race
       - name: Collect coverage files
         id: coverages
         shell: bash
@@ -76,3 +78,39 @@ jobs:
         with:
           files: ${{ steps.coverages.outputs.files }}
           env_vars: OS=${{ matrix.os }}, GO=${{ matrix.go }}
+      - if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ format('{0}_{1}', matrix.os, matrix.go) }}
+          path: '**/gotest.*.json'
+  report:
+    needs: [test]
+    if: success() || failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: |
+          for artifact in $(ls); do
+            for json in $(find "$artifact" -name "gotest.*.json"); do
+              tmp="$(mktemp)"
+              jq -s '.' "$json" > "$tmp"
+              mv "$tmp" "$json"
+              docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/pl-strflt/saxon:v1 -json:"$json" -xsl:/etc/gotest.xsl -o:"$(dirname $json)/$(basename $json .json).xml"
+            done
+            for xml in $(find "$artifact" -name "gotest.*.xml"); do
+              docker run --rm -v $(pwd):/workspace -w /workspace ghcr.io/pl-strflt/saxon:v1 -s:"$xml" -xsl:/etc/junit-summary.xsl -o:"$(dirname $xml)/$(basename $xml .xml).html"
+            done
+            artifact_header="$(jq -jn '$artifact | split("_") | "OS: \(.[0]), Go: \(.[1])"' --arg artifact "$artifact")"
+            echo "# $artifact_header" >> $GITHUB_STEP_SUMMARY
+            for html in $(find "$artifact" -name "gotest.*.html"); do
+              module_header="$(dirname "$html")"
+              module_header="${module_header#"$artifact"}"
+              test_header="$(basename "$html" .html)"
+              test_header="${test_header#"gotest."}"
+              test_header="${test_header//_/ }"
+              echo "## ${module_header:-/} $test_header Tests" >> $GITHUB_STEP_SUMMARY
+              cat "$html" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            done
+          done
