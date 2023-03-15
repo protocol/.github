@@ -21,7 +21,6 @@ jobs:
       TARGET_REPO_DIR: "target-repo"
       TEMPLATE_REPO_DIR: "template-repo"
       TEMPLATE_DIR: "templates"
-      NEEDS_UPDATE: 0
       INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
@@ -45,6 +44,14 @@ jobs:
       run: |
         default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
         echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+    - name: Check out web3-bot/sync branch
+      # If the branch already exists, check it out; otherwise, create it.
+      # Then, try merging the default branch into the web3-bot/sync branch.
+      # If that fails, reset the web3-bot/sync branch to the default branch.
+      run: |
+        git checkout web3-bot/sync || git checkout -B web3-bot/sync
+        git merge "$DEFAULT_BRANCH" || git reset --hard "$DEFAULT_BRANCH"
+      working-directory: ${{ env.TARGET_REPO_DIR }}
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
       run: |
@@ -100,7 +107,8 @@ jobs:
     - name: Run steps specific to versioning
       if: matrix.cfg.deploy_versioning
       uses: ./template-repo/.github/actions/copy-workflow-versioning
-    - name: Add files
+    - id: add-files
+      name: Add files
       env:
         CONTEXT: |
           {
@@ -111,6 +119,7 @@ jobs:
           }
         TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
+        commited=false
         for f in $(jq -r '.[]' <<< "$FILES"); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
@@ -138,14 +147,11 @@ jobs:
           pushd $TARGET_REPO_DIR > /dev/null
           git add $f
           git commit -m "$commit_msg"
+          commited=true
           popd > /dev/null
         done
-    - name: Check if we need to update the branch
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: echo "NEEDS_UPDATE=$(git rev-list HEAD...origin/$(git rev-parse --abbrev-ref HEAD) --ignore-submodules --count 2> /dev/null || echo 1)" >> $GITHUB_ENV
+        echo "commited=$commited" >> $GITHUB_ENV
     - name: Force push web3-bot/sync branch
-      if: env.NEEDS_UPDATE != 0
+      if: steps.add-files.outputs.commited == 'true'
       working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
-        git checkout -B web3-bot/sync
-        git push origin web3-bot/sync -f
+      run: git push origin web3-bot/sync -f
