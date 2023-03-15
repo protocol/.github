@@ -46,7 +46,7 @@ jobs:
         env:
           GOFLAGS: ${{ format('{0} {1}', env.GOTESTFLAGS, env.GOFLAGS) }}
         with:
-          run: gotestsum --jsonfile=gotest.All.json --packages=./... -- -v
+          run: gotestsum --jsonfile=gotest.All.json --format=standard-verbose --packages=./...
       - name: Run tests (32 bit)
         # can't run 32 bit tests on OSX.
         if: matrix.os != 'macos' &&
@@ -59,7 +59,7 @@ jobs:
         with:
           run: |
             export "PATH=$PATH_386:$PATH"
-            gotestsum --jsonfile=gotest.32-bit.json --packages=./... -- -v
+            gotestsum --jsonfile=gotest.32-bit.json --format=standard-verbose --packages=./...
       - name: Run tests with race detector
         # speed things up. Windows and OSX VMs are slow
         if: matrix.os == 'ubuntu' &&
@@ -68,7 +68,7 @@ jobs:
         env:
           GOFLAGS: ${{ format('{0} {1}', env.GORACEFLAGS, env.GOFLAGS) }}
         with:
-          run: gotestsum --jsonfile=gotest.Race_Detection.json --packages=./... -- -v -race
+          run: gotestsum --jsonfile=gotest.Race_Detection.json --format=standard-verbose --packages=./... -- -race
       - name: Collect coverage files
         id: coverages
         shell: bash
