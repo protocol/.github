@@ -46,11 +46,11 @@ jobs:
         echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
     - name: Check out web3-bot/sync branch
       # If the branch already exists, check it out; otherwise, create it.
-      # Then, try merging the default branch into the web3-bot/sync branch.
+      # Then, try rebasing the web3-bot/sync branch onto the default branch.
       # If that fails, reset the web3-bot/sync branch to the default branch.
       run: |
         git checkout web3-bot/sync || git checkout -B web3-bot/sync
-        git merge "$DEFAULT_BRANCH" || git reset --hard "$DEFAULT_BRANCH"
+        git rebase "$DEFAULT_BRANCH" || (git rebase --abort && git reset --hard "$DEFAULT_BRANCH")
       working-directory: ${{ env.TARGET_REPO_DIR }}
     - name: git config
       working-directory: ${{ env.TARGET_REPO_DIR }}
