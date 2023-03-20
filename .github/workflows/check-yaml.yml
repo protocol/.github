@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: pl-strflt/validate-yaml-schema@21116b89ed801672cb7354717c0d049974f265b0
+      - uses: pl-strflt/validate-yaml-schema@v1
         with:
           yamlSchemasJson: |
             {
