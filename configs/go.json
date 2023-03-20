@@ -353,6 +353,9 @@
       "target": "ipni/caskadht"
     },
     {
+      "target": "ipni/cassette"
+    },
+    {
       "target": "ipni/depute"
     },
     {
