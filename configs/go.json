@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -98,7 +101,13 @@
       "target": "ipfs/bifrost-gateway"
     },
     {
+      "target": "ipfs/boxo"
+    },
+    {
       "target": "ipfs/go-bitfield"
+    },
+    {
+      "target": "ipfs/go-block-format"
     },
     {
       "target": "ipfs/go-blockservice"
@@ -198,6 +207,9 @@
     },
     {
       "target": "ipfs/go-ipfs-exchange-offline"
+    },
+    {
+      "target": "ipfs/go-ipfs-files"
     },
     {
       "target": "ipfs/go-ipfs-http-client"
