@@ -5,6 +5,10 @@ on:
       - ${{{ github.default_branch }}}
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   check:
