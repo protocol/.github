@@ -7,6 +7,10 @@ on:
         type: string
         default: 1.19.x # TODO: remove once release-check is upgraded in all the targets
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   releaser:
     runs-on: ubuntu-latest

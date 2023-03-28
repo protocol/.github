@@ -1,6 +1,9 @@
 on: [push, pull_request]
 name: Go Checks
 
+permissions:
+  contents: read
+
 jobs:
   unit:
     runs-on: ubuntu-latest

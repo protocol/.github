@@ -5,8 +5,11 @@ on:
       - ${{{ github.default_branch }}}
   pull_request:
 
-jobs:
+permissions:
+  contents: write
+  packages: write
 
+jobs:
   check:
     runs-on: ubuntu-latest
     steps:

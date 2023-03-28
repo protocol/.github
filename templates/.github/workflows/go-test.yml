@@ -1,6 +1,9 @@
 on: [push, pull_request]
 name: Go Test
 
+permissions:
+  contents: read
+
 jobs:
   unit:
     strategy:

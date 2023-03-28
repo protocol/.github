@@ -1,6 +1,10 @@
 name: Manual Release Nag
 on: [ workflow_call ]
 
+permissions:
+  contents: read
+  issues: write
+
 env:
   ISSUE_TITLE: "manual release created (%tagname%)"
   ISSUE_ASSIGNEE: "%pusher%"

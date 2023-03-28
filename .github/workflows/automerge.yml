@@ -9,6 +9,11 @@ on:
         type: string
 name: Automerge
 
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
 jobs:
   automerge-check:
     if: github.event.pull_request.user.login == 'web3-bot'

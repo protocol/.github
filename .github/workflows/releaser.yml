@@ -1,6 +1,9 @@
 name: Releaser
 on: [ workflow_call ]
 
+permissions:
+  contents: write
+
 jobs:
   releaser:
     runs-on: ubuntu-latest
