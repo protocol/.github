@@ -368,6 +368,9 @@
       "target": "ipni/go-indexer-core"
     },
     {
+      "target": "ipni/go-libipni"
+    },
+    {
       "target": "ipni/go-naam"
     },
     {
