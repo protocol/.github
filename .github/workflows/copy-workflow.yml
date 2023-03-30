@@ -9,6 +9,10 @@ on:
         description: "List of repositories to deploy to"
         required: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   copy:
     runs-on: ubuntu-latest
