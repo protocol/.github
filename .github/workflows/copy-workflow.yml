@@ -116,7 +116,7 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(matrix.cfg) }},
-            "github": ${{ toJSON(steps.github.outputs.json) }}
+            "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
         TEMPLATE_ENGINE: s#\$\{\{\{\s*\.?(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson | .$1'`#ge
       run: |
