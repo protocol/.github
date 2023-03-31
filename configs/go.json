@@ -98,6 +98,10 @@
       "target": "ipfs/bifrost-gateway"
     },
     {
+      "target": "ipfs/boxo",
+      "source_ref": "next"
+    },
+    {
       "target": "ipfs/go-bitfield"
     },
     {
@@ -240,9 +244,6 @@
     },
     {
       "target": "ipfs/go-ipns"
-    },
-    {
-      "target": "ipfs/go-libipfs"
     },
     {
       "target": "ipfs/go-log"
