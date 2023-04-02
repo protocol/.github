@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -81,6 +84,9 @@
     },
     {
       "target": "ipfs-shipyard/ipfs-counter"
+    },
+    {
+      "target": "ipfs-shipyard/nopfs"
     },
     {
       "target": "ipfs-shipyard/thunderdome"
