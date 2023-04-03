@@ -1,6 +1,15 @@
 {
   "defaults": {
-    "files": []
+    "files": [
+      ".github/workflows/automerge.yml",
+      ".github/workflows/go-test.yml",
+      ".github/workflows/go-check.yml",
+      ".github/workflows/releaser.yml",
+      ".github/workflows/release-check.yml",
+      ".github/workflows/tagpush.yml"
+    ],
+    "deploy_versioning": true,
+    "deploy_go": true
   },
   "repositories": [
     { "target": "protocol/.github-test-target" }
