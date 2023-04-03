@@ -15,7 +15,8 @@ jobs:
         shell: bash
       - uses: actions/checkout@v3
       - id: go-mod
-        uses: protocol/.github/.github/actions/read-go-mod@master
+        # TODO: change ref to next before merging
+        uses: protocol/.github/.github/actions/read-go-mod@no-go
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x

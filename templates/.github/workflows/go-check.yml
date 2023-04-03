@@ -19,7 +19,8 @@ jobs:
       - id: config
         uses: protocol/.github/.github/actions/read-config@master
       - id: go-mod
-        uses: protocol/.github/.github/actions/read-go-mod@master
+        # TODO: change ref to next before merging
+        uses: protocol/.github/.github/actions/read-go-mod@no-go
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x
