@@ -99,7 +99,13 @@
     },
     {
       "target": "ipfs/boxo",
-      "source_ref": "next"
+      "source_ref": "next",
+      "files": [
+        ".github/workflows/automerge.yml",
+        ".github/workflows/go-test.yml",
+        ".github/workflows/go-check.yml",
+        ".github/workflows/tagpush.yml"
+      ]
     },
     {
       "target": "ipfs/go-bitfield"
