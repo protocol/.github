@@ -1,5 +1,11 @@
 name: Releaser
-on: [ workflow_call ]
+on:
+  workflow_call:
+    inputs:
+      branches:
+        required: false
+        type: string
+        default: ${{ github.event.repository.default_branch }}
 
 jobs:
   releaser:
@@ -9,27 +15,68 @@ jobs:
       - id: version
         name: Determine version
         run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
-      - id: pr
-        name: Determine if this commit is a merged PR (if we're not on a default branch)
-        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9 # v1.0.1
-        with:
-          github_token: ${{ github.token }}
-      - id: labels
+      - id: branch
+        name: Check if the branch is a release branch
+        if: steps.version.outputs.version != ''
         env:
-          LABELS: ${{ steps.pr.outputs.labels }}
-        run: echo "labels=$(jq -nc 'env.LABELS | split("\n")')" >> $GITHUB_OUTPUT
+          BRANCHES: ${{ inputs.branches }}
+          REF: ${{ github.ref }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branches = process.env.BRANCHES.split(',').map(b => b.trim());
+            const ref = process.env.REF.replace(/^refs\/heads\//, '');
+            const release = branches.some(b => {
+              const regexPattern = b.replace(/\*/g, '.*');
+              const regex = new RegExp(`^${regexPattern}$`);
+              return regex.test(ref);
+            });
+            console.log(`This is a release branch: ${release}`);
+            core.setOutput('release', release);
+      - id: pr
+        if: steps.version.outputs.version != '' && steps.branch.outputs.release == 'false'
+        name: Check if this is a merge commit of a release PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QUERY: repository:${{ github.repository }} is:pr is:merged ${{ github.sha }}
+          SHA: ${{ github.sha }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const items = await github.paginate(github.search.issuesAndPullRequests, {
+              q: process.env.QUERY,
+            });
+            let pr;
+            for (const item of items) {
+              const candidate = await github.pulls.get({
+                owner: item.repository.owner.login,
+                repo: item.repository.name,
+                pull_number: item.number,
+              });
+              if (candidate.data.merge_commit_sha === process.env.SHA) {
+                pr = candidate;
+                break;
+              }
+            }
+            if (pr !== undefined) {
+              console.log(`Found PR: ${pr.data.html_url}`);
+              const labels = pr.data.labels.map(l => l.name);
+              const release = labels.includes('release');
+              console.log(`This is a release PR: ${release}`);
+              core.setOutput('release', release);
+            } else {
+              console.log('No PR found');
+              core.setOutput('release', false);
+            }
       - id: tag
         name: Check if tag already exists
-        if: steps.version.outputs.version != ''
+        if: steps.branch.outputs.release == 'true' || steps.pr.outputs.release == 'true'
         uses: mukunku/tag-exists-action@9298fbcc409758ba624a0ae16b83df86637cb8ce # v1.2.0
         with:
           tag: ${{ steps.version.outputs.version }}
       - id: release
         name: Create release
-        if: steps.version.outputs.version != '' && steps.tag.outputs.exists == 'false' && (
-            github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
-            contains(fromJSON(steps.labels.outputs.labels), 'release'))
+        if: steps.tag.outputs.exists == 'false'
         uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
         with:
           draft: false
