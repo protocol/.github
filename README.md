@@ -17,6 +17,8 @@ Some aspects of Unified CI workflows are configurable through [configuration var
 
 You can customise the runner type for `go-test` through `UCI_GO_TEST_RUNNER_UBUNTU`, `UCI_GO_TEST_RUNNER_WINDOWS` and `UCI_GO_TEST_RUNNER_MACOS` configuration variables. This option will be useful for repositories wanting to use more powerful, [PL self-hosted GitHub Actions runners](https://github.com/pl-strflt/tf-aws-gh-runner).
 
+`UCI_*_RUNNER_*` variables expect the values to be JSON formatted. For example, if you want the `MacOS` runner used in `Go Test` workflow to be `macos-12` specifically, you'd set `UCI_GO_TEST_RUNNER_MACOS` to `"macos-12"` (notice the `"` around the string); and if you want your `Ubuntu` runner to be a self hosted machine with labels `this`, `is`, `my`, `self-hosted`, `runner`, you'd set `UCI_GO_TEST_RUNNER_UBUNTU` to `["this", "is", "my", "self-hosted", "runner"]`.
+
 #### Setup Actions
 
 Some repositories may require some pre-setup steps to be run before tests (or code checks) can be run. Setup steps for `go-test` are defined in `.github/actions/go-test-setup/action.yml`, and setup steps for `go-check` are defined in `.github/actions/go-check-setup/action.yml`, in the following format:
