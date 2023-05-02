@@ -387,6 +387,9 @@
       "target": "ipni/indexstar"
     },
     {
+      "target": "ipni/ipni-cli"
+    },
+    {
       "target": "ipni/lookout"
     },
     {
