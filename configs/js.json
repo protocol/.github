@@ -71,6 +71,7 @@
     { "target": "libp2p/js-libp2p-topology" },
     { "target": "libp2p/js-libp2p-tracked-map" },
     { "target": "libp2p/js-libp2p-utils" },
+    { "target": "libp2p/js-libp2p-webrtc" },
     { "target": "libp2p/js-libp2p-websockets" },
     { "target": "libp2p/js-libp2p-webtransport" },
     { "target": "libp2p/js-reframe-content-routing" },
