@@ -543,6 +543,9 @@
       "target": "multiformats/ma-pipe"
     },
     {
+      "target": "quic-go/perf"
+    },
+    {
       "target": "quic-go/webtransport-go"
     }
   ]
