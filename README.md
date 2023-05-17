@@ -72,6 +72,14 @@ If your project cannot be built on one of the supported operating systems, you c
 }
 ```
 
+If you want to disable verbose logging or test shuffling, you can do so by setting `verbose` or `shuffle` to `false` in `.github/workflows/go-test-config.json`:
+```json
+{
+  "verbose": false,
+  "shuffle": false
+}
+```
+
 ## Technical Preview
 
 You can opt-in to receive early updates from the `next` branch in-between official Unified CI releases.
