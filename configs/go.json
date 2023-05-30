@@ -543,6 +543,9 @@
       "target": "multiformats/ma-pipe"
     },
     {
+      "target": "protocol/badbits-ingester"
+    },
+    {
       "target": "quic-go/webtransport-go"
     }
   ]
