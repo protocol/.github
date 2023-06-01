@@ -23,6 +23,7 @@
     { "target": "ipfs-shipyard/is-ipfs" },
     { "target": "ipfs/aegir" },
     { "target": "ipfs/helia-ipns" },
+    { "target": "ipfs/helia-routing-v1-http-api" },
     { "target": "ipfs/helia-unixfs" },
     { "target": "ipfs/js-blockstore-datastore-adapter" },
     { "target": "ipfs/js-datastore-pubsub" },
