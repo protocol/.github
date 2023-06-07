@@ -22,6 +22,7 @@
     { "target": "ipfs-shipyard/ipfs-geoip" },
     { "target": "ipfs-shipyard/is-ipfs" },
     { "target": "ipfs/aegir" },
+    { "target": "ipfs/helia-car" },
     { "target": "ipfs/helia-ipns" },
     { "target": "ipfs/helia-routing-v1-http-api" },
     { "target": "ipfs/helia-unixfs" },
