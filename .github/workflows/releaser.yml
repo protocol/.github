@@ -16,7 +16,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           ENDPOINT: repos/${{ github.repository }}/pulls
-          SELECTOR: map(select(.merge_commit_sha == '${{ github.sha }}')) | .[0].labels // [] | map(.name)
+          SELECTOR: map(select(.merge_commit_sha == "${{ github.sha }}")) | .[0].labels // [] | map(.name)
           SORT: updated
           DIRECTION: desc
           STATE: closed
