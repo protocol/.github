@@ -327,13 +327,13 @@
       "target": "ipld/edelweiss"
     },
     {
+      "target": "ipld/frisbii"
+    },
+    {
       "target": "ipld/go-car"
     },
     {
       "target": "ipld/go-codec-dagpb"
-    },
-    {
-      "target": "ipld/go-frisbii"
     },
     {
       "target": "ipld/go-ipld-adl-hamt"
