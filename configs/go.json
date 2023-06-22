@@ -165,9 +165,6 @@
       "target": "ipfs/go-fetcher"
     },
     {
-      "target": "ipfs/go-filestore"
-    },
-    {
       "target": "ipfs/go-fs-lock"
     },
     {
@@ -177,13 +174,7 @@
       "target": "ipfs/go-ipfs-api"
     },
     {
-      "target": "ipfs/go-ipfs-blockstore"
-    },
-    {
       "target": "ipfs/go-ipfs-blocksutil"
-    },
-    {
-      "target": "ipfs/go-ipfs-chunker"
     },
     {
       "target": "ipfs/go-ipfs-cmds"
@@ -213,19 +204,10 @@
       "target": "ipfs/go-ipfs-pinner"
     },
     {
-      "target": "ipfs/go-ipfs-posinfo"
-    },
-    {
       "target": "ipfs/go-ipfs-pq"
     },
     {
-      "target": "ipfs/go-ipfs-provider"
-    },
-    {
       "target": "ipfs/go-ipfs-redirects-file"
-    },
-    {
-      "target": "ipfs/go-ipfs-routing"
     },
     {
       "target": "ipfs/go-ipfs-util"
@@ -243,9 +225,6 @@
       "target": "ipfs/go-ipld-legacy"
     },
     {
-      "target": "ipfs/go-ipns"
-    },
-    {
       "target": "ipfs/go-log"
     },
     {
@@ -259,12 +238,6 @@
     },
     {
       "target": "ipfs/go-mfs"
-    },
-    {
-      "target": "ipfs/go-namesys"
-    },
-    {
-      "target": "ipfs/go-path"
     },
     {
       "target": "ipfs/go-peertaskqueue"
@@ -285,13 +258,7 @@
       "target": "ipfs/go-unixfsnode"
     },
     {
-      "target": "ipfs/go-verifcid"
-    },
-    {
       "target": "ipfs/hang-fds"
-    },
-    {
-      "target": "ipfs/interface-go-ipfs-core"
     },
     {
       "target": "ipfs/ipfs-ds-convert"
