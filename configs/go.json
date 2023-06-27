@@ -183,13 +183,7 @@
       "target": "ipfs/go-ipfs-delay"
     },
     {
-      "target": "ipfs/go-ipfs-ds-help"
-    },
-    {
       "target": "ipfs/go-ipfs-example-plugin"
-    },
-    {
-      "target": "ipfs/go-ipfs-exchange-interface"
     },
     {
       "target": "ipfs/go-ipfs-exchange-offline"
@@ -199,9 +193,6 @@
     },
     {
       "target": "ipfs/go-ipfs-keystore"
-    },
-    {
-      "target": "ipfs/go-ipfs-pinner"
     },
     {
       "target": "ipfs/go-ipfs-pq"
@@ -235,9 +226,6 @@
     },
     {
       "target": "ipfs/go-metrics-prometheus"
-    },
-    {
-      "target": "ipfs/go-mfs"
     },
     {
       "target": "ipfs/go-peertaskqueue"
