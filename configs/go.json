@@ -510,6 +510,9 @@
       "target": "multiformats/ma-pipe"
     },
     {
+      "target": "plprobelab/go-kademlia"
+    },
+    {
       "target": "protocol/badbits-ingester"
     },
     {
