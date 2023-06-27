@@ -117,9 +117,6 @@
       "target": "ipfs/go-bitfield"
     },
     {
-      "target": "ipfs/go-blockservice"
-    },
-    {
       "target": "ipfs/go-bs-sqlite3"
     },
     {
@@ -174,9 +171,6 @@
       "target": "ipfs/go-ds-sql"
     },
     {
-      "target": "ipfs/go-fetcher"
-    },
-    {
       "target": "ipfs/go-fs-lock"
     },
     {
@@ -198,22 +192,13 @@
       "target": "ipfs/go-ipfs-example-plugin"
     },
     {
-      "target": "ipfs/go-ipfs-exchange-offline"
-    },
-    {
       "target": "ipfs/go-ipfs-http-client"
-    },
-    {
-      "target": "ipfs/go-ipfs-keystore"
     },
     {
       "target": "ipfs/go-ipfs-pq"
     },
     {
       "target": "ipfs/go-ipfs-redirects-file"
-    },
-    {
-      "target": "ipfs/go-ipfs-util"
     },
     {
       "target": "ipfs/go-ipld-cbor"
@@ -243,16 +228,10 @@
       "target": "ipfs/go-peertaskqueue"
     },
     {
-      "target": "ipfs/go-pinning-service-http-client"
-    },
-    {
       "target": "ipfs/go-qringbuf"
     },
     {
       "target": "ipfs/go-todocounter"
-    },
-    {
-      "target": "ipfs/go-unixfs"
     },
     {
       "target": "ipfs/go-unixfsnode"
