@@ -291,6 +291,9 @@
       "target": "ipld/edelweiss"
     },
     {
+      "target": "ipld/frisbii"
+    },
+    {
       "target": "ipld/go-car"
     },
     {
