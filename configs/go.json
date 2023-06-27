@@ -11,7 +11,10 @@
     "deploy_versioning": true,
     "deploy_go": true,
     "go": {
-      "versions": [ "1.19.x", "1.20.x" ]
+      "versions": [
+        "1.19.x",
+        "1.20.x"
+      ]
     }
   },
   "repositories": [
@@ -50,6 +53,9 @@
       "target": "filecoin-project/homebrew-exporter"
     },
     {
+      "target": "filecoin-project/kubo-api-client"
+    },
+    {
       "target": "filecoin-project/lassie"
     },
     {
@@ -75,6 +81,9 @@
     },
     {
       "target": "ipfs-shipyard/git-remote-ipld"
+    },
+    {
+      "target": "ipfs-shipyard/go-ds-gcs"
     },
     {
       "target": "ipfs-shipyard/go-libp2p-kitsune"
