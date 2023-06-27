@@ -65,6 +65,9 @@
       "target": "filecoin-project/lily-archiver"
     },
     {
+      "target": "filecoin-project/motion"
+    },
+    {
       "target": "filecoin-project/snapcraft-exporter"
     },
     {
