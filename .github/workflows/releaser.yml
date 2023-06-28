@@ -9,16 +9,17 @@ jobs:
       - id: version
         name: Determine version
         run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
-      - id: pr
-        name: Determine if this commit is a merged PR (if we're not on a default branch)
-        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9 # v1.0.1
-        with:
-          github_token: ${{ github.token }}
       - id: labels
+        name: Determine PR labels if this commit is a merged PR (if we're not on a default branch)
+        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+        run: echo "labels=$(gh api -X GET "$ENDPOINT" --jq "$SELECTOR" -f sort="$SORT" -f direction="$DIRECTION" -f state="$STATE")" >> $GITHUB_OUTPUT          
         env:
-          LABELS: ${{ steps.pr.outputs.labels }}
-        run: echo "labels=$(jq -nc 'env.LABELS | split("\n")')" >> $GITHUB_OUTPUT
+          GITHUB_TOKEN: ${{ github.token }}
+          ENDPOINT: repos/${{ github.repository }}/pulls
+          SELECTOR: map(select(.merge_commit_sha == "${{ github.sha }}")) | .[0].labels // [] | map(.name)
+          SORT: updated
+          DIRECTION: desc
+          STATE: closed
       - id: tag
         name: Check if tag already exists
         if: steps.version.outputs.version != ''
