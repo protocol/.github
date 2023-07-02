@@ -492,7 +492,16 @@
       "target": "multiformats/ma-pipe"
     },
     {
+      "target": "plprobelab/ashby"
+    },
+    {
+      "target": "plprobelab/caracol"
+    },
+    {
       "target": "plprobelab/go-kademlia"
+    },
+    {
+      "target": "plprobelab/tracecatcher"
     },
     {
       "target": "protocol/badbits-ingester"
