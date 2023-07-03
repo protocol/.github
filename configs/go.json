@@ -114,7 +114,13 @@
       "source_ref": "next"
     },
     {
-      "target": "ipfs/gateway-conformance"
+      "target": "ipfs/gateway-conformance",
+      "files": [
+        ".github/workflows/automerge.yml",
+        ".github/workflows/go-test.yml",
+        ".github/workflows/go-check.yml"
+      ],
+      "deploy_versioning": false
     },
     {
       "target": "ipfs/go-bitfield"
