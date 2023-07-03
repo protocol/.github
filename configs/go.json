@@ -114,6 +114,9 @@
       "source_ref": "next"
     },
     {
+      "target": "ipfs/gateway-conformance"
+    },
+    {
       "target": "ipfs/go-bitfield"
     },
     {
