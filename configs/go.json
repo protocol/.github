@@ -123,6 +123,9 @@
       "deploy_versioning": false
     },
     {
+      "target": "data-preservation-programs/singularity"
+    },
+    {
       "target": "ipfs/go-bitfield"
     },
     {
