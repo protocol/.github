@@ -19,6 +19,9 @@
   },
   "repositories": [
     {
+      "target": "data-preservation-programs/singularity"
+    },
+    {
       "target": "filecoin-project/docker-hub-exporter"
     },
     {
@@ -121,9 +124,6 @@
         ".github/workflows/go-check.yml"
       ],
       "deploy_versioning": false
-    },
-    {
-      "target": "data-preservation-programs/singularity"
     },
     {
       "target": "ipfs/go-bitfield"
