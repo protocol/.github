@@ -19,6 +19,9 @@
   },
   "repositories": [
     {
+      "target": "data-preservation-programs/singularity"
+    },
+    {
       "target": "filecoin-project/docker-hub-exporter"
     },
     {
