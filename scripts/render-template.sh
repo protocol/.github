@@ -26,6 +26,7 @@ engine='
 '
 
 # Render the template.
+export context
 # If template and output are the same, perform the rendering in-place.
 if [ "$template" = "$output" ]; then
   perl -p -i -e "$engine" "$template"
