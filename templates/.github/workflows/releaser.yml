@@ -9,4 +9,4 @@ concurrency:
 
 jobs:
   releaser:
-    uses: protocol/.github/.github/workflows/releaser.yml@master
+    uses: protocol/.github/.github/workflows/releaser.yml@v1

@@ -1,0 +1,20 @@
+name: read go.mod
+description: Reads go.mod
+
+outputs:
+  json:
+    description: JSON representation of go.mod
+    value: ${{ steps.go-mod.outputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: go-mod
+      run: |
+        eof="EOF$RANDOM"
+        printf "json<<$eof\n%s\n$eof" "$(go mod edit -json || echo '{}')" >> $GITHUB_OUTPUT
+      shell: bash
+    - env:
+        GO_MOD: ${{ steps.go-mod.outputs.json }}
+      run: echo "$GO_MOD"
+      shell: bash
