@@ -9,23 +9,25 @@ jobs:
       - id: version
         name: Determine version
         run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
-      - id: pr
-        name: Determine if this commit is a merged PR (if we're not on a default branch)
-        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: actions-ecosystem/action-get-merged-pull-request@59afe90821bb0b555082ce8ff1e36b03f91553d9 # v1.0.1
-        with:
-          github_token: ${{ github.token }}
       - id: labels
+        name: Determine PR labels if this commit is a merged PR (if we're not on a default branch)
+        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+        run: echo "labels=$(gh api -X GET "$ENDPOINT" --jq "$SELECTOR" -f sort="$SORT" -f direction="$DIRECTION" -f state="$STATE")" >> $GITHUB_OUTPUT          
         env:
-          LABELS: ${{ steps.pr.outputs.labels }}
-        run: echo "labels=$(jq -nc 'env.LABELS | split("\n")')" >> $GITHUB_OUTPUT
+          GITHUB_TOKEN: ${{ github.token }}
+          ENDPOINT: repos/${{ github.repository }}/pulls
+          SELECTOR: map(select(.merge_commit_sha == "${{ github.sha }}")) | .[0].labels // [] | map(.name)
+          SORT: updated
+          DIRECTION: desc
+          STATE: closed
       - id: tag
         name: Check if tag already exists
         if: steps.version.outputs.version != ''
         uses: mukunku/tag-exists-action@9298fbcc409758ba624a0ae16b83df86637cb8ce # v1.2.0
         with:
           tag: ${{ steps.version.outputs.version }}
-      - name: Create release
+      - id: release
+        name: Create release
         if: steps.version.outputs.version != '' && steps.tag.outputs.exists == 'false' && (
             github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
             contains(fromJSON(steps.labels.outputs.labels), 'release'))
@@ -35,3 +37,22 @@ jobs:
           tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
           target_commitish: ${{ github.sha }}
+      - name: Create release.json
+        if: steps.release.outputs.id != ''
+        env:
+          RELEASE: |
+            {
+              "draft": false,
+              "version": "${{ steps.version.outputs.version }}",
+              "url": "${{ steps.release.outputs.url }}",
+              "id": "${{ steps.release.outputs.id }}",
+              "upload_url": "${{ steps.release.outputs.upload_url }}",
+              "assets": ${{ steps.release.outputs.assets }}
+            }
+        run: jq . <<< "$RELEASE" > release.json
+      - name: Upload release.json
+        if: steps.release.outputs.id != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: release
+          path: release.json
