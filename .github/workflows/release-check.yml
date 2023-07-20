@@ -34,6 +34,8 @@ jobs:
         # Check if a git tag for the version (as read from version.json) exists
         # If that is the case, we don't need to run the rest of the workflow.
         if: steps.version.outputs.version != ''
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           git fetch origin --tags
           status=0

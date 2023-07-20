@@ -39,7 +39,7 @@ jobs:
       - name: find deleted / archived repositories
         if: steps.repos.outputs.repos != '[]'
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
           REPOS: ${{ steps.repos.outputs.repos }}
         run: |
           status=0
