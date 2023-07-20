@@ -1,7 +1,6 @@
 {
   "defaults": {
     "files": [
-      ".github/workflows/automerge.yml",
       ".github/workflows/js-test-and-release.yml"
     ]
   },

@@ -9,67 +9,107 @@ on:
 
 jobs:
   dispatch:
-    name: Create PRs in targets
+    name: Create PRs
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.workflow_run.head_commit.id || github.sha }}
-      - name: Sync PRs in targets that need it
+      - name: Create PRs
         env:
-          PR_TITLE: 'ci: update Unified CI configuration'
-          PR_BRANCH: 'web3-bot/sync'
-        run: |
-          targets=()
-          for config in configs/*.json; do
-            targets+=($(jq -rc ".repositories[] | .target" $config))
-          done
-          failed=()
-          for target in ${targets[@]}; do
-            echo "Processing $target"
-            base="$(gh api "/repos/$target" --jq '.default_branch')"
-            # checks if a PR needs to be created
-            if [[ "$(gh api -X GET "/repos/$target/compare/$base...$PR_BRANCH" --jq '.status')" == 'ahead' ]]; then
-              if [[ "$(gh api -X GET "/repos/$target/pulls" -f head="$(echo "$target" | cut -d/ -f1):$PR_BRANCH" -f base="$base" --jq 'length')" != '0' ]] ; then
-                echo "The PR already exists. Skipping."
+          BRANCH: web3-bot/sync
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          retries: 0
+          script: |
+            const request = async function(req, opts) {
+              try {
+                return await req(opts)
+              } catch(err) {
+                opts.request.retries = (opts.request.retries || 0) + 1
+                if (err.status === 403) {
+                  if (err.response.headers['x-ratelimit-remaining'] === '0') {
+                    const retryAfter = err.response.headers['x-ratelimit-reset'] - Math.floor(Date.now() / 1000) || 1
+                    core.info(`Rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                  if (err.message.toLowerCase().includes('secondary rate limit')) {
+                    const retryAfter = Math.pow(2, opts.request.retries)
+                    core.info(`Secondary rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                }
+                throw err
+              }
+            }
+            github.hook.wrap('request', request)
+
+            core.info(`Looking for repositories the user has direct access to`)
+            const items = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
+              affiliation: 'collaborator'
+            })
+            core.info(`Filtering out the repositories without unmerged branches`)
+            const repos = []
+            for (const item of items) {
+              core.info(`Checking if a PR can be created for ${item.html_url}`)
+              let branch
+              try {
+                branch = (await github.rest.repos.getBranch({
+                  owner: item.owner.login,
+                  repo: item.name,
+                  branch: process.env.BRANCH
+                }))?.data
+              } catch(error) {
+                if (error.status != 404) {
+                  throw error
+                }
+              }
+              if (branch != undefined) {
+                core.info(`The branch exists in ${item.html_url}`)
+              } else {
+                core.info(`The branch does not exist in ${item.html_url}`)
                 continue
-              fi
-            else
-              echo "The branch does not exist or has diverged from $base. Skipping."
-              continue
-            fi
-            # tries to create a PR in target
-            pr_create_attempt=1
-            pr_create_max_attempts=12
-            pr_create_attempt_interval_in_seconds=1
-            pr_create_cooldown_in_seconds=1
-            # max cumulative sleep time - 68.25 minutes
-            while true; do
-              if result="$(gh api "/repos/$target/pulls" -f title="$PR_TITLE" -f head="$PR_BRANCH" -f base="$base")"; then
-                echo "Successfully created a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
-                echo "Sleeping for $pr_create_cooldown_in_seconds seconds before creating a next one"
-                sleep $pr_create_cooldown_in_seconds
-                break
-              fi
-              if [[ "$(jq -r '.message' <<< "$result")" == 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.' ]]; then
-                if (( pr_create_attempt < pr_create_max_attempts )); then
-                  echo "Failed to create a PR for '$target' due to secondary rate limit ($pr_create_attempt/$pr_create_max_attempts)"
-                  echo "Sleeping for $pr_create_attempt_interval_in_seconds seconds before trying again"
-                  sleep $pr_create_attempt_interval_in_seconds
-                  pr_create_attempt_interval_in_seconds=$((pr_create_attempt_interval_in_seconds * 2))
-                  pr_create_attempt=$((pr_create_attempt + 1))
-                  continue
-                fi
-              fi
-              echo "$result"
-              echo "Failed to create a PR for '$target' ($pr_create_attempt/$pr_create_max_attempts)"
-              failed+=("$target")
-              break
-            done
-          done
-          if ((${#failed[@]})); then
-            echo "::error ::Failed to sync PRs in: ${failed[@]}"
-            exit 1
-          fi
+              }
+              const {data: compare} = await github.rest.repos.compareCommitsWithBasehead({
+                owner: item.owner.login,
+                repo: item.name,
+                basehead: `${item.default_branch}...${branch.name}`
+              })
+              if (compare.status == 'ahead') {
+                core.info(`PR for ${item.html_url} can be created`)
+              } else {
+                core.info(`PR for ${item.html_url} cannot be created`)
+                continue
+              }
+              const {data: pulls} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: item.owner.login,
+                repo: item.name,
+                commit_sha: branch.commit.sha
+              })
+              if (pulls.length == 0) {
+                core.info(`The PR does not exist yet in ${item.html_url}`)
+                repos.push(item)
+              } else {
+                core.info(`The PR already exists at ${pulls[0].html_url}`)
+              }
+            }
+            core.info(`Attempting to create the PRs`)
+            const failed = []
+            for (const repo of repos) {
+              core.info(`Creating PR in ${repo.html_url}`)
+              try {
+                const pr = await octokit.rest.pulls.create({
+                  owner: repo.owner.login,
+                  repo: repo.name,
+                  head: process.env.BRANCH,
+                  base: repo.default_branch
+                })
+                core.info(`${pr.html_url} created successfully`)
+              } catch(error) {
+                core.error(`Couldn't create a PR for ${repo.html_url}, got: ${error}`)
+                failed.push(repo)
+              }
+            }
+            if (failed.length != 0) {
+              throw new Error(`Failed to create PRs in ${failed.length} repos`)
+            }
