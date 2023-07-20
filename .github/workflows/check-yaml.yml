@@ -13,6 +13,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - env:
+          CONTEXT: |
+            {
+              "github": {
+                "default_branch": "main",
+                "protected_branches": [
+                  "main",
+                  "release"
+                ]
+              },
+              "config": {
+                "go": {
+                  "versions": [
+                    "1.19.x",
+                    "1.20.x"
+                  ]
+                }
+              }
+            }
+        run: |
+          # For every file that matches templates/.github/workflows/*.yml, render it using the example context.
+          # This is done to ensure that the templates are valid YAML.
+          for file in templates/.github/workflows/*.yml; do
+            echo "Rendering $file"
+            echo "================"
+            ./scripts/render-template.sh "$file" "$CONTEXT" "$file"
+            cat "$file"
+            echo
+          done
+        shell: bash
       - uses: pl-strflt/validate-yaml-schema@v1
         with:
           yamlSchemasJson: |

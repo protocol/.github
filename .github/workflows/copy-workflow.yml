@@ -122,15 +122,14 @@ jobs:
             "config": ${{ toJSON(matrix.cfg) }},
             "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
-        TEMPLATE_ENGINE: s#\$\{\{\{\s*\.?(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson | .$1'`#ge
       run: |
         for f in $(jq -r '.[]' <<< "$FILES"); do
           echo -e "\nProcessing $f."
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # expand the template with values from the JSON context object
-          perl -pi -e "$TEMPLATE_ENGINE" $tmp
+          # render template
+          ./template-repo/scripts/render-template.sh $tmp $CONTEXT $tmp
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
