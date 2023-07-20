@@ -19,6 +19,9 @@
   },
   "repositories": [
     {
+      "target": "FILCAT/ribs"
+    },
+    {
       "target": "data-preservation-programs/singularity"
     },
     {
