@@ -23,11 +23,13 @@ jobs:
                   "release"
                 ]
               },
-              "go": {
-                "versions": [
-                  "1.19.x",
-                  "1.20.x"
-                ]
+              "config": {
+                "go": {
+                  "versions": [
+                    "1.19.x",
+                    "1.20.x"
+                  ]
+                }
               }
             }
         run: |
