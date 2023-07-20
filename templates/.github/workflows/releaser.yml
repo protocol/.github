@@ -3,6 +3,9 @@ on:
   push:
     paths: [ 'version.json' ]
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true

@@ -4,6 +4,9 @@ on:
     branches: ${{{ .github.protected_branches + [.github.default_branch] | unique }}}
 name: Go Test
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: true
