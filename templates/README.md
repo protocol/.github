@@ -55,13 +55,13 @@ The `github` context contains information about the target repository the file i
 ```json
 {
   "defaults": {
-    "files": [".github/workflows/automerge.yml"],
+    "files": [".github/workflows/example1.yml"],
     "is_example": false
   },
   "repositories": [
     {
       "target": "protocol/.github-test-target",
-      "extra_files": [".github/workflows/example.yml"],
+      "extra_files": [".github/workflows/example2.yml"],
       "example": {
         "greeting": "Hello"
       },
@@ -79,8 +79,8 @@ The `github` context contains information about the target repository the file i
 {
   "config": {
     "target": "protocol/.github-test-target",
-    "files": [".github/workflows/automerge.yml"],
-    "extra_files": [".github/workflows/example.yml"],
+    "files": [".github/workflows/example1.yml"],
+    "extra_files": [".github/workflows/example2.yml"],
     "example": {
       "greeting": "Hello"
     },

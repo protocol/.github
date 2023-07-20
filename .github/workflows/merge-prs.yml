@@ -1,0 +1,85 @@
+name: Merge PRs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # https://crontab.guru/every-day
+
+jobs:
+  dispatch:
+    name: Merge PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge PRs
+        env:
+          QUERY: is:pr author:web3-bot state:open head:web3-bot/sync archived:false
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          retries: 0
+          script: |
+            const request = async function(req, opts) {
+              try {
+                return await req(opts)
+              } catch(err) {
+                opts.request.retries = (opts.request.retries || 0) + 1
+                if (err.status === 403) {
+                  if (err.response.headers['x-ratelimit-remaining'] === '0') {
+                    const retryAfter = err.response.headers['x-ratelimit-reset'] - Math.floor(Date.now() / 1000) || 1
+                    core.info(`Rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                  if (err.message.toLowerCase().includes('secondary rate limit')) {
+                    const retryAfter = Math.pow(2, opts.request.retries)
+                    core.info(`Secondary rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                }
+                throw err
+              }
+            }
+            github.hook.wrap('request', request)
+
+            core.info(`Looking for PRs matching the query: ${process.env.QUERY}`)
+            const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
+              q: process.env.QUERY
+            })
+            core.info(`Filtering out the PRs that cannot be merged`)
+            const prs = []
+            for (const item of items) {
+              core.info(`Retrieving ${item.html_url}`)
+              const [_, owner, repo] = item.url.match(/repos\/(.+?)\/(.+?)\/issues/)
+              const {data: pr} = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: item.number
+              })
+              if (pr.mergeable_state == 'clean') {
+                core.info(`${pr.html_url} can be merged`)
+                prs.push(pr)
+              } else {
+                core.info(`${pr.html_url} cannot be merged`)
+              }
+            }
+            core.info(`Attempting to merge the PRs`)
+            const failed = []
+            for (const pr of prs) {
+              core.info(`Merging ${pr.html_url}`)
+              try {
+                await octokit.rest.pulls.merge({
+                  owner: pr.base.repo.owner.login,
+                  repo: pr.base.repo.name,
+                  pull_number: pr.number,
+                  merge_method: 'squash'
+                })
+                core.info(`${pr.html_url} merged successfully`)
+              } catch(error) {
+                core.error(`Couldn't merge ${pr.html_url}, got: ${error}`)
+                failed.push(pr)
+              }
+            }
+            if (failed.length != 0) {
+              throw new Error(`Failed to merge ${failed.length} PRs`)
+            }
