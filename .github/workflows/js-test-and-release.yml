@@ -1,11 +1,6 @@
 name: test & maybe release
 on:
   workflow_call:
-    inputs:
-      default-branch:
-        description: 'The default branch of the repository'
-        required: true
-        type: string
 
 jobs:
 
@@ -165,7 +160,7 @@ jobs:
   release:
     needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-webkit, test-webkit-webworker, test-electron-main, test-electron-renderer]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/${{ inputs.default-branch }}'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/${{ github.event.repository.default_branch }}'
     steps:
       - uses: actions/checkout@v3
         with:
