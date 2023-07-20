@@ -1,5 +1,11 @@
-on: [workflow_call]
 name: Go Checks
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Go version to test against'
+        required: true
+        type: string
 
 jobs:
   unit:
@@ -13,7 +19,7 @@ jobs:
         uses: protocol/.github/.github/actions/read-config@master
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{{ config.go.versions[-1] }}}
+          go-version: ${{ inputs.go-version }}
       - name: Run repo-specific setup
         uses: ./.github/actions/go-check-setup
         if: hashFiles('./.github/actions/go-check-setup') != ''

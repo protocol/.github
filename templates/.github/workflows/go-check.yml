@@ -11,3 +11,5 @@ concurrency:
 jobs:
   go-check:
     uses: protocol/.github/.github/workflows/go-check.yml@v1.0
+    with:
+      go-version: ${{{ config.go.versions[-1] }}}
