@@ -18,7 +18,7 @@ jobs:
   add:
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
     steps:
       - name: Add label by query
         env:

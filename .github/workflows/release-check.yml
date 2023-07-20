@@ -34,6 +34,8 @@ jobs:
         # Check if a git tag for the version (as read from version.json) exists
         # If that is the case, we don't need to run the rest of the workflow.
         if: steps.version.outputs.version != ''
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           git fetch origin --tags
           status=0
@@ -120,6 +122,7 @@ jobs:
           draft: true
           tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
+          target_commitish: ${{ github.event.pull_request.base.ref }}
       - id: message
         env:
           HEADER: |

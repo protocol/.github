@@ -1,0 +1,36 @@
+name: Inspect releaser workflow
+description: Extract information about the release from the releaser workflow
+
+inputs:
+  artifacts-url:
+    description: "URL to the artifacts of the releaser workflow"
+    required: true
+    default: ${{ github.event.workflow_run.artifacts_url }}
+outputs:
+  draft:
+    description: "Whether the release is a draft"
+    value: ${{ fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].draft || 'false' }}
+  version:
+    description: "Version of the release"
+    value: ${{ fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].version }}
+  url:
+    description: "URL to the Release HTML Page"
+    value: ${{ fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].url }}
+  id:
+    description: "Release ID"
+    value: ${{ fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].id }}
+  upload_url:
+    description: "URL for uploading assets to the release"
+    value: ${{ fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].upload_url }}
+  assets:
+    description: "JSON array containing information about each uploaded asset, in the format given [here](https://docs.github.com/en/rest/reference/repos#upload-a-release-asset--code-samples) (minus the `uploader` field)"
+    value: ${{ toJSON(fromJSON(steps.workflow-run.outputs.artifacts)['release'].files['release.json'].assets || fromJSON('[]')) }}
+
+runs:
+  using: composite
+  steps:
+    - id: workflow-run
+      uses: pl-strflt/rich-workflow-run@v1
+      with:
+        artifacts-url: ${{ inputs.artifacts-url }}
+        artifact-names: release

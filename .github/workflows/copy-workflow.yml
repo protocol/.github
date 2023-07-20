@@ -36,7 +36,7 @@ jobs:
       with:
         path: ${{ env.TARGET_REPO_DIR }}
         repository: ${{ matrix.cfg.target }}
-        token: ${{ secrets.WEB3BOT_GITHUB_TOKEN }}
+        token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
         persist-credentials: true
         submodules: recursive
     - name: Checkout template repository
