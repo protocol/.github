@@ -35,7 +35,10 @@ jobs:
           # This is done to ensure that the templates are valid YAML.
           for file in templates/.github/workflows/*.yml; do
             echo "Rendering $file"
+            echo "================"
             ./scripts/render-template.sh "$file" "$CONTEXT" "$file"
+            cat "$file"
+            echo
           done
         shell: bash
       - uses: pl-strflt/validate-yaml-schema@v1
