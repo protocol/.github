@@ -1,11 +1,6 @@
 name: Go Checks
 on:
   workflow_call:
-    inputs:
-      go-version:
-        description: 'Go version to test against'
-        required: true
-        type: string
 
 jobs:
   unit:
@@ -16,10 +11,12 @@ jobs:
         with:
           submodules: recursive
       - id: config
-        uses: protocol/.github/.github/actions/read-config@master
+        uses: protocol/.github/.github/actions/read-config@v1.0.0
+      - id: go-mod
+        uses: protocol/.github/.github/actions/read-go-mod@v1.0.0
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ inputs.go-version }}
+          go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x
       - name: Run repo-specific setup
         uses: ./.github/actions/go-check-setup
         if: hashFiles('./.github/actions/go-check-setup') != ''

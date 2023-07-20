@@ -1,11 +1,6 @@
 name: Release Checker
 on:
   workflow_call:
-    inputs:
-      go-version:
-        required: true
-        type: string
-        default: 1.19.x # TODO: remove once release-check is upgraded in all the targets
 
 jobs:
   releaser:
@@ -14,9 +9,11 @@ jobs:
       - run: echo "EOF=EOF$RANDOM" >> $GITHUB_ENV
         shell: bash
       - uses: actions/checkout@v3
+      - id: go-mod
+        uses: protocol/.github/.github/actions/read-go-mod@v1.0.0
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ inputs.go-version }}
+          go-version: ${{ fromJSON(steps.go-mod.outputs.json).Go }}.x
       - id: version
         name: Determine version
         env:

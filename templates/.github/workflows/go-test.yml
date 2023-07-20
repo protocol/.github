@@ -11,5 +11,3 @@ concurrency:
 jobs:
   go-test:
     uses: protocol/.github/.github/workflows/go-test.yml@v1.0
-    with:
-      go-versions: '${{{ config.go.versions }}}'

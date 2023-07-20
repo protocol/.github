@@ -3,9 +3,10 @@ on:
   workflow_call:
     inputs:
       go-versions:
-        description: 'Go versions to test against (JSON)'
-        required: true
+        description: 'Go versions to test against'
+        required: false
         type: string
+        default: '["this", "next"]'
 
 jobs:
   unit:
@@ -21,11 +22,40 @@ jobs:
     runs-on: ${{ fromJSON(vars[format('UCI_GO_TEST_RUNNER_{0}', matrix.os)] || format('"{0}-latest"', matrix.os)) }}
     name: ${{ matrix.os }} (go ${{ matrix.go }})
     steps:
+      - name: Use msys2 on windows
+        if: matrix.os == 'windows'
+        shell: bash
+        # The executable for msys2 is also called bash.cmd
+        #   https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#shells
+        # If we prepend its location to the PATH
+        #   subsequent 'shell: bash' steps will use msys2 instead of gitbash
+        run: echo "C:/msys64/usr/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v3
         with:
           submodules: recursive
       - id: config
-        uses: protocol/.github/.github/actions/read-config@master
+        uses: protocol/.github/.github/actions/read-config@v1.0.0
+      - id: go-mod
+        uses: protocol/.github/.github/actions/read-go-mod@v1.0.0
+      - id: go
+        env:
+          MATRIX_GO: ${{ matrix.go }}
+          GO_MOD_VERSION: ${{ fromJSON(steps.go-mod.outputs.json).Go }}
+        run: |
+          if [[ "$MATRIX_GO" == "this" ]]; then
+            echo "version=$GO_MOD_VERSION.x" >> $GITHUB_OUTPUT
+          elif [[ "$MATRIX_GO" == "next" ]]; then
+            MAJOR="${GO_MOD_VERSION%.[0-9]*}"
+            MINOR="${GO_MOD_VERSION#[0-9]*.}"
+            echo "version=$MAJOR.$(($MINOR+1)).x" >> $GITHUB_OUTPUT
+          elif [[ "$MATRIX_GO" == "prev" ]]; then
+            MAJOR="${GO_MOD_VERSION%.[0-9]*}"
+            MINOR="${GO_MOD_VERSION#[0-9]*.}"
+            echo "version=$MAJOR.$(($MINOR-1)).x" >> $GITHUB_OUTPUT
+          else
+            echo "version=$MATRIX_GO" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
       - if: toJSON(fromJSON(steps.config.outputs.json).shuffle) != 'false'
         run: |
           echo "GOTESTFLAGS=-shuffle=on $GOTESTFLAGS" >> $GITHUB_ENV
@@ -38,19 +68,11 @@ jobs:
           echo "GORACEFLAGS=-v $GORACEFLAGS" >> $GITHUB_ENV
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ steps.go.outputs.version }}
       - name: Go information
         run: |
           go version
           go env
-      - name: Use msys2 on windows
-        if: matrix.os == 'windows'
-        shell: bash
-        # The executable for msys2 is also called bash.cmd
-        #   https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#shells
-        # If we prepend its location to the PATH
-        #   subsequent 'shell: bash' steps will use msys2 instead of gitbash
-        run: echo "C:/msys64/usr/bin" >> $GITHUB_PATH
       - name: Run repo-specific setup
         uses: ./.github/actions/go-test-setup
         if: hashFiles('./.github/actions/go-test-setup') != ''
@@ -91,4 +113,4 @@ jobs:
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         with:
           files: ${{ steps.coverages.outputs.files }}
-          env_vars: OS=${{ matrix.os }}, GO=${{ matrix.go }}
+          env_vars: OS=${{ matrix.os }}, GO=${{ steps.go.outputs.version }}

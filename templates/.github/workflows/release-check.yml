@@ -10,5 +10,4 @@ concurrency:
 jobs:
   release-check:
     uses: protocol/.github/.github/workflows/release-check.yml@v1
-    with:
-      go-version: ${{{ config.go.versions[-1] }}}
+
