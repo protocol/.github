@@ -29,4 +29,4 @@ jobs:
       - name: Run check
         env:
           FILE: ${{ matrix.file }}
-        run: .github/workflows/check-3rd-party.sh $FILE
+        run: ./scripts/check-3rd-party.sh $FILE

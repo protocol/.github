@@ -13,4 +13,4 @@ concurrency:
 
 jobs:
   release-check:
-    uses: protocol/.github/.github/workflows/release-check.yml@v1
+    uses: protocol/.github/shared/.github/workflows/release-check.yml@v1

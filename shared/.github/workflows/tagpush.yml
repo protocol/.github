@@ -1,0 +1,49 @@
+name: Manual Release Nag
+on: [ workflow_call ]
+
+env:
+  ISSUE_TITLE: "manual release created (%tagname%)"
+  ISSUE_ASSIGNEE: "%pusher%"
+  ISSUE_BODY: |
+    @{{ env.PUSHER }} just pushed a release tag: {{ env.TAGNAME }}.
+    Please manually verify validity (using [\`gorelease\`](https://pkg.go.dev/golang.org/x/exp/cmd/gorelease)), and update \`version.json\` to reflect the manually released version, if necessary.
+    In the future, please use the [automated process](https://github.com/protocol/.github/blob/master/VERSIONING.md).
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    name: All
+    env:
+      TAGNAME: ""
+    steps:
+      - uses: actions/checkout@v3
+      - run: cat "$GITHUB_EVENT_PATH" | jq -M .
+      - name: extract tag name
+        run: |
+          tagname=$(echo "$GITHUB_REF" | sed "s/refs\/tags\///")
+          echo $tagname
+          echo "TAGNAME=$tagname" >> $GITHUB_ENV
+      - name: create issue template file
+        if: github.event.pusher.name != 'web3-bot'
+        env:
+          PUSHER: ${{ github.event.pusher.name }}
+        run: |
+          echo "---" >> .github/workflows/tagpush.md
+          echo "title: $ISSUE_TITLE" | sed "s/%tagname%/$TAGNAME/" >> .github/workflows/tagpush.md
+          echo "assignees: $ISSUE_ASSIGNEE" | sed "s/%pusher%/$PUSHER/" >> .github/workflows/tagpush.md
+          echo "---" >> .github/workflows/tagpush.md
+          cat <<EOF >> .github/workflows/tagpush.md
+          $ISSUE_BODY
+          EOF
+      - run: cat .github/workflows/tagpush.md
+      - name: create an issue
+        if: github.event.pusher.name != 'web3-bot'
+        uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd # v2.9.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PUSHER: ${{ github.event.pusher.name }}
+        with:
+          filename: .github/workflows/tagpush.md
+      - name: fail build if push wasn't done by web3-bot
+        if: github.event.pusher.name != 'web3-bot'
+        run: exit 1

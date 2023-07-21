@@ -34,9 +34,9 @@ jobs:
         with:
           submodules: recursive
       - id: config
-        uses: protocol/.github/.github/actions/read-config@v1.0.0
+        uses: protocol/.github/shared/.github/actions/read-config@v1.0.0
       - id: go-mod
-        uses: protocol/.github/.github/actions/read-go-mod@v1.0.0
+        uses: protocol/.github/shared/.github/actions/read-go-mod@v1.0.0
       - id: go
         env:
           MATRIX_GO: ${{ matrix.go }}
