@@ -3,6 +3,13 @@ on:
   push:
     paths: [ 'version.json' ]
 
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
+
 jobs:
   releaser:
-    uses: protocol/.github/.github/workflows/releaser.yml@master
+    uses: protocol/.github/.github/workflows/releaser.yml@v1

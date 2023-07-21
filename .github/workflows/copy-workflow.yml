@@ -9,6 +9,10 @@ on:
         description: "List of repositories to deploy to"
         required: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   copy:
     runs-on: ubuntu-latest
@@ -39,12 +43,25 @@ jobs:
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
         ref: ${{ matrix.cfg.source_ref || github.ref }}
-    - name: determine GitHub default branch
+    - id: github
+      name: determine GitHub context
       working-directory: ${{ env.TARGET_REPO_DIR }}
+      env:
+        REPO: ${{ matrix.cfg.target}}
+        GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
       run: |
-        default_branch=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
-        echo "DEFAULT_BRANCH=$default_branch" >> $GITHUB_ENV
+        eof="EOF$RANDOM"
+        default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+        protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
+        echo "json<<$eof" >> $GITHUB_OUTPUT
+        echo '{' >> $GITHUB_OUTPUT
+        echo '"default_branch":"'"$default_branch"'",' >> $GITHUB_OUTPUT
+        echo '"protected_branches":'"$protected_branches" >> $GITHUB_OUTPUT
+        echo '}' >> $GITHUB_OUTPUT
+        echo "$eof" >> $GITHUB_OUTPUT
     - name: Check out web3-bot/sync branch
+      env:
+        DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
       # If the branch already exists, check it out; otherwise, create it.
       # Then, try rebasing the web3-bot/sync branch onto the default branch.
       # If that fails, reset the web3-bot/sync branch to the default branch.
@@ -113,11 +130,8 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(matrix.cfg) }},
-            "github": {
-              "default_branch": "${{ env.DEFAULT_BRANCH }}"
-            }
+            "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
-        TEMPLATE_ENGINE: s#\$\{\{\{\s*(.*?)\s*\}\}\}#`jq -cjn 'env.CONTEXT | fromjson.$1'`#ge
       run: |
         commited=false
         for f in $(jq -r '.[]' <<< "$FILES"); do
@@ -125,8 +139,8 @@ jobs:
           # add DO NOT EDIT header
           tmp=$(mktemp)
           cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # expand the template with values from the JSON context object
-          perl -pi -e "$TEMPLATE_ENGINE" $tmp
+          # render template
+          ./template-repo/scripts/render-template.sh $tmp $CONTEXT $tmp
           # create commit, if necessary
           commit_msg=""
           if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then

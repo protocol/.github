@@ -3,8 +3,14 @@ on:
   pull_request_target:
     paths: [ 'version.json' ]
 
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-check:
-    uses: protocol/.github/.github/workflows/release-check.yml@master
-    with:
-      go-version: ${{{ config.go.versions[-1] }}}
+    uses: protocol/.github/.github/workflows/release-check.yml@v1

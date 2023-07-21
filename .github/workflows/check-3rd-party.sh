@@ -12,7 +12,7 @@ for line in `sed -ne 's/[[:space:]-]*uses:[[:space:]]*//p' $1 | sed -e 's/\s*#.*
   # "actions": workflows authored by GitHub
   # "protocol": workflows published in the protocol org
   # "ipfs": workflows published in the ipfs org
-  if [[ $author == "." || $author == "actions" || $author == "protocol" || $author == "ipfs" ]]; then continue; fi
+  if [[ $author == "." || $author == "actions" || $author == "protocol" || $author == "ipfs" || $author == "pl-strflt" ]]; then continue; fi
   version=`echo $line | awk -F@ '{print $2}' | awk '{print $1}'`
   if ! [[ "$version" =~ ^[a-f0-9]{40}$ ]]; then
     status=1
