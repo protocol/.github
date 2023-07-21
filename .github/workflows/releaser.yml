@@ -8,11 +8,18 @@ jobs:
       - uses: actions/checkout@v3
       - id: version
         name: Determine version
-        run: echo "version=$(jq -r .version version.json)" >> $GITHUB_OUTPUT
+        run: jq -r .version version.json | xargs -I{} echo "version={}" | tee -a $GITHUB_OUTPUT
+      - id: latest
+        name: Determine latest version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git fetch origin --tags
+          echo -e "$VERSION\n$(git tag)" | sort -V | tail -n1 | xargs -I{} echo "latest={}" | tee -a $GITHUB_OUTPUT
       - id: labels
         name: Determine PR labels if this commit is a merged PR (if we're not on a default branch)
         if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
-        run: echo "labels=$(gh api -X GET "$ENDPOINT" --jq "$SELECTOR" -f sort="$SORT" -f direction="$DIRECTION" -f state="$STATE")" >> $GITHUB_OUTPUT          
+        run: echo "labels=$(gh api -X GET "$ENDPOINT" --jq "$SELECTOR" -f sort="$SORT" -f direction="$DIRECTION" -f state="$STATE")" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ github.token }}
           ENDPOINT: repos/${{ github.repository }}/pulls
@@ -31,12 +38,13 @@ jobs:
         if: steps.version.outputs.version != '' && steps.tag.outputs.exists == 'false' && (
             github.ref == format('refs/heads/{0}', github.event.repository.default_branch) ||
             contains(fromJSON(steps.labels.outputs.labels), 'release'))
-        uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
+        uses: galargh/action-gh-release@571276229e7c9e6ea18f99bad24122a4c3ec813f # https://github.com/galargh/action-gh-release/pull/1
         with:
           draft: false
           tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
           target_commitish: ${{ github.sha }}
+          make_latest: ${{ steps.version.outputs.version == steps.latest.outputs.latest }}
       - name: Create release.json
         if: steps.release.outputs.id != ''
         env:
@@ -47,7 +55,8 @@ jobs:
               "url": "${{ steps.release.outputs.url }}",
               "id": "${{ steps.release.outputs.id }}",
               "upload_url": "${{ steps.release.outputs.upload_url }}",
-              "assets": ${{ steps.release.outputs.assets }}
+              "assets": ${{ steps.release.outputs.assets }},
+              "make_latest": ${{ steps.version.outputs.version == steps.latest.outputs.latest }}
             }
         run: jq . <<< "$RELEASE" > release.json
       - name: Upload release.json
