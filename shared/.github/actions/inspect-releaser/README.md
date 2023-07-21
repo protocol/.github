@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: releaser
-        uses: protocol/.github/.github/actions/inspect-releaser@master
+        uses: protocol/.github/shared/.github/actions/inspect-releaser@v1.0
         with:
           artifacts-url: ${{ github.event.inputs.artifacts-url || github.event.workflow_run.artifacts_url }}
       - if: ${{ steps.releaser.outputs.id == '' }}

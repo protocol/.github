@@ -15,4 +15,4 @@ concurrency:
 
 jobs:
   js-test-and-release:
-    uses: protocol/.github/.github/workflows/js-test-and-release.yml@v1.0
+    uses: protocol/.github/shared/.github/workflows/js-test-and-release.yml@v1.0
