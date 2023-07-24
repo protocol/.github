@@ -26,6 +26,7 @@
     { "target": "ipfs/helia-ipns" },
     { "target": "ipfs/helia-routing-v1-http-api" },
     { "target": "ipfs/helia-unixfs" },
+    { "target": "ipfs/ipld-explorer-components" },
     { "target": "ipfs/js-blockstore-datastore-adapter" },
     { "target": "ipfs/js-datastore-pubsub" },
     { "target": "ipfs/js-hamt-sharding" },
