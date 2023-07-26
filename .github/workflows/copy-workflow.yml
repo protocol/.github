@@ -28,6 +28,35 @@ jobs:
       INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
+      DEFAULTS: |
+        {
+          "Go": {
+            "files": [
+              ".github/workflows/go-test.yml",
+              ".github/workflows/go-check.yml",
+              ".github/workflows/releaser.yml",
+              ".github/workflows/release-check.yml",
+              ".github/workflows/tagpush.yml"
+            ],
+            "deploy_versioning": true,
+            "deploy_go": true,
+            "go": {
+              "versions": [
+                "1.19.x",
+                "1.20.x"
+              ]
+            }
+          },
+          "JavaScript": {
+            "files": [
+              ".github/workflows/js-test-and-release.yml"
+            ]
+          },
+          "TypeScript": {
+            "files": [
+              ".github/workflows/js-test-and-release.yml"
+            ]
+          }
     name: ${{ matrix.repository }}
     steps:
     - name: Checkout ${{ matrix.repository }}
@@ -43,42 +72,6 @@ jobs:
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
         ref: ${{ github.ref }}
-    - id: config
-      env:
-        REPOSITORY: ${{ matrix.repository }}
-      run: |
-        json=''
-        for config in $(find $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/configs -name '*.json'); do
-          defaults=$(jq -c '.defaults' $config)
-          candidate="$(jq -c '.repositories | map(select(.target == env.REPOSITORY)) | .[0]' $config)"
-          if [[ $candidate != null ]]; then
-            json="$(jq -nc "env.defaults + env.candidate")"
-            break
-          fi
-        done
-        if [[ $json == '' ]]; then
-          echo "No config found for $REPOSITORY."
-          exit 1
-        fi
-        source_ref="$(jq -r '.source_ref' <<< "$json")"
-        if [[ $source_ref == null ]]; then
-          git fetch origin "$source_ref"
-          git checkout "$source_ref"
-          json=''
-          for config in $(find $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/configs -name '*.json'); do
-            defaults=$(jq -c '.defaults' $config)
-            candidate="$(jq -c '.repositories | map(select(.target == env.REPOSITORY)) | .[0]' $config)"
-            if [[ $candidate != null ]]; then
-              json="$(jq -nc "env.defaults + env.candidate")"
-              break
-            fi
-          done
-          if [[ $json == '' ]]; then
-            echo "No config found for $REPOSITORY at $source_ref."
-            exit 1
-          fi
-        fi
-        echo "json=$json" >> $GITHUB_OUTPUT
     - id: github
       name: determine GitHub context
       working-directory: ${{ env.TARGET_REPO_DIR }}
@@ -89,12 +82,24 @@ jobs:
         eof="EOF$RANDOM"
         default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
         protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
+        languages="$(gh api -X GET "/repos/$REPO/languages" | jq -c 'to_entries | sort_by(.value) | reverse | map(.key)')"
         echo "json<<$eof" >> $GITHUB_OUTPUT
         echo '{' >> $GITHUB_OUTPUT
         echo '"default_branch":"'"$default_branch"'",' >> $GITHUB_OUTPUT
-        echo '"protected_branches":'"$protected_branches" >> $GITHUB_OUTPUT
+        echo '"protected_branches":'"$protected_branches"',' >> $GITHUB_OUTPUT
+        echo '"languages":'"$languages" >> $GITHUB_OUTPUT
         echo '}' >> $GITHUB_OUTPUT
         echo "$eof" >> $GITHUB_OUTPUT
+    - id: config
+      working-directory: ${{ env.TARGET_REPO_DIR }}
+      env:
+        REPO: ${{ matrix.repository }}
+        DEFAULTS: ${{ fromJSON(env.DEFAULTS)[fromJSON(steps.github.outputs.json).languages[0]] || '{}' }}
+      run: |
+        if [[ -f uci.yml ]]; then
+          echo "json=$(jq -c --argjson defaults "$DEFAULTS" '$defaults + .' uci.yml)" >> $GITHUB_OUTPUT
+        else
+          echo "json=$(jq -c <<< "$DEFAULTS")" >> $GITHUB_OUTPUT
     - name: Check out web3-bot/sync branch
       env:
         DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
