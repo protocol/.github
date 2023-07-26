@@ -5,9 +5,8 @@
 name: Dispatch
 
 on:
-  push:
-    branches: [ master, testing ]
   workflow_dispatch:
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,29 +27,64 @@ env:
 
 jobs:
   matrix:
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/testing'
     name: Batch targets
     runs-on: ubuntu-latest
     outputs:
-      batches: ${{ steps.set-matrix.outputs.batches }}
+      batches: ${{ steps.matrix.outputs.result }}
     steps:
-      - uses: actions/checkout@v3
-      - id: set-matrix
-        run: |
-          targets=()
-          for config in configs/*.json; do
-            if [[ $GITHUB_REF == refs/heads/testing && $config != configs/testing.json ]]; then
-              continue
-            fi
-            if [[ $GITHUB_REF != refs/heads/testing && $config == configs/testing.json ]]; then
-              continue
-            fi
-            echo "::group::$config"
-            targets+=($(jq -c ".repositories[] | .target" $config))
-            echo "::endgroup::"
-          done
-          batches=$(jq -sc "[. | _nwise($MAX_REPOS_PER_WORKFLOW)] | to_entries" <<< "${targets[@]}")
-          echo "batches=$batches" >> $GITHUB_OUTPUT
+      - id: matrix
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+          retries: 0
+          script: |
+            const request = async function(req, opts) {
+              try {
+                return await req(opts)
+              } catch(err) {
+                opts.request.retries = (opts.request.retries || 0) + 1
+                if (err.status === 403) {
+                  if (err.response.headers['x-ratelimit-remaining'] === '0') {
+                    const retryAfter = err.response.headers['x-ratelimit-reset'] - Math.floor(Date.now() / 1000) || 1
+                    core.info(`Rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                  if (err.message.toLowerCase().includes('secondary rate limit')) {
+                    const retryAfter = Math.pow(2, opts.request.retries)
+                    core.info(`Secondary rate limit exceeded, retrying in ${retryAfter} seconds`)
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                    return request(req, opts)
+                  }
+                }
+                throw err
+              }
+            }
+            github.hook.wrap('request', request)
+            core.info(`Looking for repositories the user has direct access to`)
+            const items = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
+              affiliation: 'collaborator'
+            })
+            const maxReposPerWorkflow = parseInt(process.env.MAX_REPOS_PER_WORKFLOW)
+            const batches = []
+            let batch = []
+            for (const item of items) {
+              batch.push(item.full_name)
+              if (batch.length === maxReposPerWorkflow) {
+                batches.push({
+                  key: batches.length,
+                  value: batch
+                })
+                batch = []
+              }
+            }
+            if (batch.length > 0) {
+              batches.push({
+                key: batches.length,
+                value: batch
+              })
+            }
+            return batches
   dispatch:
     needs: [ matrix ]
     name: Dispatch copy workflow(batch ${{ matrix.cfg.key }})
