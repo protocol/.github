@@ -56,7 +56,7 @@ runs:
 
             # We don't tidy, because the next step does that.
             # Separate commits also help with reviews.
-            git commit -m "bump go.mod to Go $TARGET_VERSION and run go fix"
+            git commit -m "chore: bump go.mod to Go $TARGET_VERSION and run go fix"
 
             # As of Go 1.19 io/ioutil is deprecated
             # We automate its upgrade here because it is quite a widely used package
@@ -77,11 +77,11 @@ runs:
 
             git add .
             if ! git diff-index --quiet HEAD; then
-              git commit -m "stop using the deprecated io/ioutil package"
+              git commit -m "fix: stop using the deprecated io/ioutil package"
             fi
           fi
-    - name: go mod tidy (on initial workflow deployment)
-      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1
+    - name: go mod tidy (on new Go version)
+      if: env.GO_VERSION_BUMP == 1
       uses: protocol/multiple-go-modules@v1.2
       with:
         working-directory: ${{ env.TARGET_REPO_DIR }}
@@ -89,15 +89,15 @@ runs:
           go mod tidy
           if ! git diff --quiet; then
             git add .
-            git commit -m "run go mod tidy"
+            git commit -m "chore: run go mod tidy"
           fi
-    - name: gofmt -s (on initial workflow deployment and on new Go version)
-      if: env.INITIAL_WORKFLOW_DEPLOYMENT == 1 || env.GO_VERSION_BUMP == 1
+    - name: gofmt -s (on new Go version)
+      if: env.GO_VERSION_BUMP == 1
       working-directory: ${{ env.TARGET_REPO_DIR }}
       shell: bash
       run: |
         gofmt -s -w .
         git add .
         if ! git diff-index --quiet HEAD; then
-          git commit -m "run gofmt -s"
+          git commit -m "chore: run gofmt -s"
         fi
