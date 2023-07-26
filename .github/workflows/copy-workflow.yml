@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       targets:
-        description: "List of repositories to deploy to"
+        description: "List of repository names to deploy to"
         required: true
 
 defaults:
@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfg: ${{ fromJSON(github.event.inputs.targets) }}
+        repository: ${{ fromJSON(github.event.inputs.targets) }}
       max-parallel: 10
     env:
       TARGET_REPO_DIR: "target-repo"
@@ -28,13 +28,13 @@ jobs:
       INITIAL_WORKFLOW_DEPLOYMENT: 0
       GO_VERSION_BUMP: 0
       FILES: ""
-    name: ${{ matrix.cfg.target }}
+    name: ${{ matrix.repository }}
     steps:
-    - name: Checkout ${{ matrix.cfg.target }}
+    - name: Checkout ${{ matrix.repository }}
       uses: actions/checkout@v3
       with:
         path: ${{ env.TARGET_REPO_DIR }}
-        repository: ${{ matrix.cfg.target }}
+        repository: ${{ matrix.repository }}
         token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
         persist-credentials: true
         submodules: recursive
@@ -42,12 +42,48 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: ${{ env.TEMPLATE_REPO_DIR }}
-        ref: ${{ matrix.cfg.source_ref || github.ref }}
+        ref: ${{ github.ref }}
+    - id: config
+      env:
+        REPOSITORY: ${{ matrix.repository }}
+      run: |
+        json=''
+        for config in $(find $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/configs -name '*.json'); do
+          defaults=$(jq -c '.defaults' $config)
+          candidate="$(jq -c '.repositories | map(select(.target == env.REPOSITORY)) | .[0]' $config)"
+          if [[ $candidate != null ]]; then
+            json="$(jq -nc "env.defaults + env.candidate")"
+            break
+          fi
+        done
+        if [[ $json == '' ]]; then
+          echo "No config found for $REPOSITORY."
+          exit 1
+        fi
+        source_ref="$(jq -r '.source_ref' <<< "$json")"
+        if [[ $source_ref == null ]]; then
+          git fetch origin "$source_ref"
+          git checkout "$source_ref"
+          json=''
+          for config in $(find $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/configs -name '*.json'); do
+            defaults=$(jq -c '.defaults' $config)
+            candidate="$(jq -c '.repositories | map(select(.target == env.REPOSITORY)) | .[0]' $config)"
+            if [[ $candidate != null ]]; then
+              json="$(jq -nc "env.defaults + env.candidate")"
+              break
+            fi
+          done
+          if [[ $json == '' ]]; then
+            echo "No config found for $REPOSITORY at $source_ref."
+            exit 1
+          fi
+        fi
+        echo "json=$json" >> $GITHUB_OUTPUT
     - id: github
       name: determine GitHub context
       working-directory: ${{ env.TARGET_REPO_DIR }}
       env:
-        REPO: ${{ matrix.cfg.target}}
+        REPO: ${{ matrix.repository }}
         GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
       run: |
         eof="EOF$RANDOM"
@@ -79,8 +115,8 @@ jobs:
       # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
       env:
         FILES: |
-          ${{ toJSON(matrix.cfg.files) }}
-          ${{ toJSON(matrix.cfg.extra_files) }}
+          ${{ toJSON(fromJSON(steps.config.outputs.json).files) }}
+          ${{ toJSON(fromJSON(steps.config.outputs.json).extra_files) }}
       run: echo "FILES=$(jq -nc '[inputs] | add' <<< "$FILES")" >> $GITHUB_ENV
     - name: is initial workflow deployment
       # INITIAL_WORKFLOW_DEPLOYMENT=1 iff none of the files in the target repository exist yet
@@ -118,18 +154,18 @@ jobs:
           git commit -m "remove .gx"
         fi
     - name: Run steps specific to go
-      if: matrix.cfg.deploy_go
+      if: fromJSON(steps.config.outputs.json).deploy_go
       # use of ${{ env.TEMPATE_REPO_DIR }} is not allowed here
       uses: ./template-repo/.github/actions/copy-workflow-go
     - name: Run steps specific to versioning
-      if: matrix.cfg.deploy_versioning
+      if: fromJSON(steps.config.outputs.json).deploy_versioning
       uses: ./template-repo/.github/actions/copy-workflow-versioning
     - id: add-files
       name: Add files
       env:
         CONTEXT: |
           {
-            "config": ${{ toJSON(matrix.cfg) }},
+            "config": ${{ toJSON(fromJSON(steps.config.outputs.json)) }},
             "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
       run: |

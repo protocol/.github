@@ -46,10 +46,7 @@ jobs:
               continue
             fi
             echo "::group::$config"
-            defaults=$(jq -c '.defaults' $config)
-            # values defined in the repository object will override the default values
-            # e.g. { "files": ["a", "b"] } + { "files": ["c"] } = { "files": ["c"] }
-            targets+=($(jq -c ".repositories[] | $defaults + ." $config))
+            targets+=($(jq -c ".repositories[] | .target" $config))
             echo "::endgroup::"
           done
           batches=$(jq -sc "[. | _nwise($MAX_REPOS_PER_WORKFLOW)] | to_entries" <<< "${targets[@]}")
@@ -66,8 +63,8 @@ jobs:
         # For each "dispatch" job, matrix.cfg.value is an array, like:
         #
         #   [
-        #     {"target": "repo1", "files": [".github/workflows/go-check.yml"]},
-        #     {"target": "repo2", "files": [".github/workflows/go-check.yml", ".github/workflows/go-test.yml"]}
+        #     "repo1",
+        #     "repo2"
         #   ]
         #
         # The triggered copy workflow runs use that final array as their matrix.
