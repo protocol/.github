@@ -39,9 +39,9 @@ jobs:
               ".github/workflows/go-check.yml",
               ".github/workflows/releaser.yml",
               ".github/workflows/release-check.yml",
-              ".github/workflows/tagpush.yml"
+              ".github/workflows/tagpush.yml",
+              "version.json"
             ],
-            "deploy_versioning": true,
             "deploy_go": true,
             "go": {
               "versions": [
@@ -86,11 +86,13 @@ jobs:
         default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
         protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
         languages="$(gh api -X GET "/repos/$REPO/languages" | jq -c 'to_entries | sort_by(.value) | reverse | map(.key)')"
+        tag="$(git describe --tags --abbrev=0 || true)"
         echo "json<<$eof" >> $GITHUB_OUTPUT
         echo '{' >> $GITHUB_OUTPUT
         echo '"default_branch":"'"$default_branch"'",' >> $GITHUB_OUTPUT
         echo '"protected_branches":'"$protected_branches"',' >> $GITHUB_OUTPUT
-        echo '"languages":'"$languages" >> $GITHUB_OUTPUT
+        echo '"languages":'"$languages"',' >> $GITHUB_OUTPUT
+        echo '"tag":"'"$tag"'"' >> $GITHUB_OUTPUT
         echo '}' >> $GITHUB_OUTPUT
         echo "$eof" >> $GITHUB_OUTPUT
     - id: config
@@ -131,9 +133,6 @@ jobs:
       if: fromJSON(steps.config.outputs.json).deploy_go
       # use of ${{ env.TEMPATE_REPO_DIR }} is not allowed here
       uses: ./template-repo/.github/actions/copy-workflow-go
-    - name: Run steps specific to versioning
-      if: fromJSON(steps.config.outputs.json).deploy_versioning
-      uses: ./template-repo/.github/actions/copy-workflow-versioning
     - id: add-files
       name: Add files
       env:
