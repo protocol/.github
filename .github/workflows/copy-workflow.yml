@@ -8,6 +8,10 @@ on:
       targets:
         description: "List of repository names to deploy to"
         required: true
+      override:
+        description: "Defaults override to use for each repository"
+        required: false
+        default: '{}'
 
 defaults:
   run:
@@ -95,11 +99,12 @@ jobs:
       env:
         REPO: ${{ matrix.repository }}
         DEFAULTS: ${{ fromJSON(env.DEFAULTS)[fromJSON(steps.github.outputs.json).languages[0]] || '{}' }}
+        OVERRIDE: ${{ github.event.inputs.override || '{}' }}
       run: |
         if [[ -f uci.yml ]]; then
-          echo "json=$(jq -c --argjson defaults "$DEFAULTS" '$defaults + .' uci.yml)" >> $GITHUB_OUTPUT
+          echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" '$defaults + . + $override' uci.yml)" >> $GITHUB_OUTPUT
         else
-          echo "json=$(jq -c <<< "$DEFAULTS")" >> $GITHUB_OUTPUT
+          echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" -n '$defaults + $override')" >> $GITHUB_OUTPUT
     - name: Check out web3-bot/sync branch
       env:
         DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
