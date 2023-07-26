@@ -124,7 +124,7 @@ jobs:
           printf "output<<$EOF\n%s\n$EOF" "$output" >> $GITHUB_OUTPUT
       - id: release
         if: github.event.pull_request.head.repo.full_name == github.repository
-        uses: galargh/action-gh-release@25b3878b4c346655a4d3d9bea8b76638f64743cf # https://github.com/softprops/action-gh-release/pull/316
+        uses: galargh/action-gh-release@571276229e7c9e6ea18f99bad24122a4c3ec813f # https://github.com/galargh/action-gh-release/pull/1
         with:
           draft: true
           tag_name: ${{ steps.version.outputs.version }}
