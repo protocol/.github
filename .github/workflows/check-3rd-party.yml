@@ -24,6 +24,7 @@ jobs:
     name: ${{ matrix.file }}
     steps:
       - uses: actions/checkout@v3
+      - uses: ./.github/actions/render-templates
       - name: Run check
         env:
           FILE: ${{ matrix.file }}
