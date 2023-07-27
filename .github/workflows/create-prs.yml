@@ -2,10 +2,13 @@ name: Create PRs
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: [Dispatch]
-    types:
-      - completed
+    inputs:
+      branch:
+        description: "Branch from which to merge PRs"
+        required: false
+        default: 'web3-bot/sync'
+  schedule:
+    - cron: "0 0 * * *" # https://crontab.guru/every-day
 
 jobs:
   dispatch:
@@ -14,7 +17,7 @@ jobs:
     steps:
       - name: Create PRs
         env:
-          BRANCH: web3-bot/sync
+          BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}

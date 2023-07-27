@@ -1,6 +1,6 @@
 # This workflow is triggered by the dispatch workflow.
 
-name: Deploy
+name: Process
 
 on:
   workflow_dispatch:
