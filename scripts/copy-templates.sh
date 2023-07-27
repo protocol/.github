@@ -14,6 +14,9 @@ for f in $(jq -r '.config.files[]' <<< "$CONTEXT"); do
   if [[ ! -f "$REPO/$f" ]]; then
     echo "First deployment.\n"
     commit_msg="chore: add $f"
+  elif [[ "$f" == "version.json" ]]; then
+    echo "Version file. Skipping."
+    continue
   else
     status=$(cmp --silent $REPO/$f $tmp; echo $?)
     if [[ $status -ne 0 ]]; then
