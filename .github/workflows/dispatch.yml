@@ -6,7 +6,18 @@ name: Dispatch
 
 on:
   workflow_dispatch:
-
+    override:
+      description: "Defaults override to use for each target"
+      required: false
+      default: '{}'
+    branch:
+      description: "Branch to deploy to in each target"
+      required: false
+      default: 'web3-bot/sync'
+    script:
+      description: "Script to run in each target"
+      required: false
+      default: 'copy-templates.sh'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -115,9 +126,12 @@ jobs:
         name: Dispatch copy workflow
         env:
           TARGETS: ${{ toJSON(matrix.cfg.value) }}
+          OVERRIDE: ${{ github.event.inputs.override }}
+          BRANCH: ${{ github.event.inputs.branch }}
+          SCRIPT: ${{ github.event.inputs.script }}
         run: |
           start_date="$(date +%s)"
-          gh workflow run "$WORKFLOW_YML" --ref "$GITHUB_REF" --repo "$WORKFLOW_REPO" --field "targets=$TARGETS"
+          gh workflow run "$WORKFLOW_YML" --ref "$GITHUB_REF" --repo "$WORKFLOW_REPO" --field "targets=$TARGETS" --field "override=$OVERRIDE" --field "branch=$BRANCH" --field "script=$SCRIPT
           echo "start_date=$start_date" >> $GITHUB_OUTPUT
       - id: run
         name: Wait for copy workflow run to start
