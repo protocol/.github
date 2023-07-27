@@ -4,8 +4,6 @@
 
 set -euo pipefail
 
-
-
 # Check the number of arguments. 2 or 3 are expected.
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then
   echo "Usage: render.sh <template> <context> <output>"

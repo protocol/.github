@@ -12,6 +12,14 @@ on:
         description: "Defaults override to use for each repository"
         required: false
         default: '{}'
+      branch:
+        description: "Branch to deploy to"
+        required: false
+        default: 'web3-bot/sync'
+      script:
+        description: "Script to run"
+        required: false
+        default: 'copy-templates.sh'
 
 defaults:
   run:
@@ -26,11 +34,6 @@ jobs:
         repository: ${{ fromJSON(github.event.inputs.targets) }}
       max-parallel: 10
     env:
-      TARGET_REPO_DIR: "target-repo"
-      TEMPLATE_REPO_DIR: "template-repo"
-      TEMPLATE_DIR: "templates"
-      GO_VERSION_BUMP: 0
-      FILES: ""
       DEFAULTS: |
         {
           "Go": {
@@ -41,14 +44,7 @@ jobs:
               ".github/workflows/release-check.yml",
               ".github/workflows/tagpush.yml",
               "version.json"
-            ],
-            "deploy_go": true,
-            "go": {
-              "versions": [
-                "1.19.x",
-                "1.20.x"
-              ]
-            }
+            ]
           },
           "JavaScript": {
             "files": [
@@ -65,19 +61,19 @@ jobs:
     - name: Checkout ${{ matrix.repository }}
       uses: actions/checkout@v3
       with:
-        path: ${{ env.TARGET_REPO_DIR }}
+        path: ${{ matrix.repository }}
         repository: ${{ matrix.repository }}
         token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
         persist-credentials: true
         submodules: recursive
-    - name: Checkout template repository
+    - name: Checkout protocol/.github
       uses: actions/checkout@v3
       with:
-        path: ${{ env.TEMPLATE_REPO_DIR }}
+        path: protocol/.github
         ref: ${{ github.ref }}
     - id: github
-      name: determine GitHub context
-      working-directory: ${{ env.TARGET_REPO_DIR }}
+      name: Get ${{ matrix.repository }} GitHub info
+      working-directory: ${{ matrix.repository }}
       env:
         REPO: ${{ matrix.repository }}
         GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
@@ -96,7 +92,8 @@ jobs:
         echo '}' >> $GITHUB_OUTPUT
         echo "$eof" >> $GITHUB_OUTPUT
     - id: config
-      working-directory: ${{ env.TARGET_REPO_DIR }}
+      name: Get ${{ matrix.repository }} config
+      working-directory: ${{ matrix.repository }}
       env:
         REPO: ${{ matrix.repository }}
         DEFAULTS: ${{ fromJSON(env.DEFAULTS)[fromJSON(steps.github.outputs.json).languages[0]] || '{}' }}
@@ -106,75 +103,38 @@ jobs:
           echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" '$defaults + . + $override' uci.yml)" >> $GITHUB_OUTPUT
         else
           echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" -n '$defaults + $override')" >> $GITHUB_OUTPUT
-    - name: Check out web3-bot/sync branch
+    - name: Prepare ${{ matrix.repository }} for deployment
+      working-directory: ${{ matrix.repository }}
       env:
+        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
         DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
       # If the branch already exists, check it out; otherwise, create it.
       # Then, try rebasing the web3-bot/sync branch onto the default branch.
       # If that fails, reset the web3-bot/sync branch to the default branch.
       run: |
-        git checkout web3-bot/sync || git checkout -B web3-bot/sync
-        git rebase "$DEFAULT_BRANCH" || (git rebase --abort && git reset --hard "$DEFAULT_BRANCH")
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-    - name: git config
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: |
         git config user.name web3-bot
         git config user.email web3-bot@users.noreply.github.com
-    - name: determine files to add
-      # By setting the environment variable, it's possible to programmatically add / modify this list.
-      # See https://github.com/protocol/.github/blob/38135c75e47839623bf9b2748275d8c6167a8fa8/.github/workflows/copy-workflow.yml#L163-L168 for an example, how we used to make use of this.
-      env:
-        FILES: |
-          ${{ toJSON(fromJSON(steps.config.outputs.json).files) }}
-          ${{ toJSON(fromJSON(steps.config.outputs.json).extra_files) }}
-      run: echo "FILES=$(jq -nc '[inputs] | add' <<< "$FILES")" >> $GITHUB_ENV
-    - name: Run steps specific to go
-      if: fromJSON(steps.config.outputs.json).deploy_go
-      # use of ${{ env.TEMPATE_REPO_DIR }} is not allowed here
-      uses: ./template-repo/.github/actions/copy-workflow-go
-    - id: add-files
-      name: Add files
-      env:
+        git checkout "$BRANCH" || git checkout -B "$BRANCH"
+        git rebase "$DEFAULT_BRANCH" || (git rebase --abort && git reset --hard "$DEFAULT_BRANCH")
+    - env:
+        REPO: ${{ inputs.repository }}
         CONTEXT: |
           {
             "config": ${{ toJSON(fromJSON(steps.config.outputs.json)) }},
             "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
-      run: |
-        commited=false
-        for f in $(jq -r '.[]' <<< "$FILES"); do
-          echo -e "\nProcessing $f."
-          # add DO NOT EDIT header
-          tmp=$(mktemp)
-          cat $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/header.yml $TEMPLATE_REPO_DIR/$TEMPLATE_DIR/$f > $tmp
-          # render template
-          ./template-repo/scripts/render-template.sh $tmp $CONTEXT $tmp
-          # create commit, if necessary
-          commit_msg=""
-          if [[ ! -f "$TARGET_REPO_DIR/$f" ]]; then
-            echo "First deployment.\n"
-            commit_msg="add $f"
-          else
-            status=$(cmp --silent $TARGET_REPO_DIR/$f $tmp; echo $?)
-            if [[ $status -ne 0 ]]; then
-              echo "Update needed."
-              commit_msg="update $f"
-            else
-              echo "File identical. Skipping."
-              continue
-            fi
-          fi
-          mkdir -p "$TARGET_REPO_DIR/$(dirname $f)"
-          mv $tmp $TARGET_REPO_DIR/$f
-          pushd $TARGET_REPO_DIR > /dev/null
-          git add $f
-          git commit -m "$commit_msg"
-          commited=true
-          popd > /dev/null
-        done
-        echo "commited=$commited" >> $GITHUB_ENV
-    - name: Force push web3-bot/sync branch
-      if: steps.add-files.outputs.commited == 'true'
-      working-directory: ${{ env.TARGET_REPO_DIR }}
-      run: git push origin web3-bot/sync -f
+        SCRIPT: ./protocol/.github/scripts/${{ github.event.inputs.script || 'copy-templates.sh' }}
+      run: $SCRIPT
+    - id: ahead
+      name: Check if push is needed
+      working-directory: ${{ matrix.repository }}
+      env:
+        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
+        DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
+      run: git rev-list --count "$BRANCH".."$DEFAULT_BRANCH" | xargs -I{} echo "ahead={}" | tee -a $GITHUB_ENV
+    - name: Push changes
+      if: steps.ahead.outputs.ahead != '0'
+      working-directory: ${{ matrix.repository }}
+      env:
+        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
+      run: git push origin "$BRANCH" -f
