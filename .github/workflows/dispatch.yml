@@ -6,7 +6,14 @@ name: Dispatch
 
 on:
   workflow_dispatch:
-
+    inputs:
+      workflow:
+        description: "Workflow to dispatch"
+        required: true
+      inputs:
+        description: "Workflow inputs"
+        required: false
+        default: '{}'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -108,16 +115,17 @@ jobs:
       max-parallel: 1
     env:
       GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
-      WORKFLOW_YML: copy-workflow.yml
-      WORKFLOW_REPO: protocol/.github
+      WORKFLOW: ${{ github.event.inputs.workflow }}
     steps:
       - id: dispatch
         name: Dispatch copy workflow
         env:
           TARGETS: ${{ toJSON(matrix.cfg.value) }}
+          INPUTS: ${{ github.event.inputs.inputs }}
         run: |
           start_date="$(date +%s)"
-          gh workflow run "$WORKFLOW_YML" --ref "$GITHUB_REF" --repo "$WORKFLOW_REPO" --field "targets=$TARGETS"
+          args="$(jq -r 'to_entries | map("--field \(.key)=\(.value|tostring)") | join(" ")' <<< "$INPUTS")"
+          gh workflow run "$WORKFLOW" --ref "$GITHUB_REF" --repo "protocol/.github" --field "targets=$TARGETS" $args
           echo "start_date=$start_date" >> $GITHUB_OUTPUT
       - id: run
         name: Wait for copy workflow run to start
@@ -126,7 +134,7 @@ jobs:
         run: |
           # checks every 3 seconds until the most recent copy workflow run's created_at is later than this job's start_date
           while sleep 3; do
-            run="$(gh api "/repos/$WORKFLOW_REPO/actions/workflows/$WORKFLOW_YML/runs?per_page=1" --jq '.workflow_runs[0]')"
+            run="$(gh api "/repos/protocol/.github/actions/workflows/$WORKFLOW/runs?per_page=1" --jq '.workflow_runs[0]')"
             # nothing to check if no copy workflow run was returned
             if [[ ! -z "$run" ]]; then
               run_start_date="$(date --date="$(jq -r '.created_at' <<< "$run")" +%s)"
@@ -145,4 +153,4 @@ jobs:
 
           # checks every 3 seconds until the copy workflow run's status is completed
           # redirects the stdout to /dev/null because it is very chatty
-          gh run watch "$RUN_ID" --repo "$WORKFLOW_REPO" > /dev/null
+          gh run watch "$RUN_ID" --repo "protocol/.github" > /dev/null

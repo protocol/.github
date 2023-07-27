@@ -1,0 +1,122 @@
+name: Process
+
+on:
+  workflow_call:
+    inputs:
+      targets:
+        description: "List of repository names to deploy to"
+        required: true
+        type: string
+      branch:
+        description: "Branch to deploy to"
+        required: true
+        type: string
+      script:
+        description: "Script to run"
+        required: true
+        type: string
+      defaults:
+        description: "Defaults to use for each repository"
+        required: false
+        default: '{}'
+        type: string
+      override:
+        description: "Override to use for each repository"
+        required: false
+        default: '{}'
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repository: ${{ fromJSON(github.event.inputs.targets) }}
+      max-parallel: 10
+    name: ${{ matrix.repository }}
+    steps:
+    - name: Checkout ${{ matrix.repository }}
+      uses: actions/checkout@v3
+      with:
+        path: ${{ matrix.repository }}
+        repository: ${{ matrix.repository }}
+        token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+        persist-credentials: true
+        submodules: recursive
+    - name: Checkout protocol/.github
+      uses: actions/checkout@v3
+      with:
+        path: protocol/.github
+        ref: ${{ github.ref }}
+    - id: github
+      name: Get ${{ matrix.repository }} GitHub info
+      working-directory: ${{ matrix.repository }}
+      env:
+        REPO: ${{ matrix.repository }}
+        GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
+      run: |
+        eof="EOF$RANDOM"
+        default_branch="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+        protected_branches="$(gh api -X GET "/repos/$REPO/branches" -f protected=true | jq -c 'map(.name)')"
+        languages="$(gh api -X GET "/repos/$REPO/languages" | jq -c 'to_entries | sort_by(.value) | reverse | map(.key)')"
+        tag="$(git describe --tags --abbrev=0 || true)"
+        echo "json<<$eof" >> $GITHUB_OUTPUT
+        echo '{' >> $GITHUB_OUTPUT
+        echo '"default_branch":"'"$default_branch"'",' >> $GITHUB_OUTPUT
+        echo '"protected_branches":'"$protected_branches"',' >> $GITHUB_OUTPUT
+        echo '"languages":'"$languages"',' >> $GITHUB_OUTPUT
+        echo '"tag":"'"$tag"'"' >> $GITHUB_OUTPUT
+        echo '}' >> $GITHUB_OUTPUT
+        echo "$eof" >> $GITHUB_OUTPUT
+    - id: config
+      name: Get ${{ matrix.repository }} config
+      working-directory: ${{ matrix.repository }}
+      env:
+        REPO: ${{ matrix.repository }}
+        DEFAULTS: ${{ fromJSON(github.event.inputs.defaults)[fromJSON(steps.github.outputs.json).languages[0]] || github.event.inputs.defaults || '{}' }}
+        OVERRIDE: ${{ fromJSON(github.event.inputs.override)[fromJSON(steps.github.outputs.json).languages[0]] || github.event.inputs.override || '{}' }}
+      run: |
+        if [[ -f uci.yml ]]; then
+          echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" '$defaults + . + $override' uci.yml)" >> $GITHUB_OUTPUT
+        else
+          echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" -n '$defaults + $override')" >> $GITHUB_OUTPUT
+    - name: Prepare ${{ matrix.repository }} for deployment
+      working-directory: ${{ matrix.repository }}
+      env:
+        BRANCH: ${{ github.event.inputs.branch }}
+        DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
+      # If the branch already exists, check it out; otherwise, create it.
+      # Then, try rebasing the web3-bot/* branch onto the default branch.
+      # If that fails, reset the web3-bot/* branch to the default branch.
+      run: |
+        git config user.name web3-bot
+        git config user.email web3-bot@users.noreply.github.com
+        git checkout "$BRANCH" || git checkout -B "$BRANCH"
+        git rebase "$DEFAULT_BRANCH" || (git rebase --abort && git reset --hard "$DEFAULT_BRANCH")
+    - env:
+        REPO: ${{ inputs.repository }}
+        CONTEXT: |
+          {
+            "config": ${{ toJSON(fromJSON(steps.config.outputs.json)) }},
+            "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
+          }
+        SCRIPT: ./protocol/.github/scripts/${{ github.event.inputs.script }}
+      run: $SCRIPT
+    - id: ahead
+      name: Check if push is needed
+      working-directory: ${{ matrix.repository }}
+      env:
+        BRANCH: ${{ github.event.inputs.branch }}
+        DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
+      run: git rev-list --count "$BRANCH".."$DEFAULT_BRANCH" | xargs -I{} echo "ahead={}" | tee -a $GITHUB_ENV
+    - name: Push changes
+      if: steps.ahead.outputs.ahead != '0'
+      working-directory: ${{ matrix.repository }}
+      env:
+        BRANCH: ${{ github.event.inputs.branch }}
+      run: git push origin "$BRANCH" -f

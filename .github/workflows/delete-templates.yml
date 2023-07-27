@@ -1,0 +1,23 @@
+name: Delete Templates
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "List of repository names to deploy to"
+        required: true
+      files:
+        description: "List of files to delete"
+        required: true
+
+jobs:
+  copy:
+    uses: ./.github/workflows/process.yml
+    with:
+      targets: ${{ github.event.inputs.targets }}
+      branch: web3-bot/delete-templates
+      script: delete-templates.sh
+      override: |
+        {
+          "files": ${{ github.event.inputs.files }}
+        }

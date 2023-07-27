@@ -1,0 +1,39 @@
+name: Copy Templates
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "List of repository names to deploy to"
+        required: true
+
+jobs:
+  copy:
+    uses: ./.github/workflows/process.yml
+    with:
+      targets: ${{ github.event.inputs.targets }}
+      branch: web3-bot/copy-templates
+      script: copy-templates.sh
+      defaults: |
+        {
+          "Go": {
+            "files": [
+              ".github/workflows/go-test.yml",
+              ".github/workflows/go-check.yml",
+              ".github/workflows/releaser.yml",
+              ".github/workflows/release-check.yml",
+              ".github/workflows/tagpush.yml",
+              "version.json"
+            ]
+          },
+          "JavaScript": {
+            "files": [
+              ".github/workflows/js-test-and-release.yml"
+            ]
+          },
+          "TypeScript": {
+            "files": [
+              ".github/workflows/js-test-and-release.yml"
+            ]
+          }
+        }
