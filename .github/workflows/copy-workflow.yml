@@ -44,7 +44,8 @@ jobs:
               ".github/workflows/release-check.yml",
               ".github/workflows/tagpush.yml",
               "version.json"
-            ]
+            ],
+            "version": "1.20.x"
           },
           "JavaScript": {
             "files": [
