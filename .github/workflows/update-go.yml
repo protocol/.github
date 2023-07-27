@@ -1,0 +1,25 @@
+name: Update Go
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "List of repository names to deploy to"
+        required: true
+      go:
+        description: "Go version to use"
+        required: true
+
+jobs:
+  copy:
+    uses: protocol/.github/workflows/process.yml@v1.0.0
+    with:
+      targets: ${{ github.event.inputs.targets }}
+      branch: web3-bot/update-go
+      script: copy-templates.sh
+      defaults: |
+        {
+          "Go": {
+            "version": "${{ github.event.inputs.go }}"
+          }
+        }

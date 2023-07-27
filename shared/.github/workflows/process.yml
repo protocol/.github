@@ -1,25 +1,30 @@
-# This workflow is triggered by the dispatch workflow.
-
 name: Process
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       targets:
         description: "List of repository names to deploy to"
         required: true
-      override:
-        description: "Defaults override to use for each repository"
-        required: false
-        default: '{}'
+        type: string
       branch:
         description: "Branch to deploy to"
-        required: false
-        default: 'web3-bot/sync'
+        required: true
+        type: string
       script:
         description: "Script to run"
+        required: true
+        type: string
+      defaults:
+        description: "Defaults to use for each repository"
         required: false
-        default: 'copy-templates.sh'
+        default: '{}'
+        type: string
+      override:
+        description: "Override to use for each repository"
+        required: false
+        default: '{}'
+        type: string
 
 defaults:
   run:
@@ -33,30 +38,6 @@ jobs:
       matrix:
         repository: ${{ fromJSON(github.event.inputs.targets) }}
       max-parallel: 10
-    env:
-      DEFAULTS: |
-        {
-          "Go": {
-            "files": [
-              ".github/workflows/go-test.yml",
-              ".github/workflows/go-check.yml",
-              ".github/workflows/releaser.yml",
-              ".github/workflows/release-check.yml",
-              ".github/workflows/tagpush.yml",
-              "version.json"
-            ],
-            "version": "1.20.x"
-          },
-          "JavaScript": {
-            "files": [
-              ".github/workflows/js-test-and-release.yml"
-            ]
-          },
-          "TypeScript": {
-            "files": [
-              ".github/workflows/js-test-and-release.yml"
-            ]
-          }
     name: ${{ matrix.repository }}
     steps:
     - name: Checkout ${{ matrix.repository }}
@@ -97,8 +78,8 @@ jobs:
       working-directory: ${{ matrix.repository }}
       env:
         REPO: ${{ matrix.repository }}
-        DEFAULTS: ${{ fromJSON(env.DEFAULTS)[fromJSON(steps.github.outputs.json).languages[0]] || '{}' }}
-        OVERRIDE: ${{ github.event.inputs.override || '{}' }}
+        DEFAULTS: ${{ fromJSON(github.event.inputs.defaults)[fromJSON(steps.github.outputs.json).languages[0]] || github.event.inputs.defaults || '{}' }}
+        OVERRIDE: ${{ fromJSON(github.event.inputs.override)[fromJSON(steps.github.outputs.json).languages[0]] || github.event.inputs.override || '{}' }}
       run: |
         if [[ -f uci.yml ]]; then
           echo "json=$(jq -c --argjson defaults "$DEFAULTS" --argjson override "$OVERRIDE" '$defaults + . + $override' uci.yml)" >> $GITHUB_OUTPUT
@@ -107,11 +88,11 @@ jobs:
     - name: Prepare ${{ matrix.repository }} for deployment
       working-directory: ${{ matrix.repository }}
       env:
-        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
+        BRANCH: ${{ github.event.inputs.branch }}
         DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
       # If the branch already exists, check it out; otherwise, create it.
-      # Then, try rebasing the web3-bot/sync branch onto the default branch.
-      # If that fails, reset the web3-bot/sync branch to the default branch.
+      # Then, try rebasing the web3-bot/* branch onto the default branch.
+      # If that fails, reset the web3-bot/* branch to the default branch.
       run: |
         git config user.name web3-bot
         git config user.email web3-bot@users.noreply.github.com
@@ -124,18 +105,18 @@ jobs:
             "config": ${{ toJSON(fromJSON(steps.config.outputs.json)) }},
             "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
           }
-        SCRIPT: ./protocol/.github/scripts/${{ github.event.inputs.script || 'copy-templates.sh' }}
+        SCRIPT: ./protocol/.github/scripts/${{ github.event.inputs.script }}
       run: $SCRIPT
     - id: ahead
       name: Check if push is needed
       working-directory: ${{ matrix.repository }}
       env:
-        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
+        BRANCH: ${{ github.event.inputs.branch }}
         DEFAULT_BRANCH: ${{ fromJSON(steps.github.outputs.json).default_branch }}
       run: git rev-list --count "$BRANCH".."$DEFAULT_BRANCH" | xargs -I{} echo "ahead={}" | tee -a $GITHUB_ENV
     - name: Push changes
       if: steps.ahead.outputs.ahead != '0'
       working-directory: ${{ matrix.repository }}
       env:
-        BRANCH: ${{ github.event.inputs.branch || 'web3-bot/sync' }}
+        BRANCH: ${{ github.event.inputs.branch }}
       run: git push origin "$BRANCH" -f

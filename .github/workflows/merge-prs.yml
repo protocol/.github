@@ -5,8 +5,7 @@ on:
     inputs:
       branch:
         description: "Branch from which to merge PRs"
-        required: false
-        default: 'web3-bot/sync'
+        required: true
   schedule:
     - cron: "0 0 * * *" # https://crontab.guru/every-day
 
@@ -17,7 +16,7 @@ jobs:
     steps:
       - name: Merge PRs
         env:
-          QUERY: is:pr author:web3-bot state:open head:${{ github.event.inputs.branch || 'web3-bot/sync' }} archived:false
+          QUERY: is:pr author:web3-bot state:open head:${{ github.event.inputs.branch || 'web3-bot/copy-templates' }} archived:false
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
