@@ -12,7 +12,7 @@ on:
 
 jobs:
   copy:
-    uses: protocol/.github/workflows/process.yml@v1.0.0
+    uses: ./.github/workflows/process.yml
     with:
       targets: ${{ github.event.inputs.targets }}
       branch: web3-bot/update-go

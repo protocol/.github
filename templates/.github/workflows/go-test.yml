@@ -13,4 +13,4 @@ concurrency:
 
 jobs:
   go-test:
-    uses: protocol/.github/shared/.github/workflows/go-test.yml@v1.0
+    uses: protocol/.github/shared/.github/workflows/go-test.yml@${{{ source.tag | split(".") | del(.[-1]) | join(".") }}}
