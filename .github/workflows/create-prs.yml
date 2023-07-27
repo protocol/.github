@@ -53,6 +53,10 @@ jobs:
             core.info(`Filtering out the repositories without unmerged branches`)
             const repos = []
             for (const item of items) {
+              if (item.archived) {
+                core.info(`Skipping archived repository ${item.html_url}`)
+                continue
+              }
               core.info(`Checking if a PR can be created for ${item.html_url}`)
               let branch
               try {

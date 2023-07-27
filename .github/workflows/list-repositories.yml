@@ -11,5 +11,5 @@ jobs:
       - name: List Repositories
         env:
           GITHUB_TOKEN: ${{ secrets.WEB3_BOT_GITHUB_TOKEN }}
-        run: gh api user/repos -X GET -f affiliation=collaborator --jq '.[] | .full_name' --paginate
+        run: gh api user/repos -X GET -f affiliation=collaborator --jq '.[] | select(.archived == false) | .full_name' --paginate
         shell: bash

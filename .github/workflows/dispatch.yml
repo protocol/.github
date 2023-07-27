@@ -76,6 +76,10 @@ jobs:
             const batches = []
             let batch = []
             for (const item of items) {
+              if (item.archived) {
+                core.info(`Skipping archived repository ${item.full_name}`)
+                continue
+              }
               batch.push(item.full_name)
               if (batch.length === maxReposPerWorkflow) {
                 batches.push({
