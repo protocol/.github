@@ -360,6 +360,9 @@
       "target": "ipni/storetheindex"
     },
     {
+      "target": "ipni/telemetry"
+    },
+    {
       "target": "libp2p/dht-tracer1"
     },
     {
