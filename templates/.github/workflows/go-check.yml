@@ -13,4 +13,4 @@ concurrency:
 
 jobs:
   go-check:
-    uses: protocol/.github/shared/.github/workflows/go-check.yml@v1.0
+    uses: protocol/.github/shared/.github/workflows/go-check.yml@${{{ source.tag | split(".") | del(.[-1]) | join(".") }}}

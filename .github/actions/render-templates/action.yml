@@ -1,0 +1,50 @@
+name: render templates
+description: Renders workflow templates
+
+inputs:
+  context:
+    description: JSON context
+    required: true
+    default: |
+      {
+        "github": {
+          "default_branch": "main",
+          "protected_branches": [
+            "main",
+            "release"
+          ]
+        },
+        "config": {
+          "go": {
+            "versions": [
+              "1.19.x",
+              "1.20.x"
+            ]
+          }
+        },
+        "source": {
+          "tag": "v1.0.0"
+        }
+      }
+
+outputs:
+  json:
+    description: JSON config
+    value: ${{ steps.config.outputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+    - env:
+        CONTEXT: ${{ inputs.context }}
+      run: |
+        # For every file that matches templates/.github/workflows/*.yml, render it using the example context.
+        # This is done to ensure that the templates are valid YAML.
+        for file in templates/.github/workflows/*.yml; do
+          echo "Rendering $file"
+          echo "================"
+          ./scripts/render-template.sh "$file" "$CONTEXT" "$file"
+          cat "$file"
+          echo
+        done
+      shell: bash

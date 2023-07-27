@@ -124,8 +124,11 @@ jobs:
           INPUTS: ${{ github.event.inputs.inputs }}
         run: |
           start_date="$(date +%s)"
-          args="$(jq -r 'to_entries | map("--field \(.key)=\(.value|tostring)") | join(" ")' <<< "$INPUTS")"
-          gh workflow run "$WORKFLOW" --ref "$GITHUB_REF" --repo "protocol/.github" --field "targets=$TARGETS" $args
+          args=()
+          for key in $(jq -r 'keys[]' <<< "$INPUTS"); do
+            args+=("--field" "$key=$(jq -r ".$key" <<< "$INPUTS")")
+          done
+          gh workflow run "$WORKFLOW" --ref "$GITHUB_REF" --repo "protocol/.github" --field "targets=$TARGETS" ${args[@]}
           echo "start_date=$start_date" >> $GITHUB_OUTPUT
       - id: run
         name: Wait for copy workflow run to start

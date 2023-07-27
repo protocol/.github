@@ -73,6 +73,17 @@ jobs:
         echo '"tag":"'"$tag"'"' >> $GITHUB_OUTPUT
         echo '}' >> $GITHUB_OUTPUT
         echo "$eof" >> $GITHUB_OUTPUT
+    - id: source
+      name: Get protocol/.github GitHub info
+      working-directory: protocol/.github
+      run: |
+        eof="EOF$RANDOM"
+        tag="$(git describe --tags --abbrev=0 || true)"
+        echo "json<<$eof" >> $GITHUB_OUTPUT
+        echo '{' >> $GITHUB_OUTPUT
+        echo '"tag":"'"$tag"'"' >> $GITHUB_OUTPUT
+        echo '}' >> $GITHUB_OUTPUT
+        echo "$eof" >> $GITHUB_OUTPUT
     - id: config
       name: Get ${{ matrix.repository }} config
       working-directory: ${{ matrix.repository }}
@@ -103,7 +114,8 @@ jobs:
         CONTEXT: |
           {
             "config": ${{ toJSON(fromJSON(steps.config.outputs.json)) }},
-            "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }}
+            "github": ${{ toJSON(fromJSON(steps.github.outputs.json)) }},
+            "source": ${{ toJSON(fromJSON(steps.source.outputs.json)) }}
           }
         SCRIPT: ./protocol/.github/scripts/${{ github.event.inputs.script }}
       run: $SCRIPT
