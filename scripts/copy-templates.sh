@@ -18,9 +18,18 @@ for f in $(jq -r '.config.files[]' <<< "$CONTEXT"); do
   $root/protocol/.github/scripts/render-template.sh "$root/protocol/.github/templates/$f" "$CONTEXT" "$f"
 
   git add "$f"
+  git commit -m "chore: add or force update $f"
 done
 
 if [[ "$force" != "true" ]]; then
+  if [[ -f ".github/dependabot.yml" ]]; then
+    gha="$(yq '.updates | map(select(.package-ecosystem == "github-actions")) | length' .github/dependabot.yml)"
+    if [[ "$gha" -gt 0 ]]; then
+      echo "Dependabot is already configured to update GitHub Actions. Skipping."
+      exit 0
+    fi
+  fi
+
   # https://gist.github.com/mattt/e09e1ecd76d5573e0517a7622009f06f
   gh gist view --raw e09e1ecd76d5573e0517a7622009f06f | bash
 
@@ -52,14 +61,9 @@ if [[ "$force" != "true" ]]; then
     fi
 
     git add "$f"
+    git commit -m "chore: update $f"
   done
-fi
 
-if ! git diff-index --quiet HEAD; then
-  git commit -m "chore: add/update $f"
-fi
-
-if [[ "$force" != "true" ]]; then
   git reset --hard
 fi
 
