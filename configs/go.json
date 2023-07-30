@@ -19,10 +19,10 @@
   },
   "repositories": [
     {
-      "target": "FILCAT/ribs"
+      "target": "data-preservation-programs/singularity"
     },
     {
-      "target": "data-preservation-programs/singularity"
+      "target": "FILCAT/ribs"
     },
     {
       "target": "filecoin-project/docker-hub-exporter"
@@ -358,6 +358,9 @@
     },
     {
       "target": "ipni/storetheindex"
+    },
+    {
+      "target": "ipni/telemetry"
     },
     {
       "target": "libp2p/dht-tracer1"
