@@ -13,4 +13,4 @@ concurrency:
 
 jobs:
   release-check:
-    uses: protocol/.github/shared/.github/workflows/release-check.yml@${{{ source.tag | split(".") | .[0] }}}
+    uses: protocol/.github/shared/.github/workflows/release-check.yml@${{{ source.tag | split("-") | [(.[0] | split(".") | .[0]), (.[1:])] | flatten | join("-") }}}

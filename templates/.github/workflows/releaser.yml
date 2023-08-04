@@ -12,4 +12,4 @@ concurrency:
 
 jobs:
   releaser:
-    uses: protocol/.github/shared/.github/workflows/releaser.yml@${{{ source.tag | split(".") | .[0] }}}
+    uses: protocol/.github/shared/.github/workflows/releaser.yml@${{{ source.tag | split("-") | [(.[0] | split(".") | .[0]), (.[1:])] | flatten | join("-") }}}
