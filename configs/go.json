@@ -80,7 +80,13 @@
       "target": "filecoin-saturn/caboose"
     },
     {
+      "target": "filecoin-shipyard/boostly"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
+    },
+    {
+      "target": "filecoin-shipyard/telefil"
     },
     {
       "target": "ipfs-shipyard/dnslink-dnsimple"
