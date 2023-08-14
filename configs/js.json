@@ -24,6 +24,7 @@
     { "target": "ipfs/aegir" },
     { "target": "ipfs/helia-car" },
     { "target": "ipfs/helia-ipns" },
+    { "target": "ipfs/helia-mfs" },
     { "target": "ipfs/helia-routing-v1-http-api" },
     { "target": "ipfs/helia-unixfs" },
     { "target": "ipfs/ipld-explorer-components" },
