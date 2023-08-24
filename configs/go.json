@@ -83,6 +83,9 @@
       "target": "filecoin-shipyard/boostly"
     },
     {
+      "target": "filecoin-shipyard/jiffy"
+    },
+    {
       "target": "filecoin-shipyard/js-lotus-client-schema"
     },
     {
