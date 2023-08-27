@@ -19,10 +19,10 @@
   },
   "repositories": [
     {
-      "target": "FILCAT/ribs"
+      "target": "data-preservation-programs/singularity"
     },
     {
-      "target": "data-preservation-programs/singularity"
+      "target": "FILCAT/ribs"
     },
     {
       "target": "filecoin-project/docker-hub-exporter"
@@ -81,6 +81,9 @@
     },
     {
       "target": "filecoin-shipyard/boostly"
+    },
+    {
+      "target": "filecoin-shipyard/jiffy"
     },
     {
       "target": "filecoin-shipyard/js-lotus-client-schema"
@@ -345,6 +348,9 @@
       "target": "ipni/go-naam"
     },
     {
+      "target": "ipni/herald"
+    },
+    {
       "target": "ipni/heyfil"
     },
     {
@@ -424,6 +430,9 @@
     },
     {
       "target": "libp2p/go-libp2p-kbucket"
+    },
+    {
+      "target": "libp2p/go-libp2p-mplex"
     },
     {
       "target": "libp2p/go-libp2p-pubsub-router"
