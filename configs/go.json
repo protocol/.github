@@ -138,6 +138,9 @@
       "target": "ipfs/go-bitfield"
     },
     {
+      "target": "ipfs/go-block-format"
+    },
+    {
       "target": "ipfs/go-bs-sqlite3"
     },
     {
