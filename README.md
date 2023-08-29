@@ -1,3 +1,17 @@
+# ⚠️ This repository is archived ⚠️
+
+### 🏡 Unified CI has a new home! 
+
+You can find it at https://github.com/pl-strflt/uci
+
+### 🐙 Signing up for Unified CI is easier than ever!
+
+If you want to add Unified CI to your repository, give [@web3-bot](https://github.com/web3-bot) push access to your repository. That's it! 
+
+You can read more about it at https://github.com/pl-strflt/uci#usage
+
+---
+
 # Unified CI: Streamlining GitHub Workflows Across Repositories
 
 Welcome to Unified CI, your key to deploying and managing GitHub Actions workflows across an extensive network of repositories. Unified CI takes the helm in orchestrating both the initial deployment and ongoing updates of workflows, providing a seamless solution to streamline your projects' lifecycle.
